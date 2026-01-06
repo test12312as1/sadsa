@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, ChevronDown, Clock, DollarSign, Activity, Share2, Wallet, Trophy, Zap, Target, TrendingUp, Flame, Timer, ExternalLink, ChevronRight } from 'lucide-react';
+import { Search, ChevronDown, Clock, DollarSign, Activity, Share2, Wallet, Trophy, Target, Flame, Timer, ExternalLink, ChevronRight } from 'lucide-react';
 
 // Demo wallet data with different risk levels
 const DEMO_WALLETS = {
@@ -233,7 +233,7 @@ export default function GamStart() {
 
     const addresses = parseAddresses(address);
     if (addresses.length === 0) {
-        setLoading(false);
+      setLoading(false);
       return;
     }
 
@@ -294,35 +294,71 @@ export default function GamStart() {
     return '#22c55e'; // green
   };
 
+  // Get trait card style based on risk score - more subtle colors
+  const getTraitStyle = (score) => {
+    if (score >= 70) return {
+      bg: 'bg-[#1a1a2e]',
+      border: 'border-red-500/20',
+      borderHover: 'hover:border-red-500/40',
+      ring: 'ring-red-500/50',
+      iconBg: 'bg-red-500/10',
+      iconColor: 'text-red-400/80',
+      labelColor: 'text-red-300/80',
+      divider: 'border-red-500/20'
+    };
+    if (score >= 40) return {
+      bg: 'bg-[#1a1a2e]',
+      border: 'border-yellow-500/20',
+      borderHover: 'hover:border-yellow-500/40',
+      ring: 'ring-yellow-500/50',
+      iconBg: 'bg-yellow-500/10',
+      iconColor: 'text-yellow-400/80',
+      labelColor: 'text-yellow-300/80',
+      divider: 'border-yellow-500/20'
+    };
+    return {
+      bg: 'bg-[#1a1a2e]',
+      border: 'border-green-500/20',
+      borderHover: 'hover:border-green-500/40',
+      ring: 'ring-green-500/50',
+      iconBg: 'bg-green-500/10',
+      iconColor: 'text-green-400/80',
+      labelColor: 'text-green-300/80',
+      divider: 'border-green-500/20'
+    };
+  };
+
+  const traitStyle = results ? getTraitStyle(results.riskScore) : null;
+
   return (
-    <div className={`min-h-screen ${results ? 'bg-[#0f0f1a]' : 'bg-gray-50'}`}>
+    <div className="min-h-screen bg-[#0f0f1a]">
       <div className={`${results ? 'max-w-5xl' : 'max-w-2xl'} mx-auto px-4 sm:px-6 lg:px-8 ${results ? 'py-8' : 'py-24'}`}>
         
         {!results && !loading && (
-          /* MAIN PAGE - INPUT TERMINAL (Light theme) */
+          /* MAIN PAGE - Dark theme */
           <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-12">
             <div className="text-center space-y-6">
-              <h1 className="text-7xl md:text-8xl font-bold tracking-tight text-gray-900">
+              <h1 className="text-7xl md:text-8xl font-bold tracking-tight text-white">
                 GamStart
               </h1>
-              <p className="text-xl md:text-2xl text-gray-600 max-w-xl mx-auto">
+              <p className="text-xl md:text-2xl text-gray-400 max-w-xl mx-auto">
                 A diagnostic tool that scans your cryptocurrency wallet to detect patterns of compulsive gambling behavior.
               </p>
             </div>
 
             <div className="w-full space-y-4">
-              <div className="bg-white border-2 border-gray-200 rounded-xl p-6 shadow-sm">
+              <div className="bg-[#1a1a2e] border border-purple-500/20 rounded-xl p-6">
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                   <div className="relative">
                     <select
                       value={chain}
                       onChange={(e) => setChain(e.target.value)}
-                      className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-3 pr-10 text-gray-900 font-medium cursor-pointer hover:border-gray-400 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                      className="appearance-none bg-[#0f0f1a] border border-purple-500/30 rounded-lg px-4 py-3 pr-10 text-white font-medium cursor-pointer hover:border-purple-500/50 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                     >
                       <option value="ETH">ETH</option>
                       <option value="SOL">SOL</option>
                     </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={18} />
                   </div>
 
                   <textarea
@@ -336,7 +372,7 @@ export default function GamStart() {
                     }}
                     placeholder={chain === 'ETH' ? '0x... (or multiple addresses separated by comma or newline)' : 'Enter SOL address(es)'}
                     rows={address.split('\n').length > 1 ? Math.min(address.split('\n').length, 4) : 1}
-                    className="flex-1 bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-900 font-mono placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 resize-none min-h-[48px]"
+                    className="flex-1 bg-[#0f0f1a] border border-purple-500/30 rounded-lg px-4 py-3 text-white font-mono placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 resize-none min-h-[48px]"
                   />
 
                   <button
@@ -361,37 +397,37 @@ export default function GamStart() {
         )}
 
         {loading && (
-          /* LOADING STATE */
+          /* LOADING STATE - Dark theme */
           <div className="space-y-8">
             <div className="text-center space-y-4">
-              <h2 className="text-3xl font-bold text-gray-900">Forensic Scan in Progress</h2>
-              <p className="text-gray-600">Analyzing wallet behavior patterns...</p>
+              <h2 className="text-3xl font-bold text-white">Forensic Scan in Progress</h2>
+              <p className="text-gray-400">Analyzing wallet behavior patterns...</p>
             </div>
 
-            <div className="bg-white border-2 border-gray-200 rounded-2xl p-8 space-y-4 shadow-sm">
+            <div className="bg-[#1a1a2e] border border-purple-500/20 rounded-2xl p-8 space-y-4">
               {LOADING_CHECKS.map((check, index) => (
                 <div
                   key={index}
                   className={`flex items-center gap-3 transition-all duration-300 ${
                     index < loadingStep
-                      ? 'text-green-600'
+                      ? 'text-green-400'
                       : index === loadingStep
-                      ? 'text-purple-600 animate-pulse'
-                      : 'text-gray-400'
+                      ? 'text-purple-400 animate-pulse'
+                      : 'text-gray-600'
                   }`}
                 >
                   <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                     index < loadingStep
-                      ? 'border-green-600 bg-green-50'
+                      ? 'border-green-500 bg-green-500/20'
                       : index === loadingStep
-                      ? 'border-purple-600 bg-purple-50'
-                      : 'border-gray-300'
+                      ? 'border-purple-500 bg-purple-500/20'
+                      : 'border-gray-600'
                   }`}>
                     {index < loadingStep && (
-                      <div className="w-2 h-2 bg-green-600 rounded-full" />
+                      <div className="w-2 h-2 bg-green-500 rounded-full" />
                     )}
                     {index === loadingStep && (
-                      <div className="w-2 h-2 bg-purple-600 rounded-full animate-pulse" />
+                      <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
                     )}
                   </div>
                   <span className="font-medium">{check}</span>
@@ -437,17 +473,17 @@ export default function GamStart() {
                   <div className="text-center">
                     <div className="text-5xl font-bold" style={{ color: getAccentColor(results.riskScore) }}>
                       {results.riskScore}
-          </div>
+                    </div>
                     <div className="text-xs text-gray-400 uppercase tracking-wider">Risk Score</div>
-            </div>
-        </div>
+                  </div>
+                </div>
                 {/* Gambler Type - Below Score */}
                 <div className="text-center">
-                  <div className="text-lg font-semibold text-purple-300">{results.gamblerType}</div>
+                  <div className="text-lg font-medium text-gray-200">{results.gamblerType}</div>
                   <div className="text-sm text-gray-500 uppercase tracking-wide">{results.status}</div>
                 </div>
               </div>
-              
+
               {/* Info Grid - Right of Score */}
               <div className="flex-1 grid grid-cols-2 gap-4">
                 {/* Favorite Casino */}
@@ -458,7 +494,7 @@ export default function GamStart() {
                   className="bg-[#1a1a2e] border border-purple-500/20 rounded-xl p-4 hover:border-purple-500/40 transition-colors group"
                 >
                   <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Favorite Casino</div>
-                  <div className="text-lg font-semibold text-purple-300 flex items-center gap-2 group-hover:text-purple-200">
+                  <div className="text-lg font-medium text-purple-300 flex items-center gap-2 group-hover:text-purple-200">
                     {results.favoriteCasino.name}
                     <ExternalLink size={14} className="opacity-50" />
                   </div>
@@ -467,7 +503,7 @@ export default function GamStart() {
                 {/* Financial Impact */}
                 <div className="bg-[#1a1a2e] border border-purple-500/20 rounded-xl p-4">
                   <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Financial Impact</div>
-                  <div className="text-lg font-semibold text-white">
+                  <div className="text-lg font-medium text-white">
                     ${results.financialImpact.totalUSD.toLocaleString()}
                   </div>
                   <div className="text-xs text-gray-500 font-mono">{results.financialImpact.totalETH} ETH</div>
@@ -476,13 +512,13 @@ export default function GamStart() {
                 {/* Primary Pattern */}
                 <div className="bg-[#1a1a2e] border border-purple-500/20 rounded-xl p-4">
                   <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Primary Pattern</div>
-                  <div className="text-lg font-semibold text-orange-400">{results.primaryPattern}</div>
-              </div>
-              
+                  <div className="text-lg font-medium" style={{ color: getAccentColor(results.riskScore) }}>{results.primaryPattern}</div>
+                </div>
+
                 {/* Leaderboard Place */}
                 <div className="bg-[#1a1a2e] border border-purple-500/20 rounded-xl p-4">
                   <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Leaderboard</div>
-                  <div className="text-lg font-semibold text-yellow-400 flex items-center gap-2">
+                  <div className="text-lg font-medium text-purple-300 flex items-center gap-2">
                     <Trophy size={16} />
                     #{results.leaderboardPlace.toLocaleString()}
                   </div>
@@ -491,151 +527,151 @@ export default function GamStart() {
             </div>
 
             {/* Behavioral Traits Section */}
-                <div className="space-y-4">
-              <h2 className="text-xl font-bold text-gray-300">Behavioral Traits</h2>
+            <div className="space-y-4">
+              <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wide">Behavioral Traits</h2>
               
-              {/* Row 1 - Purple themed */}
+              {/* Row 1 */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Deposit Velocity */}
                 <div 
-                  className={`bg-gradient-to-br from-purple-900/40 to-purple-800/20 border border-purple-500/30 rounded-xl overflow-hidden cursor-pointer transition-all hover:border-purple-500/50 ${expandedMetric === 'velocity' ? 'ring-2 ring-purple-500' : ''}`}
+                  className={`${traitStyle.bg} border ${traitStyle.border} ${traitStyle.borderHover} rounded-xl overflow-hidden cursor-pointer transition-all ${expandedMetric === 'velocity' ? `ring-1 ${traitStyle.ring}` : ''}`}
                   onClick={() => setExpandedMetric(expandedMetric === 'velocity' ? null : 'velocity')}
                 >
                   <div className="p-5">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="p-2 bg-purple-500/20 rounded-lg">
-                        <Activity className="text-purple-400" size={20} />
-                          </div>
-                      <div className="text-sm text-purple-300">Deposit Velocity</div>
-                      <ChevronRight size={16} className={`ml-auto text-purple-400 transition-transform ${expandedMetric === 'velocity' ? 'rotate-90' : ''}`} />
-                          </div>
+                      <div className={`p-2 ${traitStyle.iconBg} rounded-lg`}>
+                        <Activity className={traitStyle.iconColor} size={18} />
+                      </div>
+                      <div className={`text-sm ${traitStyle.labelColor}`}>Deposit Velocity</div>
+                      <ChevronRight size={14} className={`ml-auto text-gray-500 transition-transform ${expandedMetric === 'velocity' ? 'rotate-90' : ''}`} />
+                    </div>
                     <div className="text-3xl font-bold text-white">{results.depositVelocity.rate}</div>
                     <div className="text-xs text-gray-500">{results.depositVelocity.unit}</div>
-                        </div>
+                  </div>
                   {expandedMetric === 'velocity' && (
-                    <div className="px-5 pb-5 pt-2 border-t border-purple-500/20">
+                    <div className={`px-5 pb-5 pt-2 border-t ${traitStyle.divider}`}>
                       <p className="text-sm text-gray-400">{results.depositVelocity.description}</p>
-                          </div>
-                        )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Midnight Factor */}
                 <div 
-                  className={`bg-gradient-to-br from-purple-900/40 to-purple-800/20 border border-purple-500/30 rounded-xl overflow-hidden cursor-pointer transition-all hover:border-purple-500/50 ${expandedMetric === 'midnight' ? 'ring-2 ring-purple-500' : ''}`}
+                  className={`${traitStyle.bg} border ${traitStyle.border} ${traitStyle.borderHover} rounded-xl overflow-hidden cursor-pointer transition-all ${expandedMetric === 'midnight' ? `ring-1 ${traitStyle.ring}` : ''}`}
                   onClick={() => setExpandedMetric(expandedMetric === 'midnight' ? null : 'midnight')}
                 >
                   <div className="p-5">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="p-2 bg-purple-500/20 rounded-lg">
-                        <Clock className="text-purple-400" size={20} />
+                      <div className={`p-2 ${traitStyle.iconBg} rounded-lg`}>
+                        <Clock className={traitStyle.iconColor} size={18} />
                       </div>
-                      <div className="text-sm text-purple-300">Midnight Factor</div>
-                      <ChevronRight size={16} className={`ml-auto text-purple-400 transition-transform ${expandedMetric === 'midnight' ? 'rotate-90' : ''}`} />
+                      <div className={`text-sm ${traitStyle.labelColor}`}>Midnight Factor</div>
+                      <ChevronRight size={14} className={`ml-auto text-gray-500 transition-transform ${expandedMetric === 'midnight' ? 'rotate-90' : ''}`} />
                     </div>
                     <div className="text-3xl font-bold text-white">{results.midnightFactor.percentage}%</div>
                     <div className="text-xs text-gray-500">{results.midnightFactor.transactions} of {results.midnightFactor.totalTransactions} txns</div>
-                </div>
+                  </div>
                   {expandedMetric === 'midnight' && (
-                    <div className="px-5 pb-5 pt-2 border-t border-purple-500/20">
+                    <div className={`px-5 pb-5 pt-2 border-t ${traitStyle.divider}`}>
                       <p className="text-sm text-gray-400">{results.midnightFactor.description}</p>
-              </div>
-            )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Chase Behavior */}
                 <div 
-                  className={`bg-gradient-to-br from-purple-900/40 to-purple-800/20 border border-purple-500/30 rounded-xl overflow-hidden cursor-pointer transition-all hover:border-purple-500/50 ${expandedMetric === 'chase' ? 'ring-2 ring-purple-500' : ''}`}
+                  className={`${traitStyle.bg} border ${traitStyle.border} ${traitStyle.borderHover} rounded-xl overflow-hidden cursor-pointer transition-all ${expandedMetric === 'chase' ? `ring-1 ${traitStyle.ring}` : ''}`}
                   onClick={() => setExpandedMetric(expandedMetric === 'chase' ? null : 'chase')}
                 >
                   <div className="p-5">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="p-2 bg-purple-500/20 rounded-lg">
-                        <Target className="text-purple-400" size={20} />
+                      <div className={`p-2 ${traitStyle.iconBg} rounded-lg`}>
+                        <Target className={traitStyle.iconColor} size={18} />
                       </div>
-                      <div className="text-sm text-purple-300">Chase Behavior</div>
-                      <ChevronRight size={16} className={`ml-auto text-purple-400 transition-transform ${expandedMetric === 'chase' ? 'rotate-90' : ''}`} />
+                      <div className={`text-sm ${traitStyle.labelColor}`}>Chase Behavior</div>
+                      <ChevronRight size={14} className={`ml-auto text-gray-500 transition-transform ${expandedMetric === 'chase' ? 'rotate-90' : ''}`} />
                     </div>
                     <div className="text-3xl font-bold text-white">{results.chaseBehavior.percentage}%</div>
                     <div className="text-xs text-gray-500">avg {results.chaseBehavior.avgResponseTime} min response</div>
                   </div>
                   {expandedMetric === 'chase' && (
-                    <div className="px-5 pb-5 pt-2 border-t border-purple-500/20">
+                    <div className={`px-5 pb-5 pt-2 border-t ${traitStyle.divider}`}>
                       <p className="text-sm text-gray-400">{results.chaseBehavior.description}</p>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Row 2 - Teal/Cyan themed */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Row 2 */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Session Length */}
                 <div 
-                  className={`bg-gradient-to-br from-cyan-900/40 to-teal-800/20 border border-cyan-500/30 rounded-xl overflow-hidden cursor-pointer transition-all hover:border-cyan-500/50 ${expandedMetric === 'session' ? 'ring-2 ring-cyan-500' : ''}`}
+                  className={`${traitStyle.bg} border ${traitStyle.border} ${traitStyle.borderHover} rounded-xl overflow-hidden cursor-pointer transition-all ${expandedMetric === 'session' ? `ring-1 ${traitStyle.ring}` : ''}`}
                   onClick={() => setExpandedMetric(expandedMetric === 'session' ? null : 'session')}
                 >
                   <div className="p-5">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="p-2 bg-cyan-500/20 rounded-lg">
-                        <Timer className="text-cyan-400" size={20} />
-                    </div>
-                      <div className="text-sm text-cyan-300">Session Length</div>
-                      <ChevronRight size={16} className={`ml-auto text-cyan-400 transition-transform ${expandedMetric === 'session' ? 'rotate-90' : ''}`} />
+                      <div className={`p-2 ${traitStyle.iconBg} rounded-lg`}>
+                        <Timer className={traitStyle.iconColor} size={18} />
+                      </div>
+                      <div className={`text-sm ${traitStyle.labelColor}`}>Session Length</div>
+                      <ChevronRight size={14} className={`ml-auto text-gray-500 transition-transform ${expandedMetric === 'session' ? 'rotate-90' : ''}`} />
                     </div>
                     <div className="text-3xl font-bold text-white">{results.sessionLength.avgHours}h</div>
                     <div className="text-xs text-gray-500">avg session</div>
                   </div>
                   {expandedMetric === 'session' && (
-                    <div className="px-5 pb-5 pt-2 border-t border-cyan-500/20">
+                    <div className={`px-5 pb-5 pt-2 border-t ${traitStyle.divider}`}>
                       <p className="text-sm text-gray-400">{results.sessionLength.description}</p>
-                  </div>
+                    </div>
                   )}
                 </div>
 
                 {/* Biggest Single Bet */}
                 <div 
-                  className={`bg-gradient-to-br from-cyan-900/40 to-teal-800/20 border border-cyan-500/30 rounded-xl overflow-hidden cursor-pointer transition-all hover:border-cyan-500/50 ${expandedMetric === 'bigbet' ? 'ring-2 ring-cyan-500' : ''}`}
+                  className={`${traitStyle.bg} border ${traitStyle.border} ${traitStyle.borderHover} rounded-xl overflow-hidden cursor-pointer transition-all ${expandedMetric === 'bigbet' ? `ring-1 ${traitStyle.ring}` : ''}`}
                   onClick={() => setExpandedMetric(expandedMetric === 'bigbet' ? null : 'bigbet')}
                 >
                   <div className="p-5">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="p-2 bg-cyan-500/20 rounded-lg">
-                        <DollarSign className="text-cyan-400" size={20} />
-                              </div>
-                      <div className="text-sm text-cyan-300">Biggest Single Bet</div>
-                      <ChevronRight size={16} className={`ml-auto text-cyan-400 transition-transform ${expandedMetric === 'bigbet' ? 'rotate-90' : ''}`} />
+                      <div className={`p-2 ${traitStyle.iconBg} rounded-lg`}>
+                        <DollarSign className={traitStyle.iconColor} size={18} />
+                      </div>
+                      <div className={`text-sm ${traitStyle.labelColor}`}>Biggest Single Bet</div>
+                      <ChevronRight size={14} className={`ml-auto text-gray-500 transition-transform ${expandedMetric === 'bigbet' ? 'rotate-90' : ''}`} />
                     </div>
                     <div className="text-3xl font-bold text-white">{results.biggestBet.amount}</div>
                     <div className="text-xs text-gray-500">ETH (${results.biggestBet.amountUSD.toLocaleString()})</div>
                   </div>
                   {expandedMetric === 'bigbet' && (
-                    <div className="px-5 pb-5 pt-2 border-t border-cyan-500/20">
+                    <div className={`px-5 pb-5 pt-2 border-t ${traitStyle.divider}`}>
                       <p className="text-sm text-gray-400">{results.biggestBet.description}</p>
-                  </div>
-                )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Longest Streak */}
                 <div 
-                  className={`bg-gradient-to-br from-cyan-900/40 to-teal-800/20 border border-cyan-500/30 rounded-xl overflow-hidden cursor-pointer transition-all hover:border-cyan-500/50 ${expandedMetric === 'streak' ? 'ring-2 ring-cyan-500' : ''}`}
+                  className={`${traitStyle.bg} border ${traitStyle.border} ${traitStyle.borderHover} rounded-xl overflow-hidden cursor-pointer transition-all ${expandedMetric === 'streak' ? `ring-1 ${traitStyle.ring}` : ''}`}
                   onClick={() => setExpandedMetric(expandedMetric === 'streak' ? null : 'streak')}
                 >
                   <div className="p-5">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="p-2 bg-cyan-500/20 rounded-lg">
-                        <Flame className="text-cyan-400" size={20} />
-                          </div>
-                      <div className="text-sm text-cyan-300">Longest Streak</div>
-                      <ChevronRight size={16} className={`ml-auto text-cyan-400 transition-transform ${expandedMetric === 'streak' ? 'rotate-90' : ''}`} />
+                      <div className={`p-2 ${traitStyle.iconBg} rounded-lg`}>
+                        <Flame className={traitStyle.iconColor} size={18} />
+                      </div>
+                      <div className={`text-sm ${traitStyle.labelColor}`}>Longest Streak</div>
+                      <ChevronRight size={14} className={`ml-auto text-gray-500 transition-transform ${expandedMetric === 'streak' ? 'rotate-90' : ''}`} />
                     </div>
                     <div className="text-3xl font-bold text-white">{results.longestStreak.deposits}</div>
                     <div className="text-xs text-gray-500">deposits in {results.longestStreak.timespan}</div>
                   </div>
                   {expandedMetric === 'streak' && (
-                    <div className="px-5 pb-5 pt-2 border-t border-cyan-500/20">
+                    <div className={`px-5 pb-5 pt-2 border-t ${traitStyle.divider}`}>
                       <p className="text-sm text-gray-400">{results.longestStreak.description}</p>
                     </div>
                   )}
-                  </div>
+                </div>
               </div>
             </div>
 
