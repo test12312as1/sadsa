@@ -3,58 +3,6 @@
 import { useState } from 'react';
 import { Search, Clock, DollarSign, Activity, Share2, Wallet, Trophy, Target, Flame, Timer, ExternalLink, ChevronRight } from 'lucide-react';
 
-// Featured influencer/streamer wallets for main page
-const FEATURED_INFLUENCERS = [
-  {
-    id: 'roshtein',
-    name: 'Roshtein',
-    handle: '@roikiboy',
-    avatar: 'R',
-    avatarColor: '#ef4444',
-    address: '0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b',
-    riskScore: 94,
-    gamblerType: 'The High Roller',
-    totalDeposited: '$2.4M',
-    favoriteCasino: 'Stake'
-  },
-  {
-    id: 'trainwrecks',
-    name: 'Trainwrecks',
-    handle: '@trainwreckstv',
-    avatar: 'T',
-    avatarColor: '#8b5cf6',
-    address: '0x2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1',
-    riskScore: 89,
-    gamblerType: 'The Night Owl',
-    totalDeposited: '$1.8M',
-    favoriteCasino: 'Stake'
-  },
-  {
-    id: 'xposed',
-    name: 'Xposed',
-    handle: '@xaboraz',
-    avatar: 'X',
-    avatarColor: '#3b82f6',
-    address: '0x3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c',
-    riskScore: 76,
-    gamblerType: 'The Grinder',
-    totalDeposited: '$890K',
-    favoriteCasino: 'Rollbit'
-  },
-  {
-    id: 'adin',
-    name: 'Adin Ross',
-    handle: '@adinross',
-    avatar: 'A',
-    avatarColor: '#22c55e',
-    address: '0x4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d',
-    riskScore: 67,
-    gamblerType: 'The Showman',
-    totalDeposited: '$560K',
-    favoriteCasino: 'Stake'
-  }
-];
-
 // Demo wallet data with different risk levels
 const DEMO_WALLETS = {
   critical: {
@@ -386,104 +334,89 @@ export default function GamStart() {
     <div className="min-h-screen bg-[#0f0f1a]">
       <div className={`${results ? 'max-w-5xl' : 'max-w-2xl'} mx-auto px-4 sm:px-6 lg:px-8 ${results ? 'py-8' : 'py-24'}`}>
         
-        {!results && !loading && (
-          /* MAIN PAGE - Dark theme */
-          <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-12">
-            <div className="text-center space-y-6">
-              <h1 className="text-7xl md:text-8xl font-bold tracking-tight text-white">
-                GamStart
-              </h1>
-              <p className="text-xl md:text-2xl text-gray-400 max-w-xl mx-auto">
-                A diagnostic tool that scans your cryptocurrency wallet to detect patterns of compulsive gambling behavior.
-              </p>
-            </div>
+{!results && !loading && (
+          /* MAIN PAGE - DexCheck style layout */
+          <div className="flex flex-col items-center justify-center min-h-[70vh] space-y-8">
+            {/* Title */}
+            <h1 className="text-4xl md:text-5xl font-semibold text-white">
+              GamStart
+            </h1>
+            
+            {/* Subtitle */}
+            <p className="text-gray-400 text-center max-w-lg leading-relaxed">
+              Scan your cryptocurrency wallet to detect patterns of<br className="hidden sm:block" />
+              compulsive gambling behavior and get your risk diagnosis.
+            </p>
 
-<div className="w-full space-y-6">
-              {/* Clean Input Field */}
-              <div className="relative">
-                <div className="flex items-center bg-[#0a0a12] border border-gray-800 rounded-full overflow-hidden focus-within:border-gray-600 transition-colors">
-                  <input
-                    type="text"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        handleScan();
-                      }
-                    }}
-                    placeholder="Enter ETH or SOL Address..."
-                    className="flex-1 bg-transparent px-6 py-4 text-white font-mono placeholder-gray-600 focus:outline-none"
-                  />
-                  <button
-                    onClick={handleScan}
-                    disabled={!address.trim()}
-                    className="m-2 px-6 py-2 bg-white hover:bg-gray-100 text-black rounded-full font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                  >
-                    <Search size={18} />
-                    ANALYZE
-                  </button>
-                </div>
-              </div>
-
-              {/* Demo hint */}
-              <p className="text-sm text-gray-600 text-center">
-                Try: "critical", "warning", "optimal", or any address for demo
-              </p>
-
-              {/* Featured Wallets - Text Links */}
-              <div className="text-center text-sm">
-                <span className="text-gray-600">or check: </span>
-                {FEATURED_INFLUENCERS.map((influencer, i) => (
-                  <span key={influencer.id}>
-                    <button
-                      onClick={() => setAddress(influencer.address)}
-                      className="text-purple-400 hover:text-purple-300 transition-colors"
-                    >
-                      {influencer.handle}
-                    </button>
-                    {i < FEATURED_INFLUENCERS.length - 1 && <span className="text-gray-700"> · </span>}
-                  </span>
-                ))}
+            {/* Input Field */}
+            <div className="w-full max-w-xl">
+              <div className="flex items-center bg-[#0a0a14] border border-gray-800 rounded-lg overflow-hidden focus-within:border-gray-700 transition-colors">
+                <input
+                  type="text"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleScan();
+                    }
+                  }}
+                  placeholder="Enter ETH or SOL Address..."
+                  className="flex-1 bg-transparent px-5 py-4 text-white placeholder-gray-600 focus:outline-none"
+                />
+                <button
+                  onClick={handleScan}
+                  disabled={!address.trim()}
+                  className="m-1.5 px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-md font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  Scan
+                  <ChevronRight size={16} />
+                </button>
               </div>
             </div>
+
+            {/* Demo Link */}
+            <button
+              onClick={() => setAddress('demo')}
+              className="text-purple-400 hover:text-purple-300 text-sm underline underline-offset-4 transition-colors"
+            >
+              I want to see how it works
+            </button>
           </div>
         )}
 
         {loading && (
-          /* LOADING STATE - Dark theme */
-          <div className="space-y-8">
-            <div className="text-center space-y-4">
-              <h2 className="text-3xl font-bold text-white">Forensic Scan in Progress</h2>
-              <p className="text-gray-400">Analyzing wallet behavior patterns...</p>
-            </div>
-
-            <div className="bg-[#1a1a2e] border border-purple-500/20 rounded-2xl p-8 space-y-4">
+          /* LOADING STATE */
+          <div className="flex flex-col items-center justify-center min-h-[70vh] space-y-8">
+            <h1 className="text-4xl md:text-5xl font-semibold text-white">
+              Scanning...
+            </h1>
+            
+            <div className="w-full max-w-md space-y-3">
               {LOADING_CHECKS.map((check, index) => (
                 <div
                   key={index}
                   className={`flex items-center gap-3 transition-all duration-300 ${
                     index < loadingStep
-                      ? 'text-green-400'
+                      ? 'text-purple-400'
                       : index === loadingStep
-                      ? 'text-purple-400 animate-pulse'
-                      : 'text-gray-600'
+                      ? 'text-gray-300 animate-pulse'
+                      : 'text-gray-700'
                   }`}
                 >
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${
                     index < loadingStep
-                      ? 'border-green-500 bg-green-500/20'
+                      ? 'border-purple-500 bg-purple-500'
                       : index === loadingStep
-                      ? 'border-purple-500 bg-purple-500/20'
-                      : 'border-gray-600'
+                      ? 'border-gray-500'
+                      : 'border-gray-700'
                   }`}>
                     {index < loadingStep && (
-                      <div className="w-2 h-2 bg-green-500 rounded-full" />
-                    )}
-                    {index === loadingStep && (
-                      <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
+                      <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
                     )}
                   </div>
-                  <span className="font-medium">{check}</span>
+                  <span className="text-sm">{check}</span>
                 </div>
               ))}
             </div>
