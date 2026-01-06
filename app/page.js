@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, ChevronDown, Clock, DollarSign, Activity, Share2, Wallet, Trophy, Target, Flame, Timer, ExternalLink, ChevronRight, X } from 'lucide-react';
+import { Search, Clock, DollarSign, Activity, Share2, Wallet, Trophy, Target, Flame, Timer, ExternalLink, ChevronRight } from 'lucide-react';
 
 // Featured influencer/streamer wallets for main page
 const FEATURED_INFLUENCERS = [
@@ -270,12 +270,10 @@ const aggregateResults = (walletResults) => {
 
 export default function GamStart() {
   const [address, setAddress] = useState('');
-  const [chain, setChain] = useState('ETH');
   const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
   const [results, setResults] = useState(null);
   const [expandedMetric, setExpandedMetric] = useState(null);
-  const [expandedInfluencer, setExpandedInfluencer] = useState(null);
 
   const handleScan = async () => {
     if (!address.trim()) return;
@@ -310,7 +308,8 @@ export default function GamStart() {
       }
 
       demoData.address = addr;
-      demoData.chain = chain;
+      // Auto-detect chain based on address format
+      demoData.chain = addr.startsWith('0x') ? 'ETH' : 'SOL';
       return demoData;
     });
 
@@ -399,133 +398,51 @@ export default function GamStart() {
               </p>
             </div>
 
-            <div className="w-full space-y-4">
-              <div className="bg-[#1a1a2e] border border-purple-500/20 rounded-xl p-6">
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                  <div className="relative">
-                    <select
-                      value={chain}
-                      onChange={(e) => setChain(e.target.value)}
-                      className="appearance-none bg-[#0f0f1a] border border-purple-500/30 rounded-lg px-4 py-3 pr-10 text-white font-medium cursor-pointer hover:border-purple-500/50 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                    >
-                      <option value="ETH">ETH</option>
-                      <option value="SOL">SOL</option>
-                    </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={18} />
-                  </div>
-
-                  <textarea
+<div className="w-full space-y-6">
+              {/* Clean Input Field */}
+              <div className="relative">
+                <div className="flex items-center bg-[#0a0a12] border border-gray-800 rounded-full overflow-hidden focus-within:border-gray-600 transition-colors">
+                  <input
+                    type="text"
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
+                      if (e.key === 'Enter') {
                         handleScan();
                       }
                     }}
-                    placeholder={chain === 'ETH' ? '0x... (or multiple addresses separated by comma or newline)' : 'Enter SOL address(es)'}
-                    rows={address.split('\n').length > 1 ? Math.min(address.split('\n').length, 4) : 1}
-                    className="flex-1 bg-[#0f0f1a] border border-purple-500/30 rounded-lg px-4 py-3 text-white font-mono placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 resize-none min-h-[48px]"
+                    placeholder="Enter ETH or SOL Address..."
+                    className="flex-1 bg-transparent px-6 py-4 text-white font-mono placeholder-gray-600 focus:outline-none"
                   />
-
                   <button
                     onClick={handleScan}
                     disabled={!address.trim()}
-                    className="px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="m-2 px-6 py-2 bg-white hover:bg-gray-100 text-black rounded-full font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
-                    <Search size={20} />
-                    Scan
+                    <Search size={18} />
+                    ANALYZE
                   </button>
                 </div>
-                <p className="text-xs text-gray-500 mt-2">
-                  Enter one or multiple wallet addresses (separate by comma or newline)
-                </p>
               </div>
 
-              <p className="text-sm text-gray-500 text-center">
+              {/* Demo hint */}
+              <p className="text-sm text-gray-600 text-center">
                 Try: "critical", "warning", "optimal", or any address for demo
               </p>
-            </div>
 
-            {/* Featured Influencers */}
-            <div className="flex flex-col items-center space-y-4 pt-8">
-              <p className="text-xs text-gray-600 uppercase tracking-wide">Featured Wallets</p>
-              <div className="flex items-center gap-3">
-                {FEATURED_INFLUENCERS.map((influencer) => (
-                  <div key={influencer.id} className="relative">
+              {/* Featured Wallets - Text Links */}
+              <div className="text-center text-sm">
+                <span className="text-gray-600">or check: </span>
+                {FEATURED_INFLUENCERS.map((influencer, i) => (
+                  <span key={influencer.id}>
                     <button
-                      onClick={() => setExpandedInfluencer(expandedInfluencer === influencer.id ? null : influencer.id)}
-                      className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg transition-all hover:scale-110 hover:ring-2 hover:ring-purple-500/50 ${expandedInfluencer === influencer.id ? 'ring-2 ring-purple-500' : ''}`}
-                      style={{ backgroundColor: influencer.avatarColor }}
-                      title={influencer.name}
+                      onClick={() => setAddress(influencer.address)}
+                      className="text-purple-400 hover:text-purple-300 transition-colors"
                     >
-                      {influencer.avatar}
+                      {influencer.handle}
                     </button>
-                    
-                    {/* Expanded Stats Popup */}
-                    {expandedInfluencer === influencer.id && (
-                      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-64 bg-[#1a1a2e] border border-purple-500/30 rounded-xl p-4 shadow-xl z-50">
-                        {/* Arrow */}
-                        <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-[#1a1a2e] border-l border-t border-purple-500/30 rotate-45"></div>
-                        
-                        {/* Close button */}
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); setExpandedInfluencer(null); }}
-                          className="absolute top-2 right-2 text-gray-500 hover:text-gray-300"
-                        >
-                          <X size={14} />
-                        </button>
-                        
-                        {/* Content */}
-                        <div className="relative">
-                          <div className="flex items-center gap-3 mb-3">
-                            <div 
-                              className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
-                              style={{ backgroundColor: influencer.avatarColor }}
-                            >
-                              {influencer.avatar}
-                            </div>
-            <div>
-                              <div className="text-white font-medium">{influencer.name}</div>
-                              <div className="text-xs text-gray-500">{influencer.handle}</div>
-                            </div>
-                          </div>
-                          
-                          <div className="space-y-2 text-sm">
-                            <div className="flex justify-between">
-                              <span className="text-gray-500">Risk Score</span>
-                              <span className="font-bold" style={{ color: influencer.riskScore >= 70 ? '#ef4444' : influencer.riskScore >= 40 ? '#eab308' : '#22c55e' }}>
-                                {influencer.riskScore}/100
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-500">Type</span>
-                              <span className="text-gray-300">{influencer.gamblerType}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-500">Total Deposited</span>
-                              <span className="text-white font-medium">{influencer.totalDeposited}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-500">Favorite</span>
-                              <span className="text-purple-300">{influencer.favoriteCasino}</span>
-                            </div>
-                          </div>
-                          
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setAddress(influencer.address);
-                              setExpandedInfluencer(null);
-                            }}
-                            className="w-full mt-4 py-2 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 rounded-lg text-purple-300 text-sm font-medium transition-colors"
-                          >
-                            View Full Report
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                    {i < FEATURED_INFLUENCERS.length - 1 && <span className="text-gray-700"> · </span>}
+                  </span>
                 ))}
               </div>
             </div>
