@@ -1,7 +1,59 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, ChevronDown, Clock, DollarSign, Activity, Share2, Wallet, Trophy, Target, Flame, Timer, ExternalLink, ChevronRight } from 'lucide-react';
+import { Search, ChevronDown, Clock, DollarSign, Activity, Share2, Wallet, Trophy, Target, Flame, Timer, ExternalLink, ChevronRight, X } from 'lucide-react';
+
+// Featured influencer/streamer wallets for main page
+const FEATURED_INFLUENCERS = [
+  {
+    id: 'roshtein',
+    name: 'Roshtein',
+    handle: '@roikiboy',
+    avatar: 'R',
+    avatarColor: '#ef4444',
+    address: '0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b',
+    riskScore: 94,
+    gamblerType: 'The High Roller',
+    totalDeposited: '$2.4M',
+    favoriteCasino: 'Stake'
+  },
+  {
+    id: 'trainwrecks',
+    name: 'Trainwrecks',
+    handle: '@trainwreckstv',
+    avatar: 'T',
+    avatarColor: '#8b5cf6',
+    address: '0x2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1',
+    riskScore: 89,
+    gamblerType: 'The Night Owl',
+    totalDeposited: '$1.8M',
+    favoriteCasino: 'Stake'
+  },
+  {
+    id: 'xposed',
+    name: 'Xposed',
+    handle: '@xaboraz',
+    avatar: 'X',
+    avatarColor: '#3b82f6',
+    address: '0x3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c',
+    riskScore: 76,
+    gamblerType: 'The Grinder',
+    totalDeposited: '$890K',
+    favoriteCasino: 'Rollbit'
+  },
+  {
+    id: 'adin',
+    name: 'Adin Ross',
+    handle: '@adinross',
+    avatar: 'A',
+    avatarColor: '#22c55e',
+    address: '0x4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d',
+    riskScore: 67,
+    gamblerType: 'The Showman',
+    totalDeposited: '$560K',
+    favoriteCasino: 'Stake'
+  }
+];
 
 // Demo wallet data with different risk levels
 const DEMO_WALLETS = {
@@ -223,6 +275,7 @@ export default function GamStart() {
   const [loadingStep, setLoadingStep] = useState(0);
   const [results, setResults] = useState(null);
   const [expandedMetric, setExpandedMetric] = useState(null);
+  const [expandedInfluencer, setExpandedInfluencer] = useState(null);
 
   const handleScan = async () => {
     if (!address.trim()) return;
@@ -233,7 +286,7 @@ export default function GamStart() {
 
     const addresses = parseAddresses(address);
     if (addresses.length === 0) {
-      setLoading(false);
+        setLoading(false);
       return;
     }
 
@@ -393,6 +446,89 @@ export default function GamStart() {
                 Try: "critical", "warning", "optimal", or any address for demo
               </p>
             </div>
+
+            {/* Featured Influencers */}
+            <div className="flex flex-col items-center space-y-4 pt-8">
+              <p className="text-xs text-gray-600 uppercase tracking-wide">Featured Wallets</p>
+              <div className="flex items-center gap-3">
+                {FEATURED_INFLUENCERS.map((influencer) => (
+                  <div key={influencer.id} className="relative">
+                    <button
+                      onClick={() => setExpandedInfluencer(expandedInfluencer === influencer.id ? null : influencer.id)}
+                      className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg transition-all hover:scale-110 hover:ring-2 hover:ring-purple-500/50 ${expandedInfluencer === influencer.id ? 'ring-2 ring-purple-500' : ''}`}
+                      style={{ backgroundColor: influencer.avatarColor }}
+                      title={influencer.name}
+                    >
+                      {influencer.avatar}
+                    </button>
+                    
+                    {/* Expanded Stats Popup */}
+                    {expandedInfluencer === influencer.id && (
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-64 bg-[#1a1a2e] border border-purple-500/30 rounded-xl p-4 shadow-xl z-50">
+                        {/* Arrow */}
+                        <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-[#1a1a2e] border-l border-t border-purple-500/30 rotate-45"></div>
+                        
+                        {/* Close button */}
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); setExpandedInfluencer(null); }}
+                          className="absolute top-2 right-2 text-gray-500 hover:text-gray-300"
+                        >
+                          <X size={14} />
+                        </button>
+                        
+                        {/* Content */}
+                        <div className="relative">
+                          <div className="flex items-center gap-3 mb-3">
+                            <div 
+                              className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
+                              style={{ backgroundColor: influencer.avatarColor }}
+                            >
+                              {influencer.avatar}
+                            </div>
+            <div>
+                              <div className="text-white font-medium">{influencer.name}</div>
+                              <div className="text-xs text-gray-500">{influencer.handle}</div>
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Risk Score</span>
+                              <span className="font-bold" style={{ color: influencer.riskScore >= 70 ? '#ef4444' : influencer.riskScore >= 40 ? '#eab308' : '#22c55e' }}>
+                                {influencer.riskScore}/100
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Type</span>
+                              <span className="text-gray-300">{influencer.gamblerType}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Total Deposited</span>
+                              <span className="text-white font-medium">{influencer.totalDeposited}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Favorite</span>
+                              <span className="text-purple-300">{influencer.favoriteCasino}</span>
+                            </div>
+                          </div>
+                          
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setAddress(influencer.address);
+                              setExpandedInfluencer(null);
+                            }}
+                            className="w-full mt-4 py-2 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 rounded-lg text-purple-300 text-sm font-medium transition-colors"
+                          >
+                            View Full Report
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 
@@ -473,17 +609,17 @@ export default function GamStart() {
                   <div className="text-center">
                     <div className="text-5xl font-bold" style={{ color: getAccentColor(results.riskScore) }}>
                       {results.riskScore}
-                    </div>
+          </div>
                     <div className="text-xs text-gray-400 uppercase tracking-wider">Risk Score</div>
-                  </div>
-                </div>
+            </div>
+        </div>
                 {/* Gambler Type - Below Score */}
                 <div className="text-center">
                   <div className="text-lg font-medium text-gray-200">{results.gamblerType}</div>
                   <div className="text-sm text-gray-500 uppercase tracking-wide">{results.status}</div>
                 </div>
               </div>
-
+              
               {/* Info Grid - Right of Score */}
               <div className="flex-1 grid grid-cols-2 gap-4">
                 {/* Favorite Casino */}
@@ -513,8 +649,8 @@ export default function GamStart() {
                 <div className="bg-[#1a1a2e] border border-purple-500/20 rounded-xl p-4">
                   <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Primary Pattern</div>
                   <div className="text-lg font-medium" style={{ color: getAccentColor(results.riskScore) }}>{results.primaryPattern}</div>
-                </div>
-
+              </div>
+              
                 {/* Leaderboard Place */}
                 <div className="bg-[#1a1a2e] border border-purple-500/20 rounded-xl p-4">
                   <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Leaderboard</div>
@@ -527,7 +663,7 @@ export default function GamStart() {
             </div>
 
             {/* Behavioral Traits Section */}
-            <div className="space-y-4">
+                <div className="space-y-4">
               <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wide">Behavioral Traits</h2>
               
               {/* Row 1 */}
@@ -541,18 +677,18 @@ export default function GamStart() {
                     <div className="flex items-center gap-3 mb-3">
                       <div className={`p-2 ${traitStyle.iconBg} rounded-lg`}>
                         <Activity className={traitStyle.iconColor} size={18} />
-                      </div>
+                          </div>
                       <div className={`text-sm ${traitStyle.labelColor}`}>Deposit Velocity</div>
                       <ChevronRight size={14} className={`ml-auto text-gray-500 transition-transform ${expandedMetric === 'velocity' ? 'rotate-90' : ''}`} />
-                    </div>
+                          </div>
                     <div className="text-3xl font-bold text-white">{results.depositVelocity.rate}</div>
                     <div className="text-xs text-gray-500">{results.depositVelocity.unit}</div>
-                  </div>
+                        </div>
                   {expandedMetric === 'velocity' && (
                     <div className={`px-5 pb-5 pt-2 border-t ${traitStyle.divider}`}>
                       <p className="text-sm text-gray-400">{results.depositVelocity.description}</p>
-                    </div>
-                  )}
+                          </div>
+                        )}
                 </div>
 
                 {/* Midnight Factor */}
@@ -570,12 +706,12 @@ export default function GamStart() {
                     </div>
                     <div className="text-3xl font-bold text-white">{results.midnightFactor.percentage}%</div>
                     <div className="text-xs text-gray-500">{results.midnightFactor.transactions} of {results.midnightFactor.totalTransactions} txns</div>
-                  </div>
+                </div>
                   {expandedMetric === 'midnight' && (
                     <div className={`px-5 pb-5 pt-2 border-t ${traitStyle.divider}`}>
                       <p className="text-sm text-gray-400">{results.midnightFactor.description}</p>
-                    </div>
-                  )}
+              </div>
+            )}
                 </div>
 
                 {/* Chase Behavior */}
@@ -603,7 +739,7 @@ export default function GamStart() {
               </div>
 
               {/* Row 2 */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Session Length */}
                 <div 
                   className={`${traitStyle.bg} border ${traitStyle.border} ${traitStyle.borderHover} rounded-xl overflow-hidden cursor-pointer transition-all ${expandedMetric === 'session' ? `ring-1 ${traitStyle.ring}` : ''}`}
@@ -613,7 +749,7 @@ export default function GamStart() {
                     <div className="flex items-center gap-3 mb-3">
                       <div className={`p-2 ${traitStyle.iconBg} rounded-lg`}>
                         <Timer className={traitStyle.iconColor} size={18} />
-                      </div>
+                    </div>
                       <div className={`text-sm ${traitStyle.labelColor}`}>Session Length</div>
                       <ChevronRight size={14} className={`ml-auto text-gray-500 transition-transform ${expandedMetric === 'session' ? 'rotate-90' : ''}`} />
                     </div>
@@ -623,7 +759,7 @@ export default function GamStart() {
                   {expandedMetric === 'session' && (
                     <div className={`px-5 pb-5 pt-2 border-t ${traitStyle.divider}`}>
                       <p className="text-sm text-gray-400">{results.sessionLength.description}</p>
-                    </div>
+                  </div>
                   )}
                 </div>
 
@@ -636,7 +772,7 @@ export default function GamStart() {
                     <div className="flex items-center gap-3 mb-3">
                       <div className={`p-2 ${traitStyle.iconBg} rounded-lg`}>
                         <DollarSign className={traitStyle.iconColor} size={18} />
-                      </div>
+                              </div>
                       <div className={`text-sm ${traitStyle.labelColor}`}>Biggest Single Bet</div>
                       <ChevronRight size={14} className={`ml-auto text-gray-500 transition-transform ${expandedMetric === 'bigbet' ? 'rotate-90' : ''}`} />
                     </div>
@@ -646,8 +782,8 @@ export default function GamStart() {
                   {expandedMetric === 'bigbet' && (
                     <div className={`px-5 pb-5 pt-2 border-t ${traitStyle.divider}`}>
                       <p className="text-sm text-gray-400">{results.biggestBet.description}</p>
-                    </div>
-                  )}
+                  </div>
+                )}
                 </div>
 
                 {/* Longest Streak */}
@@ -659,7 +795,7 @@ export default function GamStart() {
                     <div className="flex items-center gap-3 mb-3">
                       <div className={`p-2 ${traitStyle.iconBg} rounded-lg`}>
                         <Flame className={traitStyle.iconColor} size={18} />
-                      </div>
+                          </div>
                       <div className={`text-sm ${traitStyle.labelColor}`}>Longest Streak</div>
                       <ChevronRight size={14} className={`ml-auto text-gray-500 transition-transform ${expandedMetric === 'streak' ? 'rotate-90' : ''}`} />
                     </div>
@@ -671,7 +807,7 @@ export default function GamStart() {
                       <p className="text-sm text-gray-400">{results.longestStreak.description}</p>
                     </div>
                   )}
-                </div>
+                  </div>
               </div>
             </div>
 
