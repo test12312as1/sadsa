@@ -504,7 +504,7 @@ export default function GamStart() {
 
         {results && !loading && (
           /* RESULTS PAGE - Dark + Purple Theme */
-          <div className="space-y-8 text-white">
+          <div className="space-y-6 text-white">
             {/* Header Row */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm text-gray-400">
@@ -525,11 +525,11 @@ export default function GamStart() {
             </div>
 
             {/* Main Info Section - Score on left, Details on right */}
-            <div className="flex flex-col md:flex-row gap-8 items-start">
+            <div className="flex flex-col md:flex-row gap-8 items-start bg-[#12121c] rounded-2xl p-6 border border-gray-800/50">
               {/* Score Circle - Top Left */}
-              <div className="flex flex-col items-center">
+              <div className="flex flex-col items-center min-w-[180px]">
                 <div 
-                  className="w-40 h-40 rounded-full border-4 flex items-center justify-center mb-4"
+                  className="w-36 h-36 rounded-full border-4 flex items-center justify-center mb-3"
                   style={{ 
                     borderColor: getAccentColor(results.riskScore),
                     background: `radial-gradient(circle at center, ${getAccentColor(results.riskScore)}15 0%, transparent 70%)`
@@ -538,53 +538,58 @@ export default function GamStart() {
                   <div className="text-center">
                     <div className="text-5xl font-bold" style={{ color: getAccentColor(results.riskScore) }}>
                       {results.riskScore}
-          </div>
-                    <div className="text-xs text-gray-400 uppercase tracking-wider">Risk Score</div>
-            </div>
-        </div>
+                    </div>
+                    <div className="text-[10px] text-gray-500 uppercase tracking-wider">Risk Score</div>
+                  </div>
+                </div>
                 {/* Gambler Type - Below Score */}
                 <div className="text-center">
-                  <div className="text-lg font-medium text-gray-200">{results.gamblerType}</div>
-                  <div className="text-sm text-gray-500 uppercase tracking-wide">{results.status}</div>
+                  <div className="text-base font-medium text-gray-200">{results.gamblerType}</div>
+                  <div 
+                    className="text-xs font-semibold uppercase tracking-wider mt-0.5"
+                    style={{ color: getAccentColor(results.riskScore) }}
+                  >
+                    {results.status}
+                  </div>
                 </div>
               </div>
               
-              {/* Info Grid - Right of Score */}
-              <div className="flex-1 grid grid-cols-2 gap-4">
+              {/* Info Grid - Right of Score - SIMPLER STYLE */}
+              <div className="flex-1 grid grid-cols-2 gap-3">
                 {/* Favorite Casino */}
                 <a 
                   href={results.favoriteCasino.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-[#1a1a2e] border border-purple-500/20 rounded-xl p-4 hover:border-purple-500/40 transition-colors group"
+                  className="bg-[#0f0f1a] rounded-lg p-4 hover:bg-[#16162a] transition-colors group"
                 >
-                  <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Favorite Casino</div>
-                  <div className="text-lg font-medium text-purple-300 flex items-center gap-2 group-hover:text-purple-200">
+                  <div className="text-[11px] text-gray-500 uppercase tracking-wide mb-1">Favorite Casino</div>
+                  <div className="text-base font-medium text-purple-300 flex items-center gap-2 group-hover:text-purple-200">
                     {results.favoriteCasino.name}
-                    <ExternalLink size={14} className="opacity-50" />
+                    <ExternalLink size={12} className="opacity-50" />
                   </div>
                 </a>
 
                 {/* Financial Impact */}
-                <div className="bg-[#1a1a2e] border border-purple-500/20 rounded-xl p-4">
-                  <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Financial Impact</div>
-                  <div className="text-lg font-medium text-white">
+                <div className="bg-[#0f0f1a] rounded-lg p-4">
+                  <div className="text-[11px] text-gray-500 uppercase tracking-wide mb-1">Total Deposited</div>
+                  <div className="text-base font-medium text-white">
                     ${results.financialImpact.totalUSD.toLocaleString()}
                   </div>
-                  <div className="text-xs text-gray-500 font-mono">{results.financialImpact.totalETH} ETH</div>
+                  <div className="text-[11px] text-gray-600 font-mono">{results.financialImpact.totalETH} ETH</div>
                 </div>
 
                 {/* Primary Pattern */}
-                <div className="bg-[#1a1a2e] border border-purple-500/20 rounded-xl p-4">
-                  <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Primary Pattern</div>
-                  <div className="text-lg font-medium" style={{ color: getAccentColor(results.riskScore) }}>{results.primaryPattern}</div>
-              </div>
+                <div className="bg-[#0f0f1a] rounded-lg p-4">
+                  <div className="text-[11px] text-gray-500 uppercase tracking-wide mb-1">Primary Pattern</div>
+                  <div className="text-base font-medium" style={{ color: getAccentColor(results.riskScore) }}>{results.primaryPattern}</div>
+                </div>
               
                 {/* Leaderboard Place */}
-                <div className="bg-[#1a1a2e] border border-purple-500/20 rounded-xl p-4">
-                  <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Leaderboard</div>
-                  <div className="text-lg font-medium text-purple-300 flex items-center gap-2">
-                    <Trophy size={16} />
+                <div className="bg-[#0f0f1a] rounded-lg p-4">
+                  <div className="text-[11px] text-gray-500 uppercase tracking-wide mb-1">Leaderboard</div>
+                  <div className="text-base font-medium text-gray-300 flex items-center gap-2">
+                    <Trophy size={14} className="text-purple-400" />
                     #{results.leaderboardPlace.toLocaleString()}
                   </div>
                 </div>
@@ -592,32 +597,35 @@ export default function GamStart() {
             </div>
 
             {/* Behavioral Traits Section */}
-                <div className="space-y-4">
-              <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wide">Behavioral Traits</h2>
+            <div className="space-y-3">
+              <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Behavioral Analysis</h2>
               
               {/* Row 1 */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {/* Deposit Velocity */}
                 <div 
                   className={`${traitStyle.bg} border ${traitStyle.border} ${traitStyle.borderHover} rounded-xl overflow-hidden cursor-pointer transition-all ${expandedMetric === 'velocity' ? `ring-1 ${traitStyle.ring}` : ''}`}
                   onClick={() => setExpandedMetric(expandedMetric === 'velocity' ? null : 'velocity')}
                 >
-                  <div className="p-5">
-                    <div className="flex items-center gap-3 mb-3">
+                  <div className="p-4">
+                    <div className="flex items-center gap-3 mb-2">
                       <div className={`p-2 ${traitStyle.iconBg} rounded-lg`}>
-                        <Activity className={traitStyle.iconColor} size={18} />
-                          </div>
-                      <div className={`text-sm ${traitStyle.labelColor}`}>Deposit Velocity</div>
-                      <ChevronRight size={14} className={`ml-auto text-gray-500 transition-transform ${expandedMetric === 'velocity' ? 'rotate-90' : ''}`} />
-                          </div>
-                    <div className="text-3xl font-bold text-white">{results.depositVelocity.rate}</div>
-                    <div className="text-xs text-gray-500">{results.depositVelocity.unit}</div>
-                        </div>
+                        <Activity className={traitStyle.iconColor} size={16} />
+                      </div>
+                      <div>
+                        <div className={`text-sm font-medium ${traitStyle.labelColor}`}>Deposit Velocity</div>
+                        <div className="text-[10px] text-gray-500">How fast you reload</div>
+                      </div>
+                      <ChevronRight size={14} className={`ml-auto text-gray-600 transition-transform ${expandedMetric === 'velocity' ? 'rotate-90' : ''}`} />
+                    </div>
+                    <div className="text-2xl font-bold text-white">{results.depositVelocity.rate}</div>
+                    <div className="text-[11px] text-gray-500">{results.depositVelocity.unit}</div>
+                  </div>
                   {expandedMetric === 'velocity' && (
-                    <div className={`px-5 pb-5 pt-2 border-t ${traitStyle.divider}`}>
+                    <div className={`px-4 pb-4 pt-2 border-t ${traitStyle.divider}`}>
                       <p className="text-sm text-gray-400">{results.depositVelocity.description}</p>
-                          </div>
-                        )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Midnight Factor */}
@@ -625,22 +633,25 @@ export default function GamStart() {
                   className={`${traitStyle.bg} border ${traitStyle.border} ${traitStyle.borderHover} rounded-xl overflow-hidden cursor-pointer transition-all ${expandedMetric === 'midnight' ? `ring-1 ${traitStyle.ring}` : ''}`}
                   onClick={() => setExpandedMetric(expandedMetric === 'midnight' ? null : 'midnight')}
                 >
-                  <div className="p-5">
-                    <div className="flex items-center gap-3 mb-3">
+                  <div className="p-4">
+                    <div className="flex items-center gap-3 mb-2">
                       <div className={`p-2 ${traitStyle.iconBg} rounded-lg`}>
-                        <Clock className={traitStyle.iconColor} size={18} />
+                        <Clock className={traitStyle.iconColor} size={16} />
                       </div>
-                      <div className={`text-sm ${traitStyle.labelColor}`}>Midnight Factor</div>
-                      <ChevronRight size={14} className={`ml-auto text-gray-500 transition-transform ${expandedMetric === 'midnight' ? 'rotate-90' : ''}`} />
+                      <div>
+                        <div className={`text-sm font-medium ${traitStyle.labelColor}`}>Midnight Factor</div>
+                        <div className="text-[10px] text-gray-500">Late night activity</div>
+                      </div>
+                      <ChevronRight size={14} className={`ml-auto text-gray-600 transition-transform ${expandedMetric === 'midnight' ? 'rotate-90' : ''}`} />
                     </div>
-                    <div className="text-3xl font-bold text-white">{results.midnightFactor.percentage}%</div>
-                    <div className="text-xs text-gray-500">{results.midnightFactor.transactions} of {results.midnightFactor.totalTransactions} txns</div>
-                </div>
+                    <div className="text-2xl font-bold text-white">{results.midnightFactor.percentage}%</div>
+                    <div className="text-[11px] text-gray-500">{results.midnightFactor.transactions} of {results.midnightFactor.totalTransactions} txns</div>
+                  </div>
                   {expandedMetric === 'midnight' && (
-                    <div className={`px-5 pb-5 pt-2 border-t ${traitStyle.divider}`}>
+                    <div className={`px-4 pb-4 pt-2 border-t ${traitStyle.divider}`}>
                       <p className="text-sm text-gray-400">{results.midnightFactor.description}</p>
-              </div>
-            )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Chase Behavior */}
@@ -648,19 +659,22 @@ export default function GamStart() {
                   className={`${traitStyle.bg} border ${traitStyle.border} ${traitStyle.borderHover} rounded-xl overflow-hidden cursor-pointer transition-all ${expandedMetric === 'chase' ? `ring-1 ${traitStyle.ring}` : ''}`}
                   onClick={() => setExpandedMetric(expandedMetric === 'chase' ? null : 'chase')}
                 >
-                  <div className="p-5">
-                    <div className="flex items-center gap-3 mb-3">
+                  <div className="p-4">
+                    <div className="flex items-center gap-3 mb-2">
                       <div className={`p-2 ${traitStyle.iconBg} rounded-lg`}>
-                        <Target className={traitStyle.iconColor} size={18} />
+                        <Target className={traitStyle.iconColor} size={16} />
                       </div>
-                      <div className={`text-sm ${traitStyle.labelColor}`}>Chase Behavior</div>
-                      <ChevronRight size={14} className={`ml-auto text-gray-500 transition-transform ${expandedMetric === 'chase' ? 'rotate-90' : ''}`} />
+                      <div>
+                        <div className={`text-sm font-medium ${traitStyle.labelColor}`}>Chase Behavior</div>
+                        <div className="text-[10px] text-gray-500">Rapid re-deposits</div>
+                      </div>
+                      <ChevronRight size={14} className={`ml-auto text-gray-600 transition-transform ${expandedMetric === 'chase' ? 'rotate-90' : ''}`} />
                     </div>
-                    <div className="text-3xl font-bold text-white">{results.chaseBehavior.percentage}%</div>
-                    <div className="text-xs text-gray-500">avg {results.chaseBehavior.avgResponseTime} min response</div>
+                    <div className="text-2xl font-bold text-white">{results.chaseBehavior.percentage}%</div>
+                    <div className="text-[11px] text-gray-500">avg {results.chaseBehavior.avgResponseTime} min response</div>
                   </div>
                   {expandedMetric === 'chase' && (
-                    <div className={`px-5 pb-5 pt-2 border-t ${traitStyle.divider}`}>
+                    <div className={`px-4 pb-4 pt-2 border-t ${traitStyle.divider}`}>
                       <p className="text-sm text-gray-400">{results.chaseBehavior.description}</p>
                     </div>
                   )}
@@ -668,27 +682,30 @@ export default function GamStart() {
               </div>
 
               {/* Row 2 */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {/* Session Length */}
                 <div 
                   className={`${traitStyle.bg} border ${traitStyle.border} ${traitStyle.borderHover} rounded-xl overflow-hidden cursor-pointer transition-all ${expandedMetric === 'session' ? `ring-1 ${traitStyle.ring}` : ''}`}
                   onClick={() => setExpandedMetric(expandedMetric === 'session' ? null : 'session')}
                 >
-                  <div className="p-5">
-                    <div className="flex items-center gap-3 mb-3">
+                  <div className="p-4">
+                    <div className="flex items-center gap-3 mb-2">
                       <div className={`p-2 ${traitStyle.iconBg} rounded-lg`}>
-                        <Timer className={traitStyle.iconColor} size={18} />
+                        <Timer className={traitStyle.iconColor} size={16} />
+                      </div>
+                      <div>
+                        <div className={`text-sm font-medium ${traitStyle.labelColor}`}>Session Length</div>
+                        <div className="text-[10px] text-gray-500">Avg gambling duration</div>
+                      </div>
+                      <ChevronRight size={14} className={`ml-auto text-gray-600 transition-transform ${expandedMetric === 'session' ? 'rotate-90' : ''}`} />
                     </div>
-                      <div className={`text-sm ${traitStyle.labelColor}`}>Session Length</div>
-                      <ChevronRight size={14} className={`ml-auto text-gray-500 transition-transform ${expandedMetric === 'session' ? 'rotate-90' : ''}`} />
-                    </div>
-                    <div className="text-3xl font-bold text-white">{results.sessionLength.avgHours}h</div>
-                    <div className="text-xs text-gray-500">avg session</div>
+                    <div className="text-2xl font-bold text-white">{results.sessionLength.avgHours}h</div>
+                    <div className="text-[11px] text-gray-500">avg session</div>
                   </div>
                   {expandedMetric === 'session' && (
-                    <div className={`px-5 pb-5 pt-2 border-t ${traitStyle.divider}`}>
+                    <div className={`px-4 pb-4 pt-2 border-t ${traitStyle.divider}`}>
                       <p className="text-sm text-gray-400">{results.sessionLength.description}</p>
-                  </div>
+                    </div>
                   )}
                 </div>
 
@@ -697,22 +714,25 @@ export default function GamStart() {
                   className={`${traitStyle.bg} border ${traitStyle.border} ${traitStyle.borderHover} rounded-xl overflow-hidden cursor-pointer transition-all ${expandedMetric === 'bigbet' ? `ring-1 ${traitStyle.ring}` : ''}`}
                   onClick={() => setExpandedMetric(expandedMetric === 'bigbet' ? null : 'bigbet')}
                 >
-                  <div className="p-5">
-                    <div className="flex items-center gap-3 mb-3">
+                  <div className="p-4">
+                    <div className="flex items-center gap-3 mb-2">
                       <div className={`p-2 ${traitStyle.iconBg} rounded-lg`}>
-                        <DollarSign className={traitStyle.iconColor} size={18} />
-                              </div>
-                      <div className={`text-sm ${traitStyle.labelColor}`}>Biggest Single Bet</div>
-                      <ChevronRight size={14} className={`ml-auto text-gray-500 transition-transform ${expandedMetric === 'bigbet' ? 'rotate-90' : ''}`} />
+                        <DollarSign className={traitStyle.iconColor} size={16} />
+                      </div>
+                      <div>
+                        <div className={`text-sm font-medium ${traitStyle.labelColor}`}>Biggest Deposit</div>
+                        <div className="text-[10px] text-gray-500">Largest single send</div>
+                      </div>
+                      <ChevronRight size={14} className={`ml-auto text-gray-600 transition-transform ${expandedMetric === 'bigbet' ? 'rotate-90' : ''}`} />
                     </div>
-                    <div className="text-3xl font-bold text-white">{results.biggestBet.amount}</div>
-                    <div className="text-xs text-gray-500">ETH (${results.biggestBet.amountUSD.toLocaleString()})</div>
+                    <div className="text-2xl font-bold text-white">{results.biggestBet.amount} ETH</div>
+                    <div className="text-[11px] text-gray-500">${results.biggestBet.amountUSD.toLocaleString()}</div>
                   </div>
                   {expandedMetric === 'bigbet' && (
-                    <div className={`px-5 pb-5 pt-2 border-t ${traitStyle.divider}`}>
+                    <div className={`px-4 pb-4 pt-2 border-t ${traitStyle.divider}`}>
                       <p className="text-sm text-gray-400">{results.biggestBet.description}</p>
-                  </div>
-                )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Longest Streak */}
@@ -720,23 +740,26 @@ export default function GamStart() {
                   className={`${traitStyle.bg} border ${traitStyle.border} ${traitStyle.borderHover} rounded-xl overflow-hidden cursor-pointer transition-all ${expandedMetric === 'streak' ? `ring-1 ${traitStyle.ring}` : ''}`}
                   onClick={() => setExpandedMetric(expandedMetric === 'streak' ? null : 'streak')}
                 >
-                  <div className="p-5">
-                    <div className="flex items-center gap-3 mb-3">
+                  <div className="p-4">
+                    <div className="flex items-center gap-3 mb-2">
                       <div className={`p-2 ${traitStyle.iconBg} rounded-lg`}>
-                        <Flame className={traitStyle.iconColor} size={18} />
-                          </div>
-                      <div className={`text-sm ${traitStyle.labelColor}`}>Longest Streak</div>
-                      <ChevronRight size={14} className={`ml-auto text-gray-500 transition-transform ${expandedMetric === 'streak' ? 'rotate-90' : ''}`} />
+                        <Flame className={traitStyle.iconColor} size={16} />
+                      </div>
+                      <div>
+                        <div className={`text-sm font-medium ${traitStyle.labelColor}`}>Deposit Streak</div>
+                        <div className="text-[10px] text-gray-500">Consecutive deposits</div>
+                      </div>
+                      <ChevronRight size={14} className={`ml-auto text-gray-600 transition-transform ${expandedMetric === 'streak' ? 'rotate-90' : ''}`} />
                     </div>
-                    <div className="text-3xl font-bold text-white">{results.longestStreak.deposits}</div>
-                    <div className="text-xs text-gray-500">deposits in {results.longestStreak.timespan}</div>
+                    <div className="text-2xl font-bold text-white">{results.longestStreak.deposits}</div>
+                    <div className="text-[11px] text-gray-500">in {results.longestStreak.timespan}</div>
                   </div>
                   {expandedMetric === 'streak' && (
-                    <div className={`px-5 pb-5 pt-2 border-t ${traitStyle.divider}`}>
+                    <div className={`px-4 pb-4 pt-2 border-t ${traitStyle.divider}`}>
                       <p className="text-sm text-gray-400">{results.longestStreak.description}</p>
                     </div>
                   )}
-                  </div>
+                </div>
               </div>
             </div>
 
