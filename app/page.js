@@ -408,6 +408,7 @@ export default function GamStart() {
   const [reportView, setReportView] = useState('traits'); // 'traits' or 'analytics'
   const [selectedMetric, setSelectedMetric] = useState('volume');
   const [selectedTimeRange, setSelectedTimeRange] = useState('12w');
+  const [selectedCasinos, setSelectedCasinos] = useState(['Stake', 'Duel', 'Roobet', 'Shuffle', 'Gamdom']);
 
   const handleScan = async () => {
     if (!address.trim()) return;
@@ -450,7 +451,7 @@ export default function GamStart() {
 
     await new Promise(resolve => setTimeout(resolve, 500));
     setResults(finalResults);
-    setLoading(false);
+        setLoading(false);
     setLoadingStep(0);
   };
 
@@ -575,128 +576,227 @@ export default function GamStart() {
       <main className="flex-1">
         {/* PLATFORMS TAB */}
         {activeTab === 'platforms' && (
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {/* Header */}
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-white mb-2">Casino Analytics</h1>
-              <p className="text-gray-400">Weekly deposit volume and market trends across top crypto casinos</p>
-            </div>
-
-            {/* Week Totals */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-              <div className="bg-[#12121c] rounded-xl p-5 border border-gray-800/50">
-                <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Total Deposit Volume</div>
-                <div className="text-2xl font-bold text-white">{formatNumber(PLATFORM_DATA.weekTotals.totalVolume)}</div>
-                <div className="text-xs text-gray-500">Week ending Jan 5, 2026</div>
-              </div>
-              <div className="bg-[#12121c] rounded-xl p-5 border border-gray-800/50">
-                <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Total Deposits</div>
-                <div className="text-2xl font-bold text-white">{PLATFORM_DATA.weekTotals.totalDeposits.toLocaleString()}</div>
-                <div className="text-xs text-gray-500">Transactions this week</div>
-              </div>
-              <div className="bg-[#12121c] rounded-xl p-5 border border-gray-800/50">
-                <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">New Depositors</div>
-                <div className="text-2xl font-bold text-white">{PLATFORM_DATA.weekTotals.newDepositors.toLocaleString()}</div>
-                <div className="text-xs text-gray-500">Unique wallets</div>
-              </div>
-            </div>
-
-            {/* Controls */}
-            <div className="bg-[#12121c] rounded-xl p-5 border border-gray-800/50 mb-8">
-              <div className="text-sm font-medium text-white mb-3">Dashboard Controls</div>
-              <div className="flex flex-wrap gap-2 mb-4">
-                {['volume', 'marketShare', 'deposits', 'newDepositors'].map((metric) => (
-                  <button
-                    key={metric}
-                    onClick={() => setSelectedMetric(metric)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                      selectedMetric === metric
-                        ? 'bg-[#c8ff00] text-black'
-                        : 'bg-[#1a1a2e] text-gray-400 hover:text-white'
-                    }`}
-                  >
-                    {metric === 'volume' ? 'Deposit Volume' : 
-                     metric === 'marketShare' ? 'Market Share' :
-                     metric === 'deposits' ? 'Deposits' : 'New Depositors'}
-                  </button>
-                ))}
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  { value: '4w', label: 'Last 4 Weeks' },
-                  { value: '12w', label: 'Last 12 Weeks' },
-                  { value: '24w', label: 'Last 24 Weeks' },
-                  { value: '52w', label: 'Last 52 Weeks' }
-                ].map((range) => (
-                  <button
-                    key={range.value}
-                    onClick={() => setSelectedTimeRange(range.value)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                      selectedTimeRange === range.value
-                        ? 'bg-[#c8ff00] text-black'
-                        : 'bg-[#1a1a2e] text-gray-400 hover:text-white border border-gray-700'
-                    }`}
-                  >
-                    {range.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Trend Chart */}
-            <div className="bg-[#12121c] rounded-xl p-5 border border-gray-800/50 mb-8">
-              <div className="flex items-center justify-between mb-4">
+            <div className="mb-6">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center">
+                  <BarChart3 className="text-purple-400" size={20} />
+                </div>
                 <div>
-                  <div className="text-xs text-[#c8ff00] uppercase tracking-wide mb-1">Trend Visualizations</div>
-                  <div className="text-lg font-semibold text-white">Deposit Volume Trends</div>
-                  <div className="text-xs text-gray-500">Track how total deposit dollars move week over week</div>
+                  <h1 className="text-2xl font-bold text-white">Casino Analytics</h1>
+                  <p className="text-sm text-gray-500">Weekly deposit volume and market trends</p>
                 </div>
               </div>
-              
-              {/* Simple chart representation */}
-              <div className="h-48 relative mb-4">
-                <div className="absolute inset-0 flex items-end justify-between gap-1 px-2">
-                  {PLATFORM_DATA.weeklyTrends.map((week, i) => (
-                    <div key={i} className="flex-1 flex flex-col items-center gap-1">
+            </div>
+
+            {/* Week Totals - Horizontal cards with purple accent */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+              <div className="bg-gradient-to-br from-purple-500/10 to-transparent rounded-xl p-4 border border-purple-500/20">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                    <DollarSign className="text-purple-400" size={18} />
+                  </div>
+            <div>
+                    <div className="text-xs text-gray-500 uppercase tracking-wide">Weekly Volume</div>
+                    <div className="text-xl font-bold text-white">{formatNumber(PLATFORM_DATA.weekTotals.totalVolume)}</div>
+            </div>
+                </div>
+              </div>
+              <div className="bg-gradient-to-br from-purple-500/10 to-transparent rounded-xl p-4 border border-purple-500/20">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                    <Activity className="text-purple-400" size={18} />
+                  </div>
+                  <div>
+                    <div className="text-xs text-gray-500 uppercase tracking-wide">Total Deposits</div>
+                    <div className="text-xl font-bold text-white">{PLATFORM_DATA.weekTotals.totalDeposits.toLocaleString()}</div>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-gradient-to-br from-purple-500/10 to-transparent rounded-xl p-4 border border-purple-500/20">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                    <Users className="text-purple-400" size={18} />
+                  </div>
+                  <div>
+                    <div className="text-xs text-gray-500 uppercase tracking-wide">New Depositors</div>
+                    <div className="text-xl font-bold text-white">{PLATFORM_DATA.weekTotals.newDepositors.toLocaleString()}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Controls - Compact inline design */}
+            <div className="bg-[#12121c] rounded-xl p-4 border border-gray-800/50 mb-6">
+              <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+                {/* Metric Selection */}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-500 uppercase tracking-wide whitespace-nowrap">Metric:</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {['volume', 'marketShare', 'deposits', 'newDepositors'].map((metric) => (
+              <button
+                        key={metric}
+                        onClick={() => setSelectedMetric(metric)}
+                        className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                          selectedMetric === metric
+                            ? 'bg-purple-500 text-white'
+                            : 'bg-[#1a1a2e] text-gray-400 hover:text-white hover:bg-[#252540]'
+                        }`}
+                      >
+                        {metric === 'volume' ? 'Volume' : 
+                         metric === 'marketShare' ? 'Share' :
+                         metric === 'deposits' ? 'Deposits' : 'New Users'}
+              </button>
+                    ))}
+                  </div>
+          </div>
+
+                <div className="hidden lg:block w-px h-6 bg-gray-700" />
+
+                {/* Time Range */}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-500 uppercase tracking-wide whitespace-nowrap">Range:</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      { value: '4w', label: '4W' },
+                      { value: '12w', label: '12W' },
+                      { value: '24w', label: '24W' },
+                      { value: '52w', label: '1Y' }
+                    ].map((range) => (
+              <button 
+                        key={range.value}
+                        onClick={() => setSelectedTimeRange(range.value)}
+                        className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                          selectedTimeRange === range.value
+                            ? 'bg-purple-500 text-white'
+                            : 'bg-[#1a1a2e] text-gray-400 hover:text-white hover:bg-[#252540]'
+                        }`}
+                      >
+                        {range.label}
+              </button>
+                    ))}
+                  </div>
+            </div>
+          </div>
+
+              {/* Casino Selection */}
+              <div className="mt-4 pt-4 border-t border-gray-800/50">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs text-gray-500 uppercase tracking-wide">Casino Selection</span>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setSelectedCasinos(['Stake', 'Duel', 'Roobet', 'Shuffle', 'Gamdom'])}
+                      className="px-2 py-1 text-[10px] bg-[#1a1a2e] text-gray-400 hover:text-white rounded transition-colors"
+                    >
+                      Top 5
+                    </button>
+                    <button
+                      onClick={() => setSelectedCasinos(PLATFORM_DATA.casinos.map(c => c.name))}
+                      className="px-2 py-1 text-[10px] bg-[#1a1a2e] text-gray-400 hover:text-white rounded transition-colors"
+                    >
+                      All
+                    </button>
+                    <button
+                      onClick={() => setSelectedCasinos([])}
+                      className="px-2 py-1 text-[10px] bg-[#1a1a2e] text-gray-400 hover:text-white rounded transition-colors"
+                    >
+                      Clear
+                    </button>
+            </div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {PLATFORM_DATA.casinos.map((casino) => (
+                    <button
+                      key={casino.name}
+                      onClick={() => {
+                        if (selectedCasinos.includes(casino.name)) {
+                          setSelectedCasinos(selectedCasinos.filter(c => c !== casino.name));
+                        } else {
+                          setSelectedCasinos([...selectedCasinos, casino.name]);
+                        }
+                      }}
+                      className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-2 ${
+                        selectedCasinos.includes(casino.name)
+                          ? 'bg-purple-500/20 text-purple-300 border border-purple-500/50'
+                          : 'bg-[#1a1a2e] text-gray-500 hover:text-gray-300 border border-transparent'
+                      }`}
+                    >
                       <div 
-                        className="w-full bg-[#22c55e] rounded-t opacity-80 transition-all hover:opacity-100"
-                        style={{ height: `${(week.stake / 720) * 100}%` }}
+                        className="w-2 h-2 rounded-full" 
+                        style={{ backgroundColor: selectedCasinos.includes(casino.name) ? casino.color : '#4b5563' }} 
                       />
-                      <div className="text-[9px] text-gray-500 truncate w-full text-center">{week.week}</div>
+                      {casino.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+        </div>
+
+            {/* Trend Chart - Redesigned */}
+            <div className="bg-[#12121c] rounded-xl p-5 border border-gray-800/50 mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <div className="text-sm font-semibold text-white">Volume Trends</div>
+                  <div className="text-xs text-gray-500">Week over week deposit volume</div>
+                </div>
+                <div className="text-xs text-purple-400">Jan 5, 2026</div>
+              </div>
+              
+              {/* Chart with gradient area */}
+              <div className="h-44 relative mb-3">
+                {/* Y-axis labels */}
+                <div className="absolute left-0 top-0 bottom-6 w-12 flex flex-col justify-between text-[10px] text-gray-600">
+                  <span>$800M</span>
+                  <span>$600M</span>
+                  <span>$400M</span>
+                  <span>$200M</span>
+                  <span>$0</span>
+                </div>
+                {/* Chart area */}
+                <div className="absolute left-14 right-0 top-0 bottom-0 flex items-end justify-between gap-0.5">
+                  {PLATFORM_DATA.weeklyTrends.map((week, i) => (
+                    <div key={i} className="flex-1 flex flex-col items-center gap-1 group">
+                      <div className="w-full relative">
+                        <div 
+                          className="w-full bg-gradient-to-t from-purple-500/60 to-purple-400/20 rounded-t transition-all group-hover:from-purple-500/80 group-hover:to-purple-400/40"
+                          style={{ height: `${(week.stake / 720) * 140}px` }}
+                        />
+                      </div>
+                      <div className="text-[8px] text-gray-600 truncate w-full text-center opacity-0 group-hover:opacity-100 transition-opacity">{week.week}</div>
                     </div>
                   ))}
                 </div>
               </div>
-
+              
               {/* Legend */}
-              <div className="flex flex-wrap gap-4 text-xs">
-                {PLATFORM_DATA.casinos.slice(0, 5).map((casino) => (
-                  <div key={casino.name} className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: casino.color }} />
+              <div className="flex flex-wrap gap-3 text-xs border-t border-gray-800/50 pt-3">
+                {PLATFORM_DATA.casinos.filter(c => selectedCasinos.includes(c.name)).slice(0, 5).map((casino) => (
+                  <div key={casino.name} className="flex items-center gap-1.5">
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: casino.color }} />
                     <span className="text-gray-400">{casino.name}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Gainers and Declines */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            {/* Gainers and Declines - Side by side compact */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
               {/* Top Gainers */}
-              <div className="bg-[#12121c] rounded-xl p-5 border border-gray-800/50">
-                <div className="text-xs text-gray-500 uppercase tracking-wide mb-4">Top Gainers · Deposit Volume</div>
-                <div className="space-y-3">
-                  {PLATFORM_DATA.topGainers.map((casino, i) => (
-                    <div key={casino.name} className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-6 h-6 rounded-full bg-[#1a1a2e] flex items-center justify-center text-xs text-gray-400">{i + 1}</div>
-                        <span className="text-white font-medium">{casino.name}</span>
+              <div className="bg-[#12121c] rounded-xl p-4 border border-gray-800/50">
+                <div className="flex items-center gap-2 mb-3">
+                  <TrendingUp className="text-green-400" size={16} />
+                  <span className="text-sm font-medium text-white">Top Gainers</span>
+                </div>
+                <div className="space-y-2">
+                  {PLATFORM_DATA.topGainers.slice(0, 4).map((casino, i) => (
+                    <div key={casino.name} className="flex items-center justify-between py-1.5 border-b border-gray-800/30 last:border-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-600 w-4">{i + 1}</span>
+                        <span className="text-sm text-white">{casino.name}</span>
                       </div>
-                      <div className="text-right">
-                        <div className="text-[#22c55e] font-medium flex items-center gap-1">
-                          <ArrowUpRight size={14} />
-                          +{formatNumber(casino.change)} (+{casino.percentChange}%)
-                        </div>
-                        <div className="text-xs text-gray-500">{formatNumber(casino.from)} → {formatNumber(casino.to)}</div>
+                      <div className="text-sm text-green-400 font-medium">
+                        +{casino.percentChange}%
                       </div>
                     </div>
                   ))}
@@ -704,21 +804,20 @@ export default function GamStart() {
               </div>
 
               {/* Biggest Declines */}
-              <div className="bg-[#12121c] rounded-xl p-5 border border-gray-800/50">
-                <div className="text-xs text-gray-500 uppercase tracking-wide mb-4">Biggest Declines · Deposit Volume</div>
-                <div className="space-y-3">
-                  {PLATFORM_DATA.topDeclines.map((casino, i) => (
-                    <div key={casino.name} className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-6 h-6 rounded-full bg-[#1a1a2e] flex items-center justify-center text-xs text-gray-400">{i + 1}</div>
-                        <span className="text-white font-medium">{casino.name}</span>
+              <div className="bg-[#12121c] rounded-xl p-4 border border-gray-800/50">
+                <div className="flex items-center gap-2 mb-3">
+                  <TrendingDown className="text-red-400" size={16} />
+                  <span className="text-sm font-medium text-white">Biggest Declines</span>
+                </div>
+                <div className="space-y-2">
+                  {PLATFORM_DATA.topDeclines.slice(0, 4).map((casino, i) => (
+                    <div key={casino.name} className="flex items-center justify-between py-1.5 border-b border-gray-800/30 last:border-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-600 w-4">{i + 1}</span>
+                        <span className="text-sm text-white">{casino.name}</span>
                       </div>
-                      <div className="text-right">
-                        <div className="text-[#ef4444] font-medium flex items-center gap-1">
-                          <ArrowDownRight size={14} />
-                          {formatNumber(Math.abs(casino.change))} ({casino.percentChange}%)
-                        </div>
-                        <div className="text-xs text-gray-500">{formatNumber(casino.from)} → {formatNumber(casino.to)}</div>
+                      <div className="text-sm text-red-400 font-medium">
+                        {casino.percentChange}%
                       </div>
                     </div>
                   ))}
@@ -726,33 +825,40 @@ export default function GamStart() {
               </div>
             </div>
 
-            {/* Casino Leaderboard */}
-            <div className="bg-[#12121c] rounded-xl p-5 border border-gray-800/50">
-              <div className="text-xs text-gray-500 uppercase tracking-wide mb-4">Top 10 Casinos by Volume</div>
+            {/* Casino Leaderboard - Cleaner table */}
+            <div className="bg-[#12121c] rounded-xl border border-gray-800/50 overflow-hidden">
+              <div className="px-4 py-3 border-b border-gray-800/50">
+                <div className="flex items-center gap-2">
+                  <Trophy className="text-purple-400" size={16} />
+                  <span className="text-sm font-medium text-white">Top 10 by Volume</span>
+                          </div>
+                          </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="text-xs text-gray-500 uppercase">
-                      <th className="text-left pb-3 font-medium">#</th>
-                      <th className="text-left pb-3 font-medium">Casino</th>
-                      <th className="text-right pb-3 font-medium">Volume</th>
-                      <th className="text-right pb-3 font-medium">Market Share</th>
-                      <th className="text-right pb-3 font-medium">Deposits</th>
+                    <tr className="text-[10px] text-gray-500 uppercase bg-[#0f0f1a]">
+                      <th className="text-left px-4 py-2 font-medium">#</th>
+                      <th className="text-left px-4 py-2 font-medium">Casino</th>
+                      <th className="text-right px-4 py-2 font-medium">Volume</th>
+                      <th className="text-right px-4 py-2 font-medium">Share</th>
+                      <th className="text-right px-4 py-2 font-medium">Deposits</th>
                     </tr>
                   </thead>
                   <tbody className="text-sm">
                     {PLATFORM_DATA.casinos.map((casino, i) => (
-                      <tr key={casino.name} className="border-t border-gray-800/50">
-                        <td className="py-3 text-gray-500">{i + 1}</td>
-                        <td className="py-3">
+                      <tr key={casino.name} className="border-t border-gray-800/30 hover:bg-[#1a1a2e]/50 transition-colors">
+                        <td className="px-4 py-2.5 text-gray-500 text-xs">{i + 1}</td>
+                        <td className="px-4 py-2.5">
                           <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: casino.color }} />
-                            <span className="text-white font-medium">{casino.name}</span>
-                          </div>
+                            <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: casino.color }} />
+                            <span className="text-white">{casino.name}</span>
+                        </div>
                         </td>
-                        <td className="py-3 text-right text-white">{formatNumber(casino.volume)}</td>
-                        <td className="py-3 text-right text-gray-400">{casino.marketShare}%</td>
-                        <td className="py-3 text-right text-gray-400">{casino.deposits.toLocaleString()}</td>
+                        <td className="px-4 py-2.5 text-right text-white font-medium">{formatNumber(casino.volume)}</td>
+                        <td className="px-4 py-2.5 text-right">
+                          <span className="text-purple-400">{casino.marketShare}%</span>
+                        </td>
+                        <td className="px-4 py-2.5 text-right text-gray-400">{casino.deposits.toLocaleString()}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -815,12 +921,13 @@ export default function GamStart() {
                       Scan
                       <ChevronRight size={16} />
                     </button>
-                  </div>
-                  {walletType === 'proxy' && (
-                    <p className="text-xs text-gray-500 mt-2 text-center">
-                      Enter the deposit address provided by your casino (e.g., Stake, Rollbit)
-                    </p>
-                  )}
+                        </div>
+                  <p className="text-xs text-gray-500 mt-2 text-center h-4">
+                    {walletType === 'proxy' 
+                      ? 'Enter the deposit address provided by your casino (e.g., Stake, Rollbit)'
+                      : 'Your personal wallet used to send funds to casinos'
+                    }
+                  </p>
                 </div>
 
                 <button
@@ -829,7 +936,7 @@ export default function GamStart() {
                 >
                   I want to see how it works
                 </button>
-              </div>
+                          </div>
             )}
 
             {loading && (
@@ -873,7 +980,7 @@ export default function GamStart() {
             {results && !loading && (
               <div className="space-y-6 text-white">
                 {/* Header Row */}
-                <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-sm text-gray-400">
                     <Wallet size={14} />
                     {results.isMultiple ? (
@@ -881,7 +988,7 @@ export default function GamStart() {
                     ) : (
                       <span className="font-mono">{formatAddress(results.address)}</span>
                     )}
-                  </div>
+                </div>
                   <button
                     onClick={handleShare}
                     className="flex items-center gap-2 px-4 py-2 bg-purple-600/20 hover:bg-purple-600/30 rounded-lg border border-purple-500/30 transition-colors text-purple-300"
@@ -889,8 +996,8 @@ export default function GamStart() {
                     <Share2 size={18} />
                     Share
                   </button>
-                </div>
-
+              </div>
+              
                 {/* Main Info Section */}
                 <div className="flex flex-col md:flex-row gap-8 items-start bg-[#12121c] rounded-2xl p-6 border border-gray-800/50">
                   <div className="flex flex-col items-center min-w-[180px]">
@@ -904,9 +1011,9 @@ export default function GamStart() {
                       <div className="text-center">
                         <div className="text-5xl font-bold" style={{ color: getAccentColor(results.riskScore) }}>
                           {results.riskScore}
-                        </div>
+                            </div>
                         <div className="text-[10px] text-gray-500 uppercase tracking-wider">Risk Score</div>
-                      </div>
+                          </div>
                     </div>
                     <div className="text-center">
                       <div className="text-base font-medium text-gray-200">{results.gamblerType}</div>
@@ -917,12 +1024,12 @@ export default function GamStart() {
                         {results.status}
                       </div>
                     </div>
-                  </div>
-                  
+              </div>
+              
                   <div className="flex-1 grid grid-cols-2 gap-3">
                     <a 
                       href={results.favoriteCasino.url}
-                      target="_blank"
+                              target="_blank"
                       rel="noopener noreferrer"
                       className="bg-[#0f0f1a] rounded-lg p-4 hover:bg-[#16162a] transition-colors group"
                     >
@@ -930,31 +1037,31 @@ export default function GamStart() {
                       <div className="text-base font-medium text-purple-300 flex items-center gap-2 group-hover:text-purple-200">
                         {results.favoriteCasino.name}
                         <ExternalLink size={12} className="opacity-50" />
-                      </div>
+              </div>
                     </a>
 
                     <div className="bg-[#0f0f1a] rounded-lg p-4">
                       <div className="text-[11px] text-gray-500 uppercase tracking-wide mb-1">Total Deposited</div>
                       <div className="text-base font-medium text-white">
                         ${results.financialImpact.totalUSD.toLocaleString()}
-                      </div>
+                          </div>
                       <div className="text-[11px] text-gray-600 font-mono">{results.financialImpact.totalETH} ETH</div>
-                    </div>
+                        </div>
 
                     <div className="bg-[#0f0f1a] rounded-lg p-4">
                       <div className="text-[11px] text-gray-500 uppercase tracking-wide mb-1">Primary Pattern</div>
                       <div className="text-base font-medium" style={{ color: getAccentColor(results.riskScore) }}>{results.primaryPattern}</div>
-                    </div>
+                      </div>
                   
                     <div className="bg-[#0f0f1a] rounded-lg p-4">
                       <div className="text-[11px] text-gray-500 uppercase tracking-wide mb-1">Leaderboard</div>
                       <div className="text-base font-medium text-gray-300 flex items-center gap-2">
                         <Trophy size={14} className="text-purple-400" />
                         #{results.leaderboardPlace.toLocaleString()}
-                      </div>
-                    </div>
-                  </div>
                 </div>
+              </div>
+          </div>
+                    </div>
 
                 {/* View Toggle */}
                 <div className="flex items-center justify-between">
@@ -982,9 +1089,9 @@ export default function GamStart() {
                     >
                       Analytics
                     </button>
+                    </div>
                   </div>
-                </div>
-
+                  
                 {/* TRAITS VIEW */}
                 {reportView === 'traits' && (
                   <div className="space-y-3">
@@ -997,13 +1104,13 @@ export default function GamStart() {
                           <div className="flex items-center gap-3 mb-2">
                             <div className={`p-2 ${traitStyle.iconBg} rounded-lg`}>
                               <Activity className={traitStyle.iconColor} size={16} />
-                            </div>
+                          </div>
                             <div>
                               <div className={`text-sm font-medium ${traitStyle.labelColor}`}>Deposit Velocity</div>
                               <div className="text-[10px] text-gray-500">How fast you reload</div>
-                            </div>
-                            <ChevronRight size={14} className={`ml-auto text-gray-600 transition-transform ${expandedMetric === 'velocity' ? 'rotate-90' : ''}`} />
                           </div>
+                            <ChevronRight size={14} className={`ml-auto text-gray-600 transition-transform ${expandedMetric === 'velocity' ? 'rotate-90' : ''}`} />
+                        </div>
                           <div className="text-2xl font-bold text-white">{results.depositVelocity.rate}</div>
                           <div className="text-[11px] text-gray-500">{results.depositVelocity.unit}</div>
                         </div>
@@ -1012,8 +1119,8 @@ export default function GamStart() {
                             <p className="text-sm text-gray-400">{results.depositVelocity.description}</p>
                           </div>
                         )}
-                      </div>
-
+                  </div>
+                  
                       <div 
                         className={`${traitStyle.bg} border ${traitStyle.border} ${traitStyle.borderHover} rounded-xl overflow-hidden cursor-pointer transition-all ${expandedMetric === 'midnight' ? `ring-1 ${traitStyle.ring}` : ''}`}
                         onClick={() => setExpandedMetric(expandedMetric === 'midnight' ? null : 'midnight')}
@@ -1022,7 +1129,7 @@ export default function GamStart() {
                           <div className="flex items-center gap-3 mb-2">
                             <div className={`p-2 ${traitStyle.iconBg} rounded-lg`}>
                               <Clock className={traitStyle.iconColor} size={16} />
-                            </div>
+                  </div>
                             <div>
                               <div className={`text-sm font-medium ${traitStyle.labelColor}`}>Midnight Factor</div>
                               <div className="text-[10px] text-gray-500">Late night activity</div>
@@ -1035,9 +1142,9 @@ export default function GamStart() {
                         {expandedMetric === 'midnight' && (
                           <div className={`px-4 pb-4 pt-2 border-t ${traitStyle.divider}`}>
                             <p className="text-sm text-gray-400">{results.midnightFactor.description}</p>
-                          </div>
-                        )}
-                      </div>
+              </div>
+            )}
+                </div>
 
                       <div 
                         className={`${traitStyle.bg} border ${traitStyle.border} ${traitStyle.borderHover} rounded-xl overflow-hidden cursor-pointer transition-all ${expandedMetric === 'chase' ? `ring-1 ${traitStyle.ring}` : ''}`}
@@ -1047,13 +1154,13 @@ export default function GamStart() {
                           <div className="flex items-center gap-3 mb-2">
                             <div className={`p-2 ${traitStyle.iconBg} rounded-lg`}>
                               <Target className={traitStyle.iconColor} size={16} />
-                            </div>
+                              </div>
                             <div>
                               <div className={`text-sm font-medium ${traitStyle.labelColor}`}>Chase Behavior</div>
                               <div className="text-[10px] text-gray-500">Rapid re-deposits</div>
-                            </div>
+                              </div>
                             <ChevronRight size={14} className={`ml-auto text-gray-600 transition-transform ${expandedMetric === 'chase' ? 'rotate-90' : ''}`} />
-                          </div>
+                            </div>
                           <div className="text-2xl font-bold text-white">{results.chaseBehavior.percentage}%</div>
                           <div className="text-[11px] text-gray-500">avg {results.chaseBehavior.avgResponseTime} min response</div>
                         </div>
@@ -1078,17 +1185,17 @@ export default function GamStart() {
                             <div>
                               <div className={`text-sm font-medium ${traitStyle.labelColor}`}>Session Length</div>
                               <div className="text-[10px] text-gray-500">Avg gambling duration</div>
-                            </div>
-                            <ChevronRight size={14} className={`ml-auto text-gray-600 transition-transform ${expandedMetric === 'session' ? 'rotate-90' : ''}`} />
                           </div>
+                            <ChevronRight size={14} className={`ml-auto text-gray-600 transition-transform ${expandedMetric === 'session' ? 'rotate-90' : ''}`} />
+                    </div>
                           <div className="text-2xl font-bold text-white">{results.sessionLength.avgHours}h</div>
                           <div className="text-[11px] text-gray-500">avg session</div>
                         </div>
                         {expandedMetric === 'session' && (
                           <div className={`px-4 pb-4 pt-2 border-t ${traitStyle.divider}`}>
                             <p className="text-sm text-gray-400">{results.sessionLength.description}</p>
-                          </div>
-                        )}
+                  </div>
+                )}
                       </div>
 
                       <div 
@@ -1099,22 +1206,22 @@ export default function GamStart() {
                           <div className="flex items-center gap-3 mb-2">
                             <div className={`p-2 ${traitStyle.iconBg} rounded-lg`}>
                               <DollarSign className={traitStyle.iconColor} size={16} />
-                            </div>
+                          </div>
                             <div>
                               <div className={`text-sm font-medium ${traitStyle.labelColor}`}>Biggest Deposit</div>
                               <div className="text-[10px] text-gray-500">Largest single send</div>
-                            </div>
-                            <ChevronRight size={14} className={`ml-auto text-gray-600 transition-transform ${expandedMetric === 'bigbet' ? 'rotate-90' : ''}`} />
                           </div>
+                            <ChevronRight size={14} className={`ml-auto text-gray-600 transition-transform ${expandedMetric === 'bigbet' ? 'rotate-90' : ''}`} />
+                        </div>
                           <div className="text-2xl font-bold text-white">{results.biggestBet.amount} ETH</div>
                           <div className="text-[11px] text-gray-500">${results.biggestBet.amountUSD.toLocaleString()}</div>
-                        </div>
+                    </div>
                         {expandedMetric === 'bigbet' && (
                           <div className={`px-4 pb-4 pt-2 border-t ${traitStyle.divider}`}>
                             <p className="text-sm text-gray-400">{results.biggestBet.description}</p>
-                          </div>
-                        )}
-                      </div>
+                  </div>
+                )}
+          </div>
 
                       <div 
                         className={`${traitStyle.bg} border ${traitStyle.border} ${traitStyle.borderHover} rounded-xl overflow-hidden cursor-pointer transition-all ${expandedMetric === 'streak' ? `ring-1 ${traitStyle.ring}` : ''}`}
@@ -1128,7 +1235,7 @@ export default function GamStart() {
                             <div>
                               <div className={`text-sm font-medium ${traitStyle.labelColor}`}>Deposit Streak</div>
                               <div className="text-[10px] text-gray-500">Consecutive deposits</div>
-                            </div>
+                          </div>
                             <ChevronRight size={14} className={`ml-auto text-gray-600 transition-transform ${expandedMetric === 'streak' ? 'rotate-90' : ''}`} />
                           </div>
                           <div className="text-2xl font-bold text-white">{results.longestStreak.deposits}</div>
@@ -1169,8 +1276,8 @@ export default function GamStart() {
                         <div className="text-xl font-bold text-white">{results.analytics.firstDeposit.split('-').slice(1).join('/')}</div>
                         <div className="text-[10px] text-gray-500">{results.analytics.firstDeposit.split('-')[0]}</div>
                       </div>
-                    </div>
-
+                  </div>
+                  
                     {/* Deposits Over Time Chart */}
                     <div className="bg-[#12121c] rounded-xl p-5 border border-gray-800/50">
                       <div className="text-xs text-gray-500 uppercase tracking-wide mb-4">Deposits Over Time (12 Months)</div>
@@ -1186,8 +1293,8 @@ export default function GamStart() {
                         {results.analytics.monthlyDeposits.filter((_, i) => i % 3 === 0).map((d, i) => (
                           <span key={i}>{d.month}</span>
                         ))}
-                      </div>
-                    </div>
+                  </div>
+                </div>
 
                     {/* Breakdown Sections */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1207,9 +1314,9 @@ export default function GamStart() {
                                   style={{ width: `${crypto.percentage}%` }}
                                 />
                               </div>
-                            </div>
+                              </div>
                           ))}
-                        </div>
+                            </div>
                       </div>
 
                       {/* By Casino */}
@@ -1223,18 +1330,18 @@ export default function GamStart() {
                                 <span className="text-gray-400">${casino.amount.toLocaleString()} ({casino.percentage}%)</span>
                               </div>
                               <div className="h-2 bg-[#1a1a2e] rounded-full overflow-hidden">
-                                <div 
-                                  className="h-full rounded-full"
-                                  style={{ 
+                              <div 
+                                className="h-full rounded-full"
+                                style={{ 
                                     width: `${casino.percentage}%`,
                                     backgroundColor: ['#22c55e', '#8b5cf6', '#ec4899', '#f97316'][i % 4]
-                                  }}
-                                />
-                              </div>
+                                }}
+                              />
                             </div>
+                          </div>
                           ))}
-                        </div>
-                      </div>
+                    </div>
+                  </div>
                     </div>
 
                     {/* Additional Stats */}
@@ -1244,11 +1351,11 @@ export default function GamStart() {
                         <div>
                           <div className="text-gray-500 mb-1">Last Deposit</div>
                           <div className="text-white font-medium">{results.analytics.lastDeposit}</div>
-                        </div>
+                          </div>
                         <div>
                           <div className="text-gray-500 mb-1">Deposits/Day (Active)</div>
                           <div className="text-white font-medium">{(results.analytics.totalDeposits / results.analytics.activeDays).toFixed(1)}</div>
-                        </div>
+                          </div>
                         <div>
                           <div className="text-gray-500 mb-1">Max Monthly</div>
                           <div className="text-white font-medium">${Math.max(...results.analytics.monthlyDeposits.map(d => d.amount)).toLocaleString()}</div>
@@ -1265,7 +1372,7 @@ export default function GamStart() {
                 {/* Back Button */}
                 <div className="flex justify-center pt-4">
                   <button
-                    onClick={() => {
+                          onClick={() => {
                       setResults(null);
                       setAddress('');
                       setExpandedMetric(null);
@@ -1275,7 +1382,7 @@ export default function GamStart() {
                   >
                     Scan Another Wallet
                   </button>
-                </div>
+                            </div>
               </div>
             )}
           </div>
@@ -1288,7 +1395,7 @@ export default function GamStart() {
           <div className="flex items-center justify-between h-12">
             <div className="text-gray-500 text-sm">
               © 2026 GamStart
-            </div>
+      </div>
             <div className="flex items-center gap-4">
               <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-white transition-colors">
                 <TwitterIcon size={16} />
@@ -1296,8 +1403,8 @@ export default function GamStart() {
               <a href="https://discord.com" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-white transition-colors">
                 <DiscordIcon size={16} />
               </a>
-            </div>
           </div>
+      </div>
         </div>
       </footer>
     </div>
