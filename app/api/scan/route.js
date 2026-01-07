@@ -1027,4 +1027,33 @@ function formatWalletResponse(cached) {
     leaderboardPlace: Math.floor(Math.random() * 10000) + 100
   };
 }
+     percentage: cached.chase_behavior,
+      avgResponseTime: 0,
+      description: getChaseDescription(cached.chase_behavior)
+    },
+    sessionLength: {
+      avgHours: cached.avg_session_hours,
+      longestSession: 0,
+      description: getSessionDescription(cached.avg_session_hours)
+    },
+    biggestBet: {
+      amount: cached.biggest_deposit_eth,
+      amountUSD: cached.biggest_deposit_usd,
+      description: ''
+    },
+    longestStreak: {
+      deposits: cached.longest_streak,
+      timespan: '',
+      description: getStreakDescription(cached.longest_streak)
+    },
+    analytics: cached.data,
+    financialImpact: {
+      totalETH: cached.total_volume_eth,
+      totalUSD: cached.total_volume_usd,
+      totalSOL: 0
+    },
+    primaryPattern: getPrimaryPattern(cached.deposit_velocity, cached.chase_behavior, cached.midnight_factor),
+    leaderboardPlace: Math.floor(Math.random() * 10000) + 100
+  };
+}
 
