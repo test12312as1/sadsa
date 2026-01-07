@@ -142,6 +142,40 @@ export async function POST(request) {
 // MAIN TRANSACTION FETCHING
 // ============================================
 
+// Fetch all proxies with pagination (Supabase default limit is 1000)
+async function fetchAllProxies() {
+  const allProxies = [];
+  const pageSize = 10000; // Supabase max is 10000 with .range()
+  let offset = 0;
+  
+  while (true) {
+    const { data, error } = await supabase
+      .from('known_proxies')
+      .select('address, casino_name')
+      .range(offset, offset + pageSize - 1);
+    
+    if (error) {
+      console.error('Error fetching proxies:', error);
+      break;
+    }
+    
+    if (!data || data.length === 0) {
+      break;
+    }
+    
+    allProxies.push(...data);
+    
+    // If we got less than pageSize, we've reached the end
+    if (data.length < pageSize) {
+      break;
+    }
+    
+    offset += pageSize;
+  }
+  
+  return allProxies;
+}
+
 async function findGamblingTransactions(personalWallet, chain) {
   if (chain === 'SOL') {
     console.log('Solana not yet supported');
@@ -149,16 +183,10 @@ async function findGamblingTransactions(personalWallet, chain) {
   }
 
   // Get all known proxy addresses from our database
-  const { data: allProxies, error: proxyError } = await supabase
-    .from('known_proxies')
-    .select('address, casino_name');
+  // Supabase has a default limit of 1000, so we need to paginate
+  const allProxies = await fetchAllProxies();
 
-  if (proxyError) {
-    console.error('Error fetching proxies:', proxyError);
-    return { proxyAddresses: [], transactions: [] };
-  }
-
-  if (!allProxies || allProxies.length === 0) {
+  if (allProxies.length === 0) {
     console.log('No known proxies in database');
     return { proxyAddresses: [], transactions: [] };
   }
@@ -999,3 +1027,4 @@ function formatWalletResponse(cached) {
     leaderboardPlace: Math.floor(Math.random() * 10000) + 100
   };
 }
+
