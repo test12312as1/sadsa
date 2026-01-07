@@ -142,66 +142,24 @@ export async function POST(request) {
 // MAIN TRANSACTION FETCHING
 // ============================================
 
-// Fetch all proxies with pagination (Supabase default limit is 1000)
-async function fetchAllProxies() {
-  const allProxies = [];
-  const pageSize = 10000; // Supabase max is 10000 with .range()
-  let offset = 0;
-  
-  while (true) {
-    const { data, error } = await supabase
-      .from('known_proxies')
-      .select('address, casino_name')
-      .range(offset, offset + pageSize - 1);
-    
-    if (error) {
-      console.error('Error fetching proxies:', error);
-      break;
-    }
-    
-    if (!data || data.length === 0) {
-      break;
-    }
-    
-    allProxies.push(...data);
-    
-    // If we got less than pageSize, we've reached the end
-    if (data.length < pageSize) {
-      break;
-    }
-    
-    offset += pageSize;
-  }
-  
-  return allProxies;
-}
-
 async function findGamblingTransactions(personalWallet, chain) {
   if (chain === 'SOL') {
     console.log('Solana not yet supported');
     return { proxyAddresses: [], transactions: [] };
   }
 
-  // Get all known proxy addresses from our database
-  // Supabase has a default limit of 1000, so we need to paginate
-  const allProxies = await fetchAllProxies();
+  // First check if the wallet itself is a known proxy
+  const { data: selfProxy } = await supabase
+    .from('known_proxies')
+    .select('casino_name')
+    .eq('address', personalWallet)
+    .single();
 
-  if (allProxies.length === 0) {
-    console.log('No known proxies in database');
-    return { proxyAddresses: [], transactions: [] };
-  }
-
-  console.log(`Loaded ${allProxies.length} known proxies`);
-
-  // Create a map for quick lookup
-  const proxyMap = new Map(allProxies.map(p => [p.address.toLowerCase(), p.casino_name]));
-
-  // Check if the wallet itself is a known proxy
-  if (proxyMap.has(personalWallet)) {
-    console.log(`Wallet IS a known proxy for ${proxyMap.get(personalWallet)}`);
-    const transactions = await fetchIncomingDeposits(personalWallet, proxyMap.get(personalWallet));
+  if (selfProxy) {
+    console.log(`Wallet IS a known proxy for ${selfProxy.casino_name}`);
+    const transactions = await fetchIncomingDeposits(personalWallet, selfProxy.casino_name);
     return {
-      proxyAddresses: [{ address: personalWallet, casino: proxyMap.get(personalWallet) }],
+      proxyAddresses: [{ address: personalWallet, casino: selfProxy.casino_name }],
       transactions
     };
   }
@@ -214,12 +172,52 @@ async function findGamblingTransactions(personalWallet, chain) {
     return { proxyAddresses: [], transactions: [] };
   }
 
-  // Filter to transactions going to known proxies
+  // Extract all destination addresses from transfers
+  const destinationAddresses = [...new Set(
+    transfers
+      .filter(tx => tx.to)
+      .map(tx => tx.to.toLowerCase())
+  )];
+
+  console.log(`Checking ${destinationAddresses.length} unique destinations against known proxies`);
+
+  // Query database to find which destinations are known proxies
+  // Do this in batches to avoid query size limits
+  const proxyMap = new Map();
+  const batchSize = 500;
+  
+  for (let i = 0; i < destinationAddresses.length; i += batchSize) {
+    const batch = destinationAddresses.slice(i, i + batchSize);
+    
+    const { data: matchedProxies, error } = await supabase
+      .from('known_proxies')
+      .select('address, casino_name')
+      .in('address', batch);
+    
+    if (error) {
+      console.error('Error querying proxies:', error);
+      continue;
+    }
+    
+    if (matchedProxies) {
+      matchedProxies.forEach(p => {
+        proxyMap.set(p.address.toLowerCase(), p.casino_name);
+      });
+    }
+  }
+
+  console.log(`Found ${proxyMap.size} destinations that are known casino proxies`);
+
+  if (proxyMap.size === 0) {
+    return { proxyAddresses: [], transactions: [] };
+  }
+
+  // Filter transfers to only those going to known proxies
   const gamblingTxs = transfers.filter(tx => 
     tx.to && proxyMap.has(tx.to.toLowerCase())
   );
 
-  console.log(`Found ${gamblingTxs.length} transactions to known casino proxies`);
+  console.log(`Found ${gamblingTxs.length} gambling transactions`);
 
   if (gamblingTxs.length === 0) {
     return { proxyAddresses: [], transactions: [] };
@@ -1027,5 +1025,3 @@ function formatWalletResponse(cached) {
     leaderboardPlace: Math.floor(Math.random() * 10000) + 100
   };
 }
-
-
