@@ -18,19 +18,20 @@ const CACHE_DURATION = 60 * 60 * 1000;
 
 export async function POST(request) {
   try {
-    const { address, chain = 'ETH', forceRefresh = false } = await request.json();
+    const { address, chain = 'ETH', forceRefresh = false, walletType = 'personal' } = await request.json();
 
     if (!address) {
       return NextResponse.json({ error: 'Address is required' }, { status: 400 });
     }
 
     const normalizedAddress = address.toLowerCase().trim();
+    console.log(`\n=== Scanning wallet: ${normalizedAddress} (type: ${walletType}) ===`);
 
     // 1. Check cache first (unless force refresh)
     if (!forceRefresh) {
       const cached = await getCachedWallet(normalizedAddress);
       if (cached && isRecentScan(cached.last_scanned)) {
-        console.log('Returning cached result for', normalizedAddress);
+        console.log('Returning cached result');
         return NextResponse.json({
           ...formatWalletResponse(cached),
           cached: true
@@ -38,53 +39,77 @@ export async function POST(request) {
       }
     }
 
-    // 2. Check if we have stored wallet_links (A → B mappings)
-    let proxyAddresses = await getStoredProxyLinks(normalizedAddress);
-    
-    // 3. If no stored links, fetch from Alchemy and store them
-    if (proxyAddresses.length === 0) {
-      console.log('No cached links, fetching from Alchemy...');
-      proxyAddresses = await fetchAndStoreProxyLinks(normalizedAddress, chain);
+    let transactions = [];
+
+    // 2. Different handling based on wallet type
+    if (walletType === 'proxy') {
+      // User entered their casino deposit address directly
+      // Check if it's in known_proxies and get its casino
+      const { data: proxyData } = await supabase
+        .from('known_proxies')
+        .select('casino_name')
+        .eq('address', normalizedAddress)
+        .single();
+
+      if (proxyData) {
+        console.log(`Wallet is a known proxy for ${proxyData.casino_name}`);
+        // Fetch incoming transactions TO this proxy (deposits from personal wallets)
+        transactions = await fetchIncomingDeposits(normalizedAddress, proxyData.casino_name);
+      } else {
+        console.log('Proxy address not found in known_proxies');
+        return NextResponse.json({
+          address: normalizedAddress,
+          chain,
+          riskScore: 0,
+          status: 'NO_DATA',
+          gamblerType: 'Unknown Proxy',
+          message: 'This address is not recognized as a casino deposit address',
+          totalDeposits: 0,
+          totalVolumeUSD: 0
+        });
+      }
     } else {
-      console.log('Found', proxyAddresses.length, 'cached proxy links');
+      // Personal wallet - find gambling transactions
+      const result = await findGamblingTransactions(normalizedAddress, chain);
+      transactions = result.transactions;
+      
+      if (result.proxyAddresses.length === 0) {
+        console.log('No gambling activity detected');
+        return NextResponse.json({
+          address: normalizedAddress,
+          chain,
+          riskScore: 0,
+          status: 'NO_DATA',
+          gamblerType: 'No Gambling Detected',
+          message: 'No gambling transactions found for this wallet',
+          totalDeposits: 0,
+          totalVolumeUSD: 0
+        });
+      }
     }
 
-    if (proxyAddresses.length === 0) {
+    if (transactions.length === 0) {
+      console.log('No transactions found');
       return NextResponse.json({
         address: normalizedAddress,
         chain,
         riskScore: 0,
         status: 'NO_DATA',
         gamblerType: 'No Gambling Detected',
-        message: 'No gambling transactions found for this wallet',
+        message: 'No deposit transactions found',
         totalDeposits: 0,
         totalVolumeUSD: 0
       });
     }
 
-    // 4. Get all deposit transactions for these proxies (from our indexed data)
-    const transactions = await getProxyDeposits(proxyAddresses, normalizedAddress);
+    console.log(`Processing ${transactions.length} gambling transactions`);
 
-    if (transactions.length === 0) {
-      return NextResponse.json({
-        address: normalizedAddress,
-        chain,
-        riskScore: 0,
-        status: 'NO_DATA',
-        gamblerType: 'No Gambling Detected',
-        message: 'Proxy addresses found but no casino deposits recorded yet',
-        totalDeposits: 0,
-        totalVolumeUSD: 0,
-        proxiesFound: proxyAddresses.length
-      });
-    }
-
-    // 5. Calculate behavioral metrics
+    // 3. Calculate behavioral metrics
     const metrics = calculateBehavioralMetrics(transactions);
     const riskScore = calculateRiskScore(metrics);
     const { status, gamblerType } = getStatusAndType(riskScore);
 
-    // 6. Build full report
+    // 4. Build full report
     const report = {
       address: normalizedAddress,
       chain,
@@ -94,8 +119,10 @@ export async function POST(request) {
       ...metrics
     };
 
-    // 7. Cache the result
+    // 5. Cache the result
     await cacheWalletReport(normalizedAddress, chain, report);
+
+    console.log(`Scan complete: Risk ${riskScore}, ${transactions.length} txs, $${metrics.totalVolumeUSD}`);
 
     return NextResponse.json({
       ...report,
@@ -112,100 +139,216 @@ export async function POST(request) {
 }
 
 // ============================================
-// WALLET LINKS (A → B MAPPING)
+// MAIN TRANSACTION FETCHING
 // ============================================
 
-async function getStoredProxyLinks(personalWallet) {
-  const { data, error } = await supabase
-    .from('wallet_links')
-    .select('proxy_address, casino_name')
-    .eq('personal_wallet', personalWallet);
-
-  if (error || !data) return [];
-  return data.map(d => ({ address: d.proxy_address, casino: d.casino_name }));
-}
-
-async function fetchAndStoreProxyLinks(personalWallet, chain) {
+async function findGamblingTransactions(personalWallet, chain) {
   if (chain === 'SOL') {
-    // TODO: Implement Solana
-    return [];
+    console.log('Solana not yet supported');
+    return { proxyAddresses: [], transactions: [] };
   }
 
   // Get all known proxy addresses from our database
-  const { data: allProxies } = await supabase
+  const { data: allProxies, error: proxyError } = await supabase
     .from('known_proxies')
     .select('address, casino_name');
 
+  if (proxyError) {
+    console.error('Error fetching proxies:', proxyError);
+    return { proxyAddresses: [], transactions: [] };
+  }
+
   if (!allProxies || allProxies.length === 0) {
     console.log('No known proxies in database');
-    return [];
+    return { proxyAddresses: [], transactions: [] };
   }
+
+  console.log(`Loaded ${allProxies.length} known proxies`);
 
   // Create a map for quick lookup
   const proxyMap = new Map(allProxies.map(p => [p.address.toLowerCase(), p.casino_name]));
-  const proxyAddresses = allProxies.map(p => p.address.toLowerCase());
+
+  // Check if the wallet itself is a known proxy
+  if (proxyMap.has(personalWallet)) {
+    console.log(`Wallet IS a known proxy for ${proxyMap.get(personalWallet)}`);
+    const transactions = await fetchIncomingDeposits(personalWallet, proxyMap.get(personalWallet));
+    return {
+      proxyAddresses: [{ address: personalWallet, casino: proxyMap.get(personalWallet) }],
+      transactions
+    };
+  }
 
   // Fetch outgoing transactions from the personal wallet
-  // We'll check if any went to known proxies
   const transfers = await fetchOutgoingTransfers(personalWallet);
-  
-  // Filter to only transactions going to known proxies
+  console.log(`Fetched ${transfers.length} outgoing transfers`);
+
+  if (transfers.length === 0) {
+    return { proxyAddresses: [], transactions: [] };
+  }
+
+  // Filter to transactions going to known proxies
   const gamblingTxs = transfers.filter(tx => 
     tx.to && proxyMap.has(tx.to.toLowerCase())
   );
 
-  // Extract unique proxy addresses this wallet has used
-  const usedProxies = new Map();
-  gamblingTxs.forEach(tx => {
-    const proxyAddr = tx.to.toLowerCase();
+  console.log(`Found ${gamblingTxs.length} transactions to known casino proxies`);
+
+  if (gamblingTxs.length === 0) {
+    return { proxyAddresses: [], transactions: [] };
+  }
+
+  // Convert to our transaction format
+  const transactions = gamblingTxs.map(tx => {
     const asset = tx.asset || 'ETH';
     const rawValue = parseFloat(tx.value) || 0;
-    
-    // Convert to ETH equivalent for consistent tracking
-    const { valueETH } = convertToUSD(asset, rawValue);
-    
-    if (!usedProxies.has(proxyAddr)) {
-      usedProxies.set(proxyAddr, {
-        address: proxyAddr,
-        casino: proxyMap.get(proxyAddr),
-        firstSeen: tx.metadata?.blockTimestamp,
-        txCount: 1,
-        totalValue: valueETH
-      });
-    } else {
-      const existing = usedProxies.get(proxyAddr);
-      existing.txCount++;
-      existing.totalValue += valueETH;
+    const { valueETH, valueUSD } = convertToUSD(asset, rawValue);
+
+    return {
+      hash: tx.hash,
+      from: personalWallet,
+      to: tx.to.toLowerCase(),
+      casino: proxyMap.get(tx.to.toLowerCase()),
+      value: valueETH,
+      valueUSD: valueUSD,
+      asset: asset,
+      timestamp: new Date(tx.metadata?.blockTimestamp || Date.now()),
+      blockNumber: parseInt(tx.blockNum, 16)
+    };
+  });
+
+  // Extract unique proxy addresses
+  const usedProxies = new Map();
+  transactions.forEach(tx => {
+    if (!usedProxies.has(tx.to)) {
+      usedProxies.set(tx.to, { address: tx.to, casino: tx.casino });
     }
   });
 
-  // Store the wallet links for future fast lookups
-  if (usedProxies.size > 0) {
-    const links = Array.from(usedProxies.values()).map(proxy => ({
-      personal_wallet: personalWallet,
-      proxy_address: proxy.address,
-      casino_name: proxy.casino,
-      first_seen: proxy.firstSeen || new Date().toISOString(),
-      tx_count: proxy.txCount,
-      total_value_eth: proxy.totalValue
-    }));
+  // Store for future lookups (async, don't wait)
+  storeWalletLinks(personalWallet, transactions, proxyMap);
+  storeTransactions(transactions, personalWallet);
 
+  return {
+    proxyAddresses: Array.from(usedProxies.values()),
+    transactions
+  };
+}
+
+async function fetchIncomingDeposits(proxyAddress, casinoName) {
+  // Fetch incoming transactions TO this proxy address
+  const transfers = [];
+  let pageKey = undefined;
+
+  while (true) {
+    try {
+      const response = await fetch(ALCHEMY_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: 1,
+          method: 'alchemy_getAssetTransfers',
+          params: [{
+            toAddress: proxyAddress,
+            category: ['external', 'erc20'],
+            maxCount: '0x3E8',
+            excludeZeroValue: true,
+            withMetadata: true,
+            pageKey
+          }]
+        })
+      });
+
+      const data = await response.json();
+      if (data.error) {
+        console.error('Alchemy error:', data.error);
+        break;
+      }
+
+      const txs = data.result?.transfers || [];
+      transfers.push(...txs);
+      pageKey = data.result?.pageKey;
+
+      if (!pageKey || transfers.length > 5000) break;
+    } catch (e) {
+      console.error('Fetch error:', e);
+      break;
+    }
+  }
+
+  console.log(`Fetched ${transfers.length} incoming deposits to proxy`);
+
+  // Convert to our format
+  return transfers.map(tx => {
+    const asset = tx.asset || 'ETH';
+    const rawValue = parseFloat(tx.value) || 0;
+    const { valueETH, valueUSD } = convertToUSD(asset, rawValue);
+
+    return {
+      hash: tx.hash,
+      from: tx.from.toLowerCase(),
+      to: proxyAddress,
+      casino: casinoName,
+      value: valueETH,
+      valueUSD: valueUSD,
+      asset: asset,
+      timestamp: new Date(tx.metadata?.blockTimestamp || Date.now()),
+      blockNumber: parseInt(tx.blockNum, 16)
+    };
+  });
+}
+
+async function storeWalletLinks(personalWallet, transactions, proxyMap) {
+  const linksMap = new Map();
+  
+  transactions.forEach(tx => {
+    const proxyAddr = tx.to;
+    if (!linksMap.has(proxyAddr)) {
+      linksMap.set(proxyAddr, {
+        personal_wallet: personalWallet,
+        proxy_address: proxyAddr,
+        casino_name: tx.casino,
+        first_seen: tx.timestamp.toISOString(),
+        tx_count: 1,
+        total_value_eth: tx.value
+      });
+    } else {
+      const existing = linksMap.get(proxyAddr);
+      existing.tx_count++;
+      existing.total_value_eth += tx.value;
+    }
+  });
+
+  const links = Array.from(linksMap.values());
+  if (links.length > 0) {
     const { error } = await supabase
       .from('wallet_links')
       .upsert(links, { onConflict: 'personal_wallet,proxy_address' });
-
-    if (error) {
-      console.error('Error storing wallet links:', error);
-    }
-
-    // Also store the individual transactions
-    await storeUserTransactions(gamblingTxs, personalWallet, proxyMap);
+    if (error) console.error('Error storing wallet links:', error);
   }
+}
 
-  return Array.from(usedProxies.values()).map(p => ({ 
-    address: p.address, 
-    casino: p.casino 
+async function storeTransactions(transactions, personalWallet) {
+  if (transactions.length === 0) return;
+
+  const records = transactions.map(tx => ({
+    tx_hash: tx.hash,
+    from_address: personalWallet,
+    to_address: tx.to,
+    casino_name: tx.casino,
+    value_eth: tx.value,
+    value_usd: tx.valueUSD,
+    asset: tx.asset,
+    chain: 'ETH',
+    block_number: tx.blockNumber,
+    block_timestamp: tx.timestamp.toISOString()
   }));
+
+  const { error } = await supabase
+    .from('transactions')
+    .upsert(records, { onConflict: 'tx_hash', ignoreDuplicates: true });
+
+  if (error) console.error('Error storing transactions:', error);
 }
 
 async function fetchOutgoingTransfers(address) {
@@ -215,25 +358,24 @@ async function fetchOutgoingTransfers(address) {
   while (true) {
     try {
       const response = await fetch(ALCHEMY_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           jsonrpc: '2.0',
           id: 1,
           method: 'alchemy_getAssetTransfers',
-        params: [{
+          params: [{
             fromAddress: address,
-          category: ['external', 'erc20'],
-            maxCount: '0x3E8', // 1000
+            category: ['external', 'erc20'],
+            maxCount: '0x3E8',
             excludeZeroValue: true,
             withMetadata: true,
             pageKey
-        }]
-      })
-    });
-    
+          }]
+        })
+      });
+
       const data = await response.json();
-      
       if (data.error) {
         console.error('Alchemy error:', data.error);
         break;
@@ -241,9 +383,9 @@ async function fetchOutgoingTransfers(address) {
 
       const txs = data.result?.transfers || [];
       transfers.push(...txs);
-
       pageKey = data.result?.pageKey;
-      if (!pageKey || transfers.length > 10000) break; // Safety limit
+
+      if (!pageKey || transfers.length > 10000) break;
     } catch (e) {
       console.error('Fetch error:', e);
       break;
@@ -251,39 +393,6 @@ async function fetchOutgoingTransfers(address) {
   }
 
   return transfers;
-}
-
-async function storeUserTransactions(transfers, personalWallet, proxyMap) {
-  if (transfers.length === 0) return;
-
-  const records = transfers.map(tx => {
-    const asset = tx.asset || 'ETH';
-    const rawValue = parseFloat(tx.value) || 0;
-    
-    // Calculate USD value based on asset type
-    const { valueETH, valueUSD } = convertToUSD(asset, rawValue);
-
-    return {
-      tx_hash: tx.hash,
-      from_address: personalWallet,
-      to_address: tx.to?.toLowerCase(),
-      casino_name: proxyMap.get(tx.to?.toLowerCase()),
-      value_eth: valueETH,
-      value_usd: valueUSD,
-      asset: asset,
-      chain: 'ETH',
-      block_number: parseInt(tx.blockNum, 16),
-      block_timestamp: tx.metadata?.blockTimestamp || new Date().toISOString()
-    };
-  });
-
-  const { error } = await supabase
-    .from('transactions')
-    .upsert(records, { onConflict: 'tx_hash', ignoreDuplicates: true });
-
-  if (error) {
-    console.error('Transaction storage error:', error);
-  }
 }
 
 // Convert different tokens to USD value
@@ -336,43 +445,6 @@ function convertToUSD(asset, rawValue) {
     valueETH: 0,
     valueUSD: 0
   };
-}
-
-// ============================================
-// GET DEPOSIT DATA FROM DB
-// ============================================
-
-async function getProxyDeposits(proxyLinks, personalWallet) {
-  // First try to get from our transactions table (user's txs to proxies)
-  const proxyAddresses = proxyLinks.map(p => p.address);
-  
-  const { data: userTxs, error } = await supabase
-    .from('transactions')
-    .select('*')
-    .eq('from_address', personalWallet)
-    .in('to_address', proxyAddresses)
-    .order('block_timestamp', { ascending: true });
-
-    if (error) {
-    console.error('Error fetching transactions:', error);
-    return [];
-  }
-
-  if (userTxs && userTxs.length > 0) {
-    return userTxs.map(tx => ({
-      hash: tx.tx_hash,
-      from: tx.from_address,
-      to: tx.to_address,
-      casino: tx.casino_name,
-      value: tx.value_eth,
-      valueUSD: tx.value_usd,
-      asset: tx.asset,
-      timestamp: new Date(tx.block_timestamp),
-      blockNumber: tx.block_number
-    }));
-  }
-
-  return [];
 }
 
 // ============================================
