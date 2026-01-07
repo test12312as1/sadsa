@@ -9,8 +9,13 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_KEY
 );
 
+const ALCHEMY_KEY = process.env.ALCHEMY_KEY;
+const ALCHEMY_URL = `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`;
+
 // Verify this is called from Vercel Cron (or allow manual trigger with secret)
 const CRON_SECRET = process.env.CRON_SECRET;
+
+import { CASINO_HOT_WALLETS } from '../utils/casino-hot-wallets';
 
 export async function GET(request) {
   try {
@@ -25,7 +30,7 @@ export async function GET(request) {
       }
     }
 
-    console.log('Starting platform snapshots aggregation...');
+    console.log('Starting platform snapshots aggregation from casino hot wallets...');
     const result = await aggregatePlatformSnapshots();
     
     return NextResponse.json({
@@ -58,21 +63,36 @@ async function aggregatePlatformSnapshots() {
   const endOfDay = new Date(today);
   endOfDay.setHours(23, 59, 59, 999);
 
-  console.log(`Aggregating snapshots for ${snapshotDate}`);
+  console.log(`Aggregating snapshots for ${snapshotDate} from casino hot wallets`);
 
-  // Fetch all transactions for today
-  const { data: transactions, error: txError } = await supabase
-    .from('transactions')
-    .select('casino_name, value_usd, from_address, block_timestamp')
-    .gte('block_timestamp', startOfDay.toISOString())
-    .lte('block_timestamp', endOfDay.toISOString());
+  // Fetch deposits to each casino hot wallet for today
+  const casinoMap = {};
+  const allDepositors = new Set(); // Track all unique depositors across all casinos
 
-  if (txError) {
-    throw new Error(`Failed to fetch transactions: ${txError.message}`);
+  for (const [hotWallet, casinoName] of Object.entries(CASINO_HOT_WALLETS)) {
+    console.log(`Fetching deposits for ${casinoName} (${hotWallet})...`);
+    
+    const deposits = await fetchDepositsToHotWallet(hotWallet, startOfDay, endOfDay);
+    
+    if (!casinoMap[casinoName]) {
+      casinoMap[casinoName] = {
+        name: casinoName,
+        deposits: [],
+        depositors: new Set(),
+        totalVolume: 0
+      };
+    }
+
+    deposits.forEach(deposit => {
+      casinoMap[casinoName].deposits.push(deposit);
+      casinoMap[casinoName].depositors.add(deposit.from_address);
+      casinoMap[casinoName].totalVolume += deposit.value_usd || 0;
+      allDepositors.add(deposit.from_address);
+    });
   }
 
-  if (!transactions || transactions.length === 0) {
-    console.log('No transactions found for today');
+  if (Object.keys(casinoMap).length === 0) {
+    console.log('No deposits found for today');
     return {
       date: snapshotDate,
       casinosProcessed: 0,
@@ -80,42 +100,22 @@ async function aggregatePlatformSnapshots() {
     };
   }
 
-  // Group by casino
-  const casinoMap = {};
-  transactions.forEach(tx => {
-    if (!tx.casino_name) return;
-    
-    const casino = tx.casino_name;
-    if (!casinoMap[casino]) {
-      casinoMap[casino] = {
-        name: casino,
-        transactions: [],
-        depositors: new Set(),
-        totalVolume: 0
-      };
-    }
-    
-    casinoMap[casino].transactions.push(tx);
-    casinoMap[casino].depositors.add(tx.from_address);
-    casinoMap[casino].totalVolume += tx.value_usd || 0;
-  });
-
   // Get all previous depositors for each casino (to calculate new depositors)
-  const allCasinos = Object.keys(casinoMap);
   const previousDepositorsMap = {};
   
-  for (const casino of allCasinos) {
-    // Get all unique depositors before today
+  for (const casinoName of Object.keys(casinoMap)) {
+    // Get all unique depositors before today from transactions table
+    // (or we could query hot wallets historically, but transactions table is faster)
     const { data: prevTxs } = await supabase
       .from('transactions')
       .select('from_address')
-      .eq('casino_name', casino)
+      .eq('casino_name', casinoName)
       .lt('block_timestamp', startOfDay.toISOString());
     
     if (prevTxs) {
-      previousDepositorsMap[casino] = new Set(prevTxs.map(tx => tx.from_address));
+      previousDepositorsMap[casinoName] = new Set(prevTxs.map(tx => tx.from_address));
     } else {
-      previousDepositorsMap[casino] = new Set();
+      previousDepositorsMap[casinoName] = new Set();
     }
   }
 
@@ -126,7 +126,7 @@ async function aggregatePlatformSnapshots() {
   const snapshots = [];
   for (const casino of Object.values(casinoMap)) {
     const uniqueDepositors = casino.depositors.size;
-    const totalDeposits = casino.transactions.length;
+    const totalDeposits = casino.deposits.length;
     const totalVolume = casino.totalVolume;
     
     // Calculate new depositors (addresses that haven't deposited to this casino before)
@@ -167,7 +167,7 @@ async function aggregatePlatformSnapshots() {
 
   return {
     date: snapshotDate,
-    casinosProcessed: allCasinos.length,
+    casinosProcessed: Object.keys(casinoMap).length,
     totalSnapshots: snapshots.length,
     snapshots: snapshots.map(s => ({
       casino: s.casino_name,
@@ -177,4 +177,108 @@ async function aggregatePlatformSnapshots() {
       volume: s.total_volume
     }))
   };
+}
+
+async function fetchDepositsToHotWallet(hotWallet, startDate, endDate) {
+  const deposits = [];
+  let pageKey = undefined;
+  let page = 0;
+
+  // Convert dates to Unix timestamps (Alchemy uses hex timestamps)
+  const startTimestamp = `0x${Math.floor(startDate.getTime() / 1000).toString(16)}`;
+  const endTimestamp = `0x${Math.floor(endDate.getTime() / 1000).toString(16)}`;
+
+  while (true) {
+    try {
+      const response = await fetch(ALCHEMY_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: 1,
+          method: 'alchemy_getAssetTransfers',
+          params: [{
+            toAddress: hotWallet,
+            category: ['external', 'erc20'],
+            maxCount: '0x3E8', // 1000 per page
+            excludeZeroValue: true,
+            fromBlock: '0x0', // Start from beginning, filter by timestamp
+            toBlock: 'latest',
+            pageKey: pageKey
+          }]
+        })
+      });
+
+      const data = await response.json();
+      
+      if (data.error) {
+        console.error(`❌ Alchemy error for ${hotWallet}:`, data.error);
+        break;
+      }
+
+      const transfers = data.result?.transfers || [];
+      pageKey = data.result?.pageKey;
+
+      if (transfers.length === 0) {
+        break;
+      }
+
+      // Filter transfers by date and process
+      transfers.forEach(transfer => {
+        const txDate = new Date(transfer.metadata.blockTimestamp);
+        
+        // Only include transfers within our date range
+        if (txDate >= startDate && txDate <= endDate) {
+          // Convert value to USD (simplified - should use price API)
+          let valueUSD = 0;
+          if (transfer.asset === 'ETH' || transfer.category === 'external') {
+            // ETH transfer
+            const ethValue = parseFloat(transfer.value || 0) / 1e18;
+            valueUSD = ethValue * 3300; // TODO: Use real price API
+          } else if (transfer.category === 'erc20') {
+            // ERC20 token transfer
+            const tokenValue = parseFloat(transfer.value || 0);
+            const decimals = transfer.rawContract?.decimals ? parseInt(transfer.rawContract.decimals, 16) : 18;
+            const adjustedValue = tokenValue / Math.pow(10, decimals);
+            
+            // Check if it's a stablecoin
+            const tokenSymbol = transfer.asset?.toUpperCase() || '';
+            if (tokenSymbol === 'USDT' || tokenSymbol === 'USDC' || tokenSymbol === 'DAI') {
+              valueUSD = adjustedValue; // 1:1 for stablecoins
+            } else {
+              // For other tokens, use ETH price as placeholder (TODO: use real price API)
+              valueUSD = adjustedValue * 3300;
+            }
+          }
+
+          deposits.push({
+            from_address: transfer.from.toLowerCase(),
+            value_usd: valueUSD,
+            block_timestamp: txDate.toISOString(),
+            tx_hash: transfer.hash,
+            asset: transfer.asset || 'ETH'
+          });
+        }
+      });
+
+      // Rate limit protection
+      await new Promise(r => setTimeout(r, 200));
+
+      if (!pageKey) {
+        break;
+      }
+
+      page++;
+      if (page % 10 === 0) {
+        console.log(`   Processed ${page} pages for ${hotWallet}...`);
+      }
+    } catch (e) {
+      console.error(`   ❌ Network error for ${hotWallet}:`, e.message);
+      console.log(`   Retrying in 2 seconds...`);
+      await new Promise(r => setTimeout(r, 2000));
+    }
+  }
+
+  console.log(`   Found ${deposits.length} deposits for ${hotWallet}`);
+  return deposits;
 }
