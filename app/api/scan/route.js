@@ -158,18 +158,24 @@ async function fetchAndStoreProxyLinks(personalWallet, chain) {
   const usedProxies = new Map();
   gamblingTxs.forEach(tx => {
     const proxyAddr = tx.to.toLowerCase();
+    const asset = tx.asset || 'ETH';
+    const rawValue = parseFloat(tx.value) || 0;
+    
+    // Convert to ETH equivalent for consistent tracking
+    const { valueETH } = convertToUSD(asset, rawValue);
+    
     if (!usedProxies.has(proxyAddr)) {
       usedProxies.set(proxyAddr, {
         address: proxyAddr,
         casino: proxyMap.get(proxyAddr),
         firstSeen: tx.metadata?.blockTimestamp,
         txCount: 1,
-        totalValue: parseFloat(tx.value) || 0
+        totalValue: valueETH
       });
     } else {
       const existing = usedProxies.get(proxyAddr);
       existing.txCount++;
-      existing.totalValue += parseFloat(tx.value) || 0;
+      existing.totalValue += valueETH;
     }
   });
 
@@ -250,18 +256,26 @@ async function fetchOutgoingTransfers(address) {
 async function storeUserTransactions(transfers, personalWallet, proxyMap) {
   if (transfers.length === 0) return;
 
-  const records = transfers.map(tx => ({
-    tx_hash: tx.hash,
-    from_address: personalWallet,
-    to_address: tx.to?.toLowerCase(),
-    casino_name: proxyMap.get(tx.to?.toLowerCase()),
-    value_eth: parseFloat(tx.value) || 0,
-    value_usd: (parseFloat(tx.value) || 0) * 3300, // TODO: Use real price
-    asset: tx.asset || 'ETH',
-    chain: 'ETH',
-    block_number: parseInt(tx.blockNum, 16),
-    block_timestamp: tx.metadata?.blockTimestamp || new Date().toISOString()
-  }));
+  const records = transfers.map(tx => {
+    const asset = tx.asset || 'ETH';
+    const rawValue = parseFloat(tx.value) || 0;
+    
+    // Calculate USD value based on asset type
+    const { valueETH, valueUSD } = convertToUSD(asset, rawValue);
+
+    return {
+      tx_hash: tx.hash,
+      from_address: personalWallet,
+      to_address: tx.to?.toLowerCase(),
+      casino_name: proxyMap.get(tx.to?.toLowerCase()),
+      value_eth: valueETH,
+      value_usd: valueUSD,
+      asset: asset,
+      chain: 'ETH',
+      block_number: parseInt(tx.blockNum, 16),
+      block_timestamp: tx.metadata?.blockTimestamp || new Date().toISOString()
+    };
+  });
 
   const { error } = await supabase
     .from('transactions')
@@ -270,6 +284,58 @@ async function storeUserTransactions(transfers, personalWallet, proxyMap) {
   if (error) {
     console.error('Transaction storage error:', error);
   }
+}
+
+// Convert different tokens to USD value
+function convertToUSD(asset, rawValue) {
+  const assetUpper = asset?.toUpperCase() || 'ETH';
+  
+  // Stablecoins - 1:1 with USD
+  const stablecoins = ['USDT', 'USDC', 'DAI', 'BUSD', 'TUSD', 'USDP', 'GUSD', 'FRAX'];
+  if (stablecoins.includes(assetUpper)) {
+    return {
+      valueETH: rawValue / 3300, // Convert to ETH equivalent for consistency
+      valueUSD: rawValue
+    };
+  }
+  
+  // ETH and WETH
+  if (assetUpper === 'ETH' || assetUpper === 'WETH') {
+    return {
+      valueETH: rawValue,
+      valueUSD: rawValue * 3300
+    };
+  }
+  
+  // Other tokens - try to estimate (conservative approach)
+  // For unknown tokens, we'll use a very low estimate to avoid inflation
+  // In production, you'd want to use a price API
+  const knownTokenPrices = {
+    'WBTC': 95000,
+    'LINK': 15,
+    'UNI': 8,
+    'AAVE': 200,
+    'MKR': 1500,
+    'SHIB': 0.00001,
+    'PEPE': 0.00001,
+    'APE': 1.5,
+  };
+  
+  if (knownTokenPrices[assetUpper]) {
+    const usdValue = rawValue * knownTokenPrices[assetUpper];
+    return {
+      valueETH: usdValue / 3300,
+      valueUSD: usdValue
+    };
+  }
+  
+  // Unknown token - assume $0 to avoid inflating totals
+  // Better to undercount than overcount
+  console.log(`Unknown token: ${asset}, value: ${rawValue} - skipping USD conversion`);
+  return {
+    valueETH: 0,
+    valueUSD: 0
+  };
 }
 
 // ============================================
