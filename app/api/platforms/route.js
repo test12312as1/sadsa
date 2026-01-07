@@ -111,6 +111,7 @@ async function getCasinoStats() {
       volume: Math.round(c.volume),
       marketShare: totalVolume > 0 ? parseFloat(((c.volume / totalVolume) * 100).toFixed(1)) : 0,
       deposits: c.deposits,
+      uniqueDepositors: c.depositors.size,
       color: getCasinoColor(c.name)
     }))
     .sort((a, b) => b.volume - a.volume)
@@ -190,23 +191,37 @@ async function getTrendData(timeRange) {
   // Calculate weeks to fetch
   const weeks = timeRange === '4w' ? 4 : timeRange === '12w' ? 12 : timeRange === '24w' ? 24 : 52;
   
+  // Calculate start date
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - (weeks * 7));
+  
   // Try to get from snapshots first
   const { data: snapshots } = await supabase
     .from('platform_snapshots')
     .select('*')
-    .eq('snapshot_type', 'weekly')
-    .order('snapshot_date', { ascending: true })
-    .limit(weeks);
+    .gte('snapshot_date', startDate.toISOString().split('T')[0])
+    .order('snapshot_date', { ascending: true });
 
   if (snapshots && snapshots.length > 0) {
-    // Group by week
+    // Group by date (daily snapshots, aggregate to weekly if needed)
     const weeklyData = {};
     snapshots.forEach(s => {
-      const weekKey = s.snapshot_date;
+      // Group by week (get week start date)
+      const date = new Date(s.snapshot_date);
+      const weekStart = new Date(date);
+      weekStart.setDate(date.getDate() - date.getDay()); // Sunday of that week
+      const weekKey = weekStart.toISOString().split('T')[0];
+      
       if (!weeklyData[weekKey]) {
-        weeklyData[weekKey] = { week: formatWeekLabel(s.snapshot_date) };
+        weeklyData[weekKey] = { week: formatWeekLabel(weekStart.toISOString().split('T')[0]) };
       }
-      weeklyData[weekKey][s.casino_name.toLowerCase()] = s.deposit_volume_usd / 1000000; // Convert to millions
+      
+      // Use casino name as key (lowercase for consistency)
+      const casinoKey = s.casino_name.toLowerCase();
+      if (!weeklyData[weekKey][casinoKey]) {
+        weeklyData[weekKey][casinoKey] = 0;
+      }
+      weeklyData[weekKey][casinoKey] += (s.total_volume || 0) / 1000000; // Convert to millions
     });
 
     return Object.values(weeklyData);
@@ -300,4 +315,3 @@ function getDefaultTrends() {
     { week: 'Jan 5', stake: 441, duel: 65, shuffle: 40, roobet: 93, gamdom: 37 }
   ];
 }
-
