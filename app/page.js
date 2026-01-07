@@ -812,28 +812,36 @@ export default function GamStart() {
             </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {platformData.casinos.map((casino) => (
-                    <button
-                      key={casino.name}
-                      onClick={() => {
-                        if (selectedCasinos.includes(casino.name)) {
-                          setSelectedCasinos(selectedCasinos.filter(c => c !== casino.name));
-                        } else {
-                          setSelectedCasinos([...selectedCasinos, casino.name]);
-                        }
-                      }}
-                      className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-2 ${
-                        selectedCasinos.includes(casino.name)
-                          ? 'bg-purple-500/20 text-purple-300 border border-purple-500/50'
-                          : 'bg-[#1a1a2e] text-gray-500 hover:text-gray-300 border border-transparent'
-                      }`}
-                    >
-                      <div 
-                        className="w-2 h-2 rounded-full" 
-                        style={{ backgroundColor: selectedCasinos.includes(casino.name) ? casino.color : '#4b5563' }} 
-                      />
-                      {casino.name}
-                    </button>
+                    {platformData.casinos.map((casino) => (
+                    <div key={casino.name} className="flex items-center gap-1">
+                      <button
+                        onClick={() => {
+                          if (selectedCasinos.includes(casino.name)) {
+                            setSelectedCasinos(selectedCasinos.filter(c => c !== casino.name));
+                          } else {
+                            setSelectedCasinos([...selectedCasinos, casino.name]);
+                          }
+                        }}
+                        className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-2 ${
+                          selectedCasinos.includes(casino.name)
+                            ? 'bg-purple-500/20 text-purple-300 border border-purple-500/50'
+                            : 'bg-[#1a1a2e] text-gray-500 hover:text-gray-300 border border-transparent'
+                        }`}
+                      >
+                        <div 
+                          className="w-2 h-2 rounded-full" 
+                          style={{ backgroundColor: selectedCasinos.includes(casino.name) ? casino.color : '#4b5563' }} 
+                        />
+                        {casino.name}
+                      </button>
+                      <a
+                        href={`/casino/${encodeURIComponent(casino.name)}`}
+                        className="px-2 py-1.5 text-xs text-gray-500 hover:text-purple-400 transition-colors"
+                        title="View details"
+                      >
+                        →
+                      </a>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -897,10 +905,13 @@ export default function GamStart() {
                 <div className="space-y-2">
                   {platformData.topGainers.slice(0, 4).map((casino, i) => (
                     <div key={casino.name} className="flex items-center justify-between py-1.5 border-b border-gray-800/30 last:border-0">
-                      <div className="flex items-center gap-2">
+                      <a 
+                        href={`/casino/${encodeURIComponent(casino.name)}`}
+                        className="flex items-center gap-2 hover:text-purple-400 transition-colors cursor-pointer"
+                      >
                         <span className="text-xs text-gray-600 w-4">{i + 1}</span>
-                        <span className="text-sm text-white">{casino.name}</span>
-                      </div>
+                        <span className="text-sm text-white hover:text-purple-400">{casino.name}</span>
+                      </a>
                       <div className="text-sm text-green-400 font-medium">
                         +{casino.percentChange}%
                       </div>
@@ -918,10 +929,13 @@ export default function GamStart() {
                 <div className="space-y-2">
                   {platformData.topDeclines.slice(0, 4).map((casino, i) => (
                     <div key={casino.name} className="flex items-center justify-between py-1.5 border-b border-gray-800/30 last:border-0">
-                      <div className="flex items-center gap-2">
+                      <a 
+                        href={`/casino/${encodeURIComponent(casino.name)}`}
+                        className="flex items-center gap-2 hover:text-purple-400 transition-colors cursor-pointer"
+                      >
                         <span className="text-xs text-gray-600 w-4">{i + 1}</span>
-                        <span className="text-sm text-white">{casino.name}</span>
-                      </div>
+                        <span className="text-sm text-white hover:text-purple-400">{casino.name}</span>
+                      </a>
                       <div className="text-sm text-red-400 font-medium">
                         {casino.percentChange}%
                       </div>
@@ -951,14 +965,17 @@ export default function GamStart() {
                     </tr>
                   </thead>
                   <tbody className="text-sm">
-                    {PLATFORM_DATA.casinos.map((casino, i) => (
+                    {platformData.casinos.map((casino, i) => (
                       <tr key={casino.name} className="border-t border-gray-800/30 hover:bg-[#1a1a2e]/50 transition-colors">
                         <td className="px-4 py-2.5 text-gray-500 text-xs">{i + 1}</td>
                         <td className="px-4 py-2.5">
-                          <div className="flex items-center gap-2">
+                          <a 
+                            href={`/casino/${encodeURIComponent(casino.name)}`}
+                            className="flex items-center gap-2 hover:text-purple-400 transition-colors cursor-pointer"
+                          >
                             <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: casino.color }} />
-                            <span className="text-white">{casino.name}</span>
-                        </div>
+                            <span className="text-white hover:text-purple-400">{casino.name}</span>
+                          </a>
                         </td>
                         <td className="px-4 py-2.5 text-right text-white font-medium">{formatNumber(casino.volume)}</td>
                         <td className="px-4 py-2.5 text-right">
@@ -1516,3 +1533,4 @@ export default function GamStart() {
     </div>
   );
 }
+
