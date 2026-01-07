@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, Clock, DollarSign, Activity, Share2, Wallet, Trophy, Target, Flame, Timer, ExternalLink, ChevronRight, TrendingUp, TrendingDown, BarChart3, PieChart, Users, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 
 // Twitter/X Icon
@@ -409,6 +409,36 @@ export default function GamStart() {
   const [selectedMetric, setSelectedMetric] = useState('volume');
   const [selectedTimeRange, setSelectedTimeRange] = useState('12w');
   const [selectedCasinos, setSelectedCasinos] = useState(['Stake', 'Duel', 'Roobet', 'Shuffle', 'Gamdom']);
+  const [platformData, setPlatformData] = useState(PLATFORM_DATA); // Start with default data
+  const [platformLoading, setPlatformLoading] = useState(false);
+
+  // Fetch platform data when tab changes to platforms
+  useEffect(() => {
+    if (activeTab === 'platforms') {
+      fetchPlatformData();
+    }
+  }, [activeTab, selectedTimeRange]);
+
+  const fetchPlatformData = async () => {
+    setPlatformLoading(true);
+    try {
+      const response = await fetch(`/api/platforms?range=${selectedTimeRange}&metric=${selectedMetric}`);
+      if (response.ok) {
+        const data = await response.json();
+        setPlatformData({
+          weekTotals: data.weekTotals,
+          topGainers: data.topGainers,
+          topDeclines: data.topDeclines,
+          casinos: data.casinos,
+          weeklyTrends: data.weeklyTrends
+        });
+      }
+    } catch (error) {
+      console.error('Failed to fetch platform data:', error);
+      // Keep using default data on error
+    }
+    setPlatformLoading(false);
+  };
 
   const handleScan = async () => {
     if (!address.trim()) return;
@@ -423,13 +453,93 @@ export default function GamStart() {
       return;
     }
 
-    for (let i = 0; i < LOADING_CHECKS.length; i++) {
-      await new Promise(resolve => setTimeout(resolve, 800));
-      setLoadingStep(i + 1);
-    }
+    // Start loading animation
+    const loadingInterval = setInterval(() => {
+      setLoadingStep(prev => {
+        if (prev < LOADING_CHECKS.length) return prev + 1;
+        return prev;
+      });
+    }, 800);
 
-    const walletResults = addresses.map(addr => {
-      const addrLower = addr.toLowerCase();
+    try {
+      // Check if it's a demo request
+      const isDemo = addresses.some(addr => 
+        addr.toLowerCase() === 'demo' || 
+        addr.toLowerCase().includes('demo')
+      );
+
+      if (isDemo) {
+        // Use demo data
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        clearInterval(loadingInterval);
+        setLoadingStep(LOADING_CHECKS.length);
+        
+        const demoResult = { ...DEMO_WALLETS.critical };
+        demoResult.address = '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb';
+        setResults(demoResult);
+      } else {
+        // Call real API for single wallet (first address)
+        const targetAddress = addresses[0];
+        const chain = targetAddress.startsWith('0x') ? 'ETH' : 'SOL';
+
+        const response = await fetch('/api/scan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            address: targetAddress, 
+            chain,
+            walletType // 'personal' or 'proxy'
+          })
+        });
+
+        clearInterval(loadingInterval);
+        setLoadingStep(LOADING_CHECKS.length);
+
+        if (!response.ok) {
+          throw new Error('Scan failed');
+        }
+
+        const data = await response.json();
+
+        // Handle no data case
+        if (data.status === 'NO_DATA') {
+          // Show a message or use minimal demo data
+          setResults({
+            ...data,
+            riskScore: 0,
+            status: 'NO_DATA',
+            gamblerType: 'No Gambling Detected',
+            depositVelocity: { rate: 0, safeBaseline: 2.0, unit: 'txns/hour', description: 'No gambling transactions found.' },
+            midnightFactor: { percentage: 0, transactions: 0, totalTransactions: 0, description: 'No data available.' },
+            chaseBehavior: { percentage: 0, avgResponseTime: 0, description: 'No data available.' },
+            sessionLength: { avgHours: 0, longestSession: 0, description: 'No data available.' },
+            biggestBet: { amount: 0, amountUSD: 0, description: 'No deposits found.' },
+            longestStreak: { deposits: 0, timespan: '0 min', description: 'No data available.' },
+            financialImpact: { totalETH: 0, totalUSD: 0, totalSOL: 0 },
+            favoriteCasino: { name: 'None', url: '#' },
+            primaryPattern: 'No Activity',
+            leaderboardPlace: 0,
+            analytics: {
+              totalDeposits: 0,
+              avgDepositValue: 0,
+              firstDeposit: null,
+              lastDeposit: null,
+              activeDays: 0,
+              depositsByCrypto: [],
+              depositsByCasino: [],
+              monthlyDeposits: []
+            }
+          });
+        } else {
+        setResults(data);
+        }
+      }
+    } catch (error) {
+      console.error('Scan error:', error);
+      clearInterval(loadingInterval);
+      
+      // Fallback to demo data on error
+      const addrLower = addresses[0].toLowerCase();
       let demoData;
       
       if (addrLower.includes('critical') || addrLower.includes('87')) {
@@ -442,16 +552,12 @@ export default function GamStart() {
         demoData = { ...DEMO_WALLETS.critical };
       }
 
-      demoData.address = addr;
-      demoData.chain = addr.startsWith('0x') ? 'ETH' : 'SOL';
-      return demoData;
-    });
+      demoData.address = addresses[0];
+      demoData.chain = addresses[0].startsWith('0x') ? 'ETH' : 'SOL';
+      setResults(demoData);
+    }
 
-    const finalResults = aggregateResults(walletResults);
-
-    await new Promise(resolve => setTimeout(resolve, 500));
-    setResults(finalResults);
-        setLoading(false);
+    setLoading(false);
     setLoadingStep(0);
   };
 
@@ -599,7 +705,7 @@ export default function GamStart() {
                   </div>
             <div>
                     <div className="text-xs text-gray-500 uppercase tracking-wide">Weekly Volume</div>
-                    <div className="text-xl font-bold text-white">{formatNumber(PLATFORM_DATA.weekTotals.totalVolume)}</div>
+                    <div className="text-xl font-bold text-white">{formatNumber(platformData.weekTotals.totalVolume)}</div>
             </div>
                 </div>
               </div>
@@ -610,7 +716,7 @@ export default function GamStart() {
                   </div>
                   <div>
                     <div className="text-xs text-gray-500 uppercase tracking-wide">Total Deposits</div>
-                    <div className="text-xl font-bold text-white">{PLATFORM_DATA.weekTotals.totalDeposits.toLocaleString()}</div>
+                    <div className="text-xl font-bold text-white">{platformData.weekTotals.totalDeposits.toLocaleString()}</div>
                   </div>
                 </div>
               </div>
@@ -621,7 +727,7 @@ export default function GamStart() {
                   </div>
                   <div>
                     <div className="text-xs text-gray-500 uppercase tracking-wide">New Depositors</div>
-                    <div className="text-xl font-bold text-white">{PLATFORM_DATA.weekTotals.newDepositors.toLocaleString()}</div>
+                    <div className="text-xl font-bold text-white">{platformData.weekTotals.newDepositors.toLocaleString()}</div>
                   </div>
                 </div>
               </div>
@@ -692,7 +798,7 @@ export default function GamStart() {
                       Top 5
                     </button>
                     <button
-                      onClick={() => setSelectedCasinos(PLATFORM_DATA.casinos.map(c => c.name))}
+                      onClick={() => setSelectedCasinos(platformData.casinos.map(c => c.name))}
                       className="px-2 py-1 text-[10px] bg-[#1a1a2e] text-gray-400 hover:text-white rounded transition-colors"
                     >
                       All
@@ -706,7 +812,7 @@ export default function GamStart() {
             </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {PLATFORM_DATA.casinos.map((casino) => (
+                  {platformData.casinos.map((casino) => (
                     <button
                       key={casino.name}
                       onClick={() => {
@@ -755,7 +861,7 @@ export default function GamStart() {
                 </div>
                 {/* Chart area */}
                 <div className="absolute left-14 right-0 top-0 bottom-0 flex items-end justify-between gap-0.5">
-                  {PLATFORM_DATA.weeklyTrends.map((week, i) => (
+                  {platformData.weeklyTrends.map((week, i) => (
                     <div key={i} className="flex-1 flex flex-col items-center gap-1 group">
                       <div className="w-full relative">
                         <div 
@@ -771,7 +877,7 @@ export default function GamStart() {
               
               {/* Legend */}
               <div className="flex flex-wrap gap-3 text-xs border-t border-gray-800/50 pt-3">
-                {PLATFORM_DATA.casinos.filter(c => selectedCasinos.includes(c.name)).slice(0, 5).map((casino) => (
+                {platformData.casinos.filter(c => selectedCasinos.includes(c.name)).slice(0, 5).map((casino) => (
                   <div key={casino.name} className="flex items-center gap-1.5">
                     <div className="w-2 h-2 rounded-full" style={{ backgroundColor: casino.color }} />
                     <span className="text-gray-400">{casino.name}</span>
@@ -789,7 +895,7 @@ export default function GamStart() {
                   <span className="text-sm font-medium text-white">Top Gainers</span>
                 </div>
                 <div className="space-y-2">
-                  {PLATFORM_DATA.topGainers.slice(0, 4).map((casino, i) => (
+                  {platformData.topGainers.slice(0, 4).map((casino, i) => (
                     <div key={casino.name} className="flex items-center justify-between py-1.5 border-b border-gray-800/30 last:border-0">
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-gray-600 w-4">{i + 1}</span>
@@ -810,7 +916,7 @@ export default function GamStart() {
                   <span className="text-sm font-medium text-white">Biggest Declines</span>
                 </div>
                 <div className="space-y-2">
-                  {PLATFORM_DATA.topDeclines.slice(0, 4).map((casino, i) => (
+                  {platformData.topDeclines.slice(0, 4).map((casino, i) => (
                     <div key={casino.name} className="flex items-center justify-between py-1.5 border-b border-gray-800/30 last:border-0">
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-gray-600 w-4">{i + 1}</span>
