@@ -92,8 +92,14 @@ async function aggregatePlatformSnapshots() {
     deposits.forEach(deposit => {
       casinoMap[casinoName].deposits.push(deposit);
       casinoMap[casinoName].depositors.add(deposit.from_address);
-      casinoMap[casinoName].totalVolume += deposit.value_usd || 0;
+      const depositValue = deposit.value_usd || 0;
+      casinoMap[casinoName].totalVolume += depositValue;
       allDepositors.add(deposit.from_address);
+      
+      // Debug: log first few deposits to verify values
+      if (casinoMap[casinoName].deposits.length <= 3) {
+        console.log(`   Sample deposit: ${deposit.from_address.slice(0, 10)}... value_usd: ${depositValue}, asset: ${deposit.asset}`);
+      }
     });
   }
 
@@ -134,6 +140,10 @@ async function aggregatePlatformSnapshots() {
     const uniqueDepositors = casino.depositors.size;
     const totalDeposits = casino.deposits.length;
     const totalVolume = casino.totalVolume;
+    
+    // Debug: Check volume calculation
+    const sampleDepositValues = casino.deposits.slice(0, 5).map(d => d.value_usd);
+    console.log(`   ${casino.name}: ${totalDeposits} deposits, totalVolume: ${totalVolume}, sample values: ${sampleDepositValues.join(', ')}`);
     
     // Calculate new depositors (addresses that haven't deposited to this casino before)
     const previousDepositors = previousDepositorsMap[casino.name] || new Set();
@@ -270,15 +280,21 @@ async function fetchDepositsToHotWallet(hotWallet, startDate, endDate) {
         break;
       }
 
-      // Log sample transfer dates for debugging (first page only)
+      // Log sample transfer dates and values for debugging (first page only)
       if (page === 0 && transfers.length > 0) {
         const sampleTransfer = transfers[0];
         console.log(`   Sample transfer structure:`, {
           hasMetadata: !!sampleTransfer.metadata,
           hasBlockTimestamp: !!sampleTransfer.metadata?.blockTimestamp,
           hasBlockNum: !!sampleTransfer.blockNum,
-          metadataKeys: sampleTransfer.metadata ? Object.keys(sampleTransfer.metadata) : [],
-          transferKeys: Object.keys(sampleTransfer).slice(0, 10)
+          category: sampleTransfer.category,
+          asset: sampleTransfer.asset,
+          value: sampleTransfer.value,
+          valueType: typeof sampleTransfer.value,
+          rawContract: sampleTransfer.rawContract ? {
+            decimals: sampleTransfer.rawContract.decimals,
+            decimalsType: typeof sampleTransfer.rawContract.decimals
+          } : null
         });
         
         const sampleDates = transfers.slice(0, 3).map(t => {
@@ -290,6 +306,14 @@ async function fetchDepositsToHotWallet(hotWallet, startDate, endDate) {
           return 'N/A';
         });
         console.log(`   Sample transfer dates: ${sampleDates.join(', ')}`);
+        
+        // Test value conversion on first transfer
+        if (sampleTransfer.value) {
+          const testValue = typeof sampleTransfer.value === 'string' && sampleTransfer.value.startsWith('0x')
+            ? parseInt(sampleTransfer.value, 16)
+            : parseFloat(sampleTransfer.value) || 0;
+          console.log(`   Sample value conversion: ${sampleTransfer.value} -> ${testValue} -> USD: ${testValue / 1e18 * 3300}`);
+        }
       }
 
       let foundDepositsInPage = false;
@@ -341,25 +365,64 @@ async function fetchDepositsToHotWallet(hotWallet, startDate, endDate) {
           foundDepositsInPage = true;
           allTransfersTooOld = false;
           
-          // Convert value to USD (simplified - should use price API)
+          // Convert value to USD - use same logic as scan/route.js
+          const asset = transfer.asset || (transfer.category === 'external' ? 'ETH' : 'UNKNOWN');
+          let rawValue = 0;
+          
+          // Parse value - Alchemy returns values as strings, could be hex or decimal
+          if (transfer.value) {
+            if (typeof transfer.value === 'string') {
+              if (transfer.value.startsWith('0x')) {
+                // Hex string
+                rawValue = parseInt(transfer.value, 16);
+              } else {
+                // Decimal string
+                rawValue = parseFloat(transfer.value) || 0;
+              }
+            } else {
+              // Already a number
+              rawValue = transfer.value;
+            }
+          }
+          
           let valueUSD = 0;
-          if (transfer.asset === 'ETH' || transfer.category === 'external') {
-            // ETH transfer
-            const ethValue = parseFloat(transfer.value || 0) / 1e18;
+          
+          if (transfer.category === 'external') {
+            // Native ETH transfer - value is in wei
+            const ethValue = rawValue / 1e18;
             valueUSD = ethValue * 3300; // TODO: Use real price API
           } else if (transfer.category === 'erc20') {
             // ERC20 token transfer
-            const tokenValue = parseFloat(transfer.value || 0);
-            const decimals = transfer.rawContract?.decimals ? parseInt(transfer.rawContract.decimals, 16) : 18;
-            const adjustedValue = tokenValue / Math.pow(10, decimals);
+            // Parse decimals - could be hex string or number
+            let decimals = 18; // default
+            if (transfer.rawContract?.decimals !== undefined) {
+              if (typeof transfer.rawContract.decimals === 'string') {
+                if (transfer.rawContract.decimals.startsWith('0x')) {
+                  decimals = parseInt(transfer.rawContract.decimals, 16);
+                } else {
+                  decimals = parseInt(transfer.rawContract.decimals, 10);
+                }
+              } else {
+                decimals = parseInt(transfer.rawContract.decimals);
+              }
+            }
+            
+            const adjustedValue = rawValue / Math.pow(10, decimals);
             
             // Check if it's a stablecoin
-            const tokenSymbol = transfer.asset?.toUpperCase() || '';
-            if (tokenSymbol === 'USDT' || tokenSymbol === 'USDC' || tokenSymbol === 'DAI') {
+            const tokenSymbol = asset.toUpperCase();
+            const stablecoins = ['USDT', 'USDC', 'DAI', 'BUSD', 'TUSD', 'USDP', 'GUSD', 'FRAX'];
+            if (stablecoins.includes(tokenSymbol)) {
               valueUSD = adjustedValue; // 1:1 for stablecoins
-            } else {
-              // For other tokens, use ETH price as placeholder (TODO: use real price API)
+            } else if (tokenSymbol === 'ETH' || tokenSymbol === 'WETH') {
               valueUSD = adjustedValue * 3300;
+            } else {
+              // Unknown token - set to 0 to avoid inflating totals
+              // Log first few to see what tokens we're missing
+              if (deposits.length < 5) {
+                console.log(`   Unknown token: ${tokenSymbol}, value: ${adjustedValue}, setting USD to 0`);
+              }
+              valueUSD = 0;
             }
           }
 
@@ -459,3 +522,4 @@ async function fetchDepositsToHotWallet(hotWallet, startDate, endDate) {
   console.log(`   Found ${deposits.length} deposits for ${hotWallet}`);
   return deposits;
 }
+
