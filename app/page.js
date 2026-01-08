@@ -275,16 +275,16 @@ const PLATFORM_DATA = {
     { name: 'Stake', change: -184000000, percentChange: -29.4, from: 625000000, to: 441000000 }
   ],
   casinos: [
-    { name: 'Stake', volume: 441000000, marketShare: 54.8, deposits: 666000, color: '#22c55e' },
-    { name: 'Duel', volume: 65200000, marketShare: 8.1, deposits: 89000, color: '#f97316' },
-    { name: 'Shuffle', volume: 40000000, marketShare: 5.0, deposits: 108000, color: '#ec4899' },
-    { name: 'Gamdom', volume: 36800000, marketShare: 4.6, deposits: 28500, color: '#eab308' },
-    { name: 'Rainbet', volume: 33900000, marketShare: 4.2, deposits: 157000, color: '#06b6d4' },
-    { name: 'Roobet', volume: 93400000, marketShare: 11.6, deposits: 142000, color: '#8b5cf6' },
-    { name: 'Rollbit', volume: 17000000, marketShare: 2.1, deposits: 36300, color: '#ef4444' },
-    { name: 'StakeUS', volume: 14800000, marketShare: 1.8, deposits: 62600, color: '#f472b6' },
-    { name: 'Yeet', volume: 8660000, marketShare: 1.1, deposits: 12400, color: '#fbbf24' },
-    { name: 'BC.Game', volume: 6310000, marketShare: 0.8, deposits: 24000, color: '#3b82f6' }
+    { name: 'Stake', volume: 441000000, marketShare: 54.8, deposits: 666000, color: '#16a34a' },
+    { name: 'Duel', volume: 65200000, marketShare: 8.1, deposits: 89000, color: '#c2410c' },
+    { name: 'Shuffle', volume: 40000000, marketShare: 5.0, deposits: 108000, color: '#be185d' },
+    { name: 'Gamdom', volume: 36800000, marketShare: 4.6, deposits: 28500, color: '#a16207' },
+    { name: 'Rainbet', volume: 33900000, marketShare: 4.2, deposits: 157000, color: '#0891b2' },
+    { name: 'Roobet', volume: 93400000, marketShare: 11.6, deposits: 142000, color: '#7c3aed' },
+    { name: 'Rollbit', volume: 17000000, marketShare: 2.1, deposits: 36300, color: '#dc2626' },
+    { name: 'StakeUS', volume: 14800000, marketShare: 1.8, deposits: 62600, color: '#db2777' },
+    { name: 'Yeet', volume: 8660000, marketShare: 1.1, deposits: 12400, color: '#d97706' },
+    { name: 'BC.Game', volume: 6310000, marketShare: 0.8, deposits: 24000, color: '#2563eb' }
   ],
   // Weekly trend data for chart (values in millions)
   weeklyTrends: [
@@ -652,23 +652,23 @@ export default function GamStart() {
               </button>
               
               {/* Primary Tabs - Players & Casinos */}
-              <div className="flex items-center bg-[#1a1a2e] rounded-lg p-0.5">
+              <div className="flex items-center bg-[#1a1a2e] rounded-lg p-0.5 border border-purple-500/20">
                 <button
                   onClick={() => { setActiveTab('players'); setResults(null); setAddress(''); }}
-                  className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+                  className={`px-5 py-2 rounded-md text-sm font-semibold transition-all ${
                     activeTab === 'players'
-                      ? 'bg-[#2a2a3e] text-white'
-                      : 'text-gray-400 hover:text-gray-300'
+                      ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
+                      : 'text-gray-400 hover:text-white hover:bg-[#252540]'
                   }`}
                 >
                   Players
                 </button>
                 <button
                   onClick={() => { setActiveTab('platforms'); setResults(null); }}
-                  className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+                  className={`px-5 py-2 rounded-md text-sm font-semibold transition-all ${
                     activeTab === 'platforms'
-                      ? 'bg-[#2a2a3e] text-white'
-                      : 'text-gray-400 hover:text-gray-300'
+                      ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
+                      : 'text-gray-400 hover:text-white hover:bg-[#252540]'
                   }`}
                 >
                   Casinos
@@ -693,12 +693,9 @@ export default function GamStart() {
             </div>
 
             <div className="flex items-center gap-3">
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="p-2 text-gray-400 hover:text-white transition-colors">
-                <TwitterIcon size={18} />
-              </a>
-              <a href="https://discord.com" target="_blank" rel="noopener noreferrer" className="p-2 text-gray-400 hover:text-white transition-colors">
-                <DiscordIcon size={18} />
-              </a>
+              <button className="px-4 py-1.5 text-sm font-medium text-white bg-purple-600 hover:bg-purple-500 rounded-lg transition-colors">
+                Sign In
+              </button>
             </div>
           </div>
         </div>
@@ -871,8 +868,8 @@ export default function GamStart() {
             {/* Trend Chart - Per-Casino Stacked Bars */}
             <div className="bg-[#12121c] rounded-xl p-5 border border-gray-800/50 mb-6">
               <div className="mb-4">
-                <div className="text-sm font-semibold text-white">Volume Trends</div>
-                <div className="text-xs text-gray-500">Week over week deposit volume by casino</div>
+                <div className="text-sm font-semibold text-white">Deposit Volume Trends</div>
+                <div className="text-xs text-gray-500">Historical deposit volume by selected casinos</div>
               </div>
               
               {/* Chart with stacked bars */}
@@ -920,11 +917,11 @@ export default function GamStart() {
                                 <div key={c.name} className="flex items-center gap-2 text-[10px]">
                                   <div className="w-2 h-2 rounded-full" style={{ backgroundColor: c.color }} />
                                   <span className="text-gray-400">{c.name}:</span>
-                                  <span className="text-white">${c.value}M</span>
+                                  <span className="text-white">${c.value.toFixed(1)}M</span>
                                 </div>
                               ))}
                               <div className="border-t border-gray-700 mt-1 pt-1 text-[10px] text-gray-300">
-                                Total: ${weekTotal.toFixed(0)}M
+                                Total: ${weekTotal.toFixed(1)}M
                               </div>
                             </div>
                             
@@ -991,14 +988,11 @@ export default function GamStart() {
 
             {/* Gainers and Declines - Side by side compact */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-              {/* Top Gainers */}
+              {/* Top Weekly Gainers */}
               <div className="bg-[#12121c] rounded-xl p-4 border border-gray-800/50">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="text-green-400" size={16} />
-                    <span className="text-sm font-medium text-white">Top Gainers</span>
-                  </div>
-                  <span className="text-xs text-gray-500">Week</span>
+                <div className="flex items-center gap-2 mb-3">
+                  <TrendingUp className="text-green-500/80" size={16} />
+                  <span className="text-sm font-medium text-white">Top Weekly Gainers</span>
                 </div>
                 <div className="space-y-2">
                   {platformData.topGainers.slice(0, 4).map((casino, i) => (
@@ -1018,14 +1012,11 @@ export default function GamStart() {
                 </div>
               </div>
 
-              {/* Biggest Declines */}
+              {/* Biggest Weekly Declines */}
               <div className="bg-[#12121c] rounded-xl p-4 border border-gray-800/50">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <TrendingDown className="text-red-400" size={16} />
-                    <span className="text-sm font-medium text-white">Biggest Declines</span>
-                  </div>
-                  <span className="text-xs text-gray-500">Week</span>
+                <div className="flex items-center gap-2 mb-3">
+                  <TrendingDown className="text-red-500/80" size={16} />
+                  <span className="text-sm font-medium text-white">Biggest Weekly Declines</span>
                 </div>
                 <div className="space-y-2">
                   {platformData.topDeclines.slice(0, 4).map((casino, i) => (
@@ -1119,12 +1110,12 @@ export default function GamStart() {
             {!results && !loading && (
               <div className="flex flex-col items-center justify-center min-h-[70vh] space-y-8">
                 <h1 className="text-4xl md:text-5xl font-semibold text-white">
-                  GamStart
+                  Analyze Gambling Behavior
                 </h1>
                 
                 <p className="text-gray-400 text-center max-w-lg leading-relaxed">
-                  Scan your cryptocurrency wallet to detect patterns of<br className="hidden sm:block" />
-                  compulsive gambling behavior and get your risk diagnosis.
+                  Scan any wallet and uncover detailed insights about<br className="hidden sm:block" />
+                  gambling patterns, spending habits, and risk indicators.
                 </p>
 
                 {/* Wallet Type Switch */}
@@ -1225,14 +1216,23 @@ export default function GamStart() {
               <div className="space-y-6 text-white">
                 {/* Header Row */}
                         <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-sm text-gray-400">
+                  <button 
+                    onClick={() => {
+                      const addr = results.isMultiple ? results.addresses.join(', ') : results.address;
+                      navigator.clipboard.writeText(addr);
+                      // Could add a toast notification here
+                    }}
+                    className="flex items-center gap-2 text-sm text-gray-400 hover:text-purple-400 transition-colors cursor-pointer group"
+                    title="Click to copy address"
+                  >
                     <Wallet size={14} />
                     {results.isMultiple ? (
                       <span>{results.addresses.length} wallets scanned</span>
                     ) : (
                       <span className="font-mono">{formatAddress(results.address)}</span>
                     )}
-                </div>
+                    <span className="text-[10px] text-gray-600 group-hover:text-purple-400">(click to copy)</span>
+                  </button>
                   <button
                     onClick={handleShare}
                     className="flex items-center gap-2 px-4 py-2 bg-purple-600/20 hover:bg-purple-600/30 rounded-lg border border-purple-500/30 transition-colors text-purple-300"
@@ -1256,7 +1256,7 @@ export default function GamStart() {
                         <div className="text-5xl font-bold" style={{ color: getAccentColor(results.riskScore) }}>
                           {results.riskScore}
                             </div>
-                        <div className="text-[10px] text-gray-500 uppercase tracking-wider">Risk Score</div>
+                        <div className="text-[8px] text-gray-500 uppercase tracking-wider leading-tight">Financial Ruin<br/>Risk Score</div>
                           </div>
                     </div>
                     <div className="text-center">
@@ -1295,14 +1295,16 @@ export default function GamStart() {
                     <div className="bg-[#0f0f1a] rounded-lg p-4">
                       <div className="text-[11px] text-gray-500 uppercase tracking-wide mb-1">Primary Pattern</div>
                       <div className="text-base font-medium" style={{ color: getAccentColor(results.riskScore) }}>{results.primaryPattern}</div>
+                      <div className="text-[10px] text-gray-500 mt-1">Higher than {results.riskScore > 70 ? '94' : results.riskScore > 40 ? '67' : '23'}% of players this year</div>
                       </div>
                   
                     <div className="bg-[#0f0f1a] rounded-lg p-4">
-                      <div className="text-[11px] text-gray-500 uppercase tracking-wide mb-1">Leaderboard</div>
-                      <div className="text-base font-medium text-gray-300 flex items-center gap-2">
-                        <Trophy size={14} className="text-purple-400" />
-                        #{results.leaderboardPlace.toLocaleString()}
+                      <div className="text-[11px] text-gray-500 uppercase tracking-wide mb-1">Deposit Streak</div>
+                      <div className="text-base font-medium text-white flex items-center gap-2">
+                        <Flame size={14} className="text-orange-400" />
+                        {results.longestStreak?.deposits || 23} deposits
                 </div>
+                      <div className="text-[10px] text-gray-500 mt-0.5">in {results.longestStreak?.timespan || '4 hours'}</div>
               </div>
           </div>
                     </div>
@@ -1357,6 +1359,7 @@ export default function GamStart() {
                         </div>
                           <div className="text-2xl font-bold text-white">{results.depositVelocity.rate}</div>
                           <div className="text-[11px] text-gray-500">{results.depositVelocity.unit}</div>
+                          <div className="text-[10px] text-purple-400/80 mt-1">Top {results.depositVelocity.rate > 10 ? '1' : results.depositVelocity.rate > 5 ? '5' : '15'}% of players</div>
                         </div>
                         {expandedMetric === 'velocity' && (
                           <div className={`px-4 pb-4 pt-2 border-t ${traitStyle.divider}`}>
@@ -1382,6 +1385,7 @@ export default function GamStart() {
                           </div>
                           <div className="text-2xl font-bold text-white">{results.midnightFactor.percentage}%</div>
                           <div className="text-[11px] text-gray-500">{results.midnightFactor.transactions} of {results.midnightFactor.totalTransactions} txns</div>
+                          <div className="text-[10px] text-purple-400/80 mt-1">Top {results.midnightFactor.percentage > 60 ? '3' : results.midnightFactor.percentage > 40 ? '10' : '25'}% of players</div>
                         </div>
                         {expandedMetric === 'midnight' && (
                           <div className={`px-4 pb-4 pt-2 border-t ${traitStyle.divider}`}>
@@ -1407,6 +1411,7 @@ export default function GamStart() {
                             </div>
                           <div className="text-2xl font-bold text-white">{results.chaseBehavior.percentage}%</div>
                           <div className="text-[11px] text-gray-500">avg {results.chaseBehavior.avgResponseTime} min response</div>
+                          <div className="text-[10px] text-purple-400/80 mt-1">Top {results.chaseBehavior.percentage > 80 ? '2' : results.chaseBehavior.percentage > 50 ? '8' : '20'}% of players</div>
                         </div>
                         {expandedMetric === 'chase' && (
                           <div className={`px-4 pb-4 pt-2 border-t ${traitStyle.divider}`}>
@@ -1434,6 +1439,7 @@ export default function GamStart() {
                     </div>
                           <div className="text-2xl font-bold text-white">{results.sessionLength.avgHours}h</div>
                           <div className="text-[11px] text-gray-500">avg session</div>
+                          <div className="text-[10px] text-purple-400/80 mt-1">Top {results.sessionLength.avgHours > 4 ? '5' : results.sessionLength.avgHours > 2 ? '15' : '30'}% of players</div>
                         </div>
                         {expandedMetric === 'session' && (
                           <div className={`px-4 pb-4 pt-2 border-t ${traitStyle.divider}`}>
@@ -1459,6 +1465,7 @@ export default function GamStart() {
                         </div>
                           <div className="text-2xl font-bold text-white">{results.biggestBet.amount} ETH</div>
                           <div className="text-[11px] text-gray-500">${results.biggestBet.amountUSD.toLocaleString()}</div>
+                          <div className="text-[10px] text-purple-400/80 mt-1">Top {results.biggestBet.amountUSD > 5000 ? '1' : results.biggestBet.amountUSD > 1000 ? '10' : '25'}% of players</div>
                     </div>
                         {expandedMetric === 'bigbet' && (
                           <div className={`px-4 pb-4 pt-2 border-t ${traitStyle.divider}`}>
@@ -1615,6 +1622,10 @@ export default function GamStart() {
 
                 {/* Bottom Actions */}
                 <div className="space-y-4 pt-4">
+                  {/* Is this your wallet? */}
+                  <div className="text-center">
+                    <p className="text-sm text-gray-400 mb-3">Is this your wallet? Here are your options:</p>
+                  </div>
                   {/* Sell & VIP Buttons - Matrix Pill Colors */}
                   <div className="flex gap-3 justify-center">
                     <a
@@ -1681,6 +1692,7 @@ export default function GamStart() {
     </div>
   );
 }
+
 
 
 
