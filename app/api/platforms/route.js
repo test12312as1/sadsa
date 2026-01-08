@@ -121,15 +121,22 @@ async function getCasinoStats(period = 'week') {
   const today = new Date();
   const startDate = new Date();
   
+  let periodMultiplier = 1; // For fallback data scaling
   if (period === 'week') {
     startDate.setDate(today.getDate() - 7);
+    periodMultiplier = 1;
   } else if (period === 'month') {
     startDate.setDate(today.getDate() - 30);
+    periodMultiplier = 4.3; // ~4.3 weeks in a month
   } else if (period === 'year') {
     startDate.setDate(today.getDate() - 365);
+    periodMultiplier = 52; // 52 weeks in a year
   } else {
     startDate.setDate(today.getDate() - 7); // Default to week
+    periodMultiplier = 1;
   }
+  
+  console.log(`Getting casino stats for period: ${period}, startDate: ${startDate.toISOString().split('T')[0]}`);
   
   // Get snapshots for the selected period
   const { data: snapshots } = await supabase
@@ -139,14 +146,28 @@ async function getCasinoStats(period = 'week') {
     .order('snapshot_date', { ascending: false });
 
   if (snapshots && snapshots.length > 0) {
-    // For rankings, use the most recent snapshot for each casino (not aggregated)
-    // This gives current rankings rather than cumulative totals
+    console.log(`Found ${snapshots.length} snapshots for period ${period}`);
+    
+    // For rankings, aggregate ALL snapshots in the period (not just most recent)
+    // This gives cumulative totals for the selected time period
     const casinoMap = {};
     snapshots.forEach(s => {
-      if (!casinoMap[s.casino_name] || 
-          new Date(s.snapshot_date) > new Date(casinoMap[s.casino_name].snapshot_date)) {
-        casinoMap[s.casino_name] = s;
+      if (!casinoMap[s.casino_name]) {
+        casinoMap[s.casino_name] = {
+          casino_name: s.casino_name,
+          total_volume: 0,
+          total_deposits: 0,
+          unique_depositors: 0
+        };
       }
+      casinoMap[s.casino_name].total_volume += (s.total_volume || 0);
+      casinoMap[s.casino_name].total_deposits += (s.total_deposits || 0);
+      // For unique depositors, we can't simply sum (would double count)
+      // Use max as a reasonable approximation
+      casinoMap[s.casino_name].unique_depositors = Math.max(
+        casinoMap[s.casino_name].unique_depositors,
+        s.unique_depositors || 0
+      );
     });
 
     const totalVolume = Object.values(casinoMap).reduce((sum, c) => sum + (c.total_volume || 0), 0);
@@ -173,8 +194,9 @@ async function getCasinoStats(period = 'week') {
     .select('casino_name, value_usd, from_address');
 
   if (error || !data || data.length === 0) {
-    // Return fallback data
-    return getDefaultCasinoStats();
+    // Return fallback data scaled by period
+    console.log(`Using default casino stats for period: ${period} with multiplier: ${periodMultiplier}`);
+    return getDefaultCasinoStats(periodMultiplier);
   }
 
   // Aggregate by casino
@@ -413,8 +435,9 @@ function getCasinoColor(name) {
 // DEFAULT/FALLBACK DATA
 // ============================================
 
-function getDefaultCasinoStats() {
-  return [
+function getDefaultCasinoStats(multiplier = 1) {
+  // Base weekly stats - multiplier scales for month/year views
+  const baseStats = [
     { name: 'Stake', volume: 441000000, marketShare: 54.8, deposits: 666000, color: '#22c55e' },
     { name: 'Roobet', volume: 93400000, marketShare: 11.6, deposits: 142000, color: '#8b5cf6' },
     { name: 'Duel', volume: 65200000, marketShare: 8.1, deposits: 89000, color: '#f97316' },
@@ -426,6 +449,13 @@ function getDefaultCasinoStats() {
     { name: 'Yeet', volume: 8660000, marketShare: 1.1, deposits: 12400, color: '#fbbf24' },
     { name: 'BC.Game', volume: 6310000, marketShare: 0.8, deposits: 24000, color: '#3b82f6' }
   ];
+  
+  // Scale volume and deposits by multiplier, keep marketShare as is
+  return baseStats.map(s => ({
+    ...s,
+    volume: Math.round(s.volume * multiplier),
+    deposits: Math.round(s.deposits * multiplier)
+  }));
 }
 
 function getDefaultMovers() {
@@ -449,18 +479,19 @@ function getDefaultMovers() {
 
 function getDefaultTrends() {
   return [
-    { week: 'Oct 20', stake: 580, duel: 28, shuffle: 38, roobet: 95, gamdom: 42 },
-    { week: 'Oct 27', stake: 560, duel: 30, shuffle: 40, roobet: 98, gamdom: 44 },
-    { week: 'Nov 3', stake: 590, duel: 32, shuffle: 42, roobet: 102, gamdom: 45 },
-    { week: 'Nov 10', stake: 620, duel: 35, shuffle: 44, roobet: 105, gamdom: 46 },
-    { week: 'Nov 17', stake: 650, duel: 38, shuffle: 45, roobet: 108, gamdom: 47 },
-    { week: 'Nov 24', stake: 680, duel: 42, shuffle: 43, roobet: 110, gamdom: 48 },
-    { week: 'Dec 1', stake: 625, duel: 30, shuffle: 44, roobet: 111, gamdom: 47 },
-    { week: 'Dec 8', stake: 600, duel: 32, shuffle: 42, roobet: 108, gamdom: 45 },
-    { week: 'Dec 15', stake: 580, duel: 35, shuffle: 40, roobet: 105, gamdom: 44 },
-    { week: 'Dec 22', stake: 720, duel: 45, shuffle: 42, roobet: 100, gamdom: 46 },
-    { week: 'Dec 29', stake: 625, duel: 30, shuffle: 40, roobet: 93, gamdom: 47 },
-    { week: 'Jan 5', stake: 441, duel: 65, shuffle: 40, roobet: 93, gamdom: 37 }
+    { week: 'Oct 20', stake: 580, duel: 28, shuffle: 38, roobet: 95, gamdom: 42, rainbet: 32, rollbit: 14, stakeus: 18, yeet: 6, 'bc.game': 15 },
+    { week: 'Oct 27', stake: 560, duel: 30, shuffle: 40, roobet: 98, gamdom: 44, rainbet: 30, rollbit: 12, stakeus: 20, yeet: 7, 'bc.game': 18 },
+    { week: 'Nov 3', stake: 590, duel: 32, shuffle: 42, roobet: 102, gamdom: 45, rainbet: 34, rollbit: 15, stakeus: 22, yeet: 5, 'bc.game': 16 },
+    { week: 'Nov 10', stake: 620, duel: 35, shuffle: 44, roobet: 105, gamdom: 46, rainbet: 36, rollbit: 16, stakeus: 19, yeet: 8, 'bc.game': 14 },
+    { week: 'Nov 17', stake: 650, duel: 38, shuffle: 45, roobet: 108, gamdom: 47, rainbet: 35, rollbit: 18, stakeus: 21, yeet: 7, 'bc.game': 12 },
+    { week: 'Nov 24', stake: 680, duel: 42, shuffle: 43, roobet: 110, gamdom: 48, rainbet: 38, rollbit: 15, stakeus: 24, yeet: 9, 'bc.game': 10 },
+    { week: 'Dec 1', stake: 625, duel: 30, shuffle: 44, roobet: 111, gamdom: 47, rainbet: 36, rollbit: 13, stakeus: 20, yeet: 6, 'bc.game': 11 },
+    { week: 'Dec 8', stake: 600, duel: 32, shuffle: 42, roobet: 108, gamdom: 45, rainbet: 34, rollbit: 14, stakeus: 18, yeet: 7, 'bc.game': 9 },
+    { week: 'Dec 15', stake: 580, duel: 35, shuffle: 40, roobet: 105, gamdom: 44, rainbet: 32, rollbit: 16, stakeus: 16, yeet: 8, 'bc.game': 8 },
+    { week: 'Dec 22', stake: 720, duel: 45, shuffle: 42, roobet: 100, gamdom: 46, rainbet: 38, rollbit: 19, stakeus: 22, yeet: 10, 'bc.game': 7 },
+    { week: 'Dec 29', stake: 625, duel: 30, shuffle: 40, roobet: 93, gamdom: 47, rainbet: 35, rollbit: 15, stakeus: 17, yeet: 9, 'bc.game': 6 },
+    { week: 'Jan 5', stake: 441, duel: 65, shuffle: 40, roobet: 93, gamdom: 37, rainbet: 34, rollbit: 17, stakeus: 15, yeet: 9, 'bc.game': 6 }
   ];
 }
+
 
