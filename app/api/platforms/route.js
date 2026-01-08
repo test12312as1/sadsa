@@ -28,14 +28,23 @@ export async function GET(request) {
     // Get trend data
     const trends = await getTrendData(timeRange);
 
-    return NextResponse.json({
+    const responseData = {
       weekTotals,
       casinos,
       topGainers: gainers,
       topDeclines: declines,
       weeklyTrends: trends,
       lastUpdated: new Date().toISOString()
+    };
+    
+    console.log('API Response:', {
+      casinosCount: casinos.length,
+      trendsCount: trends.length,
+      sampleTrend: trends[0],
+      sampleCasino: casinos[0]
     });
+
+    return NextResponse.json(responseData);
 
   } catch (error) {
     console.error('Platforms API error:', error);
@@ -354,7 +363,9 @@ async function getTrendData(timeRange) {
   }
 
   // Return default trend data if no snapshots
-  return getDefaultTrends();
+  const defaultTrends = getDefaultTrends();
+  console.log('Using default trends:', defaultTrends.length, 'weeks');
+  return defaultTrends;
 }
 
 function aggregateByCasino(data) {
@@ -452,3 +463,4 @@ function getDefaultTrends() {
     { week: 'Jan 5', stake: 441, duel: 65, shuffle: 40, roobet: 93, gamdom: 37 }
   ];
 }
+
