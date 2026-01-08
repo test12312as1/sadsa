@@ -412,18 +412,25 @@ export default function GamStart() {
   const [platformData, setPlatformData] = useState(PLATFORM_DATA); // Start with default data
   const [platformLoading, setPlatformLoading] = useState(false);
   const [rankingTimePeriod, setRankingTimePeriod] = useState('week'); // week, month, year
+  
+  // Refetch when ranking period changes
+  useEffect(() => {
+    if (activeTab === 'platforms' && rankingTimePeriod) {
+      fetchPlatformData();
+    }
+  }, [rankingTimePeriod]);
 
-  // Fetch platform data when tab changes to platforms
+  // Fetch platform data when tab changes to platforms or inputs change
   useEffect(() => {
     if (activeTab === 'platforms') {
       fetchPlatformData();
     }
-  }, [activeTab, selectedTimeRange]);
+  }, [activeTab, selectedTimeRange, selectedMetric]);
 
   const fetchPlatformData = async () => {
     setPlatformLoading(true);
     try {
-      const response = await fetch(`/api/platforms?range=${selectedTimeRange}&metric=${selectedMetric}`);
+      const response = await fetch(`/api/platforms?range=${selectedTimeRange}&metric=${selectedMetric}&rankingPeriod=${rankingTimePeriod}`);
       if (response.ok) {
         const data = await response.json();
         setPlatformData({
@@ -832,10 +839,9 @@ export default function GamStart() {
                     </button>
             </div>
                 </div>
-                <div className="overflow-x-auto -mx-4 px-4">
-                  <div className="flex gap-2 min-w-max pb-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
                     {platformData.casinos.map((casino) => (
-                    <div key={casino.name} className="flex items-center gap-1 shrink-0">
+                    <div key={casino.name} className="flex items-center gap-1">
                       <button
                         onClick={() => {
                           if (selectedCasinos.includes(casino.name)) {
@@ -844,7 +850,7 @@ export default function GamStart() {
                             setSelectedCasinos([...selectedCasinos, casino.name]);
                           }
                         }}
-                        className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-2 whitespace-nowrap ${
+                        className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-2 ${
                           selectedCasinos.includes(casino.name)
                             ? 'bg-purple-500/20 text-purple-300 border border-purple-500/50'
                             : 'bg-[#1a1a2e] text-gray-500 hover:text-gray-300 border border-transparent'
@@ -854,7 +860,7 @@ export default function GamStart() {
                           className="w-2 h-2 rounded-full shrink-0" 
                           style={{ backgroundColor: selectedCasinos.includes(casino.name) ? casino.color : '#4b5563' }} 
                         />
-                        {casino.name}
+                        <span className="truncate">{casino.name}</span>
                       </button>
                       <a
                         href={`/casino/${encodeURIComponent(casino.name)}`}
@@ -865,19 +871,15 @@ export default function GamStart() {
                       </a>
                     </div>
                   ))}
-                  </div>
                 </div>
               </div>
         </div>
 
             {/* Trend Chart - Redesigned */}
             <div className="bg-[#12121c] rounded-xl p-5 border border-gray-800/50 mb-6">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <div className="text-sm font-semibold text-white">Volume Trends</div>
-                  <div className="text-xs text-gray-500">Week over week deposit volume</div>
-                </div>
-                <div className="text-xs text-purple-400">Jan 5, 2026</div>
+              <div className="mb-4">
+                <div className="text-sm font-semibold text-white">Volume Trends</div>
+                <div className="text-xs text-gray-500">Week over week deposit volume</div>
               </div>
               
               {/* Chart with gradient area */}
@@ -1631,4 +1633,3 @@ export default function GamStart() {
     </div>
   );
 }
-
