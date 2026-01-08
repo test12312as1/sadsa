@@ -234,7 +234,9 @@ async function fetchDepositsToHotWallet(hotWallet, startDate, endDate) {
   // This avoids block estimation errors and ensures we get all transfers in our date range
   console.log(`   Fetching all transfers (no block limit), filtering for ${startDate.toISOString()} to ${endDate.toISOString()}`);
 
- const response = await fetch(ALCHEMY_URL, {
+  while (true) {
+    try {
+      const response = await fetch(ALCHEMY_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -245,9 +247,10 @@ async function fetchDepositsToHotWallet(hotWallet, startDate, endDate) {
             toAddress: hotWallet,
             category: ['external', 'erc20'],
             maxCount: '0x3E8', // 1000 per page
-            order: 'desc',     // 👈 ADD THIS LINE HERE
             excludeZeroValue: true,
-            withMetadata: true, 
+            withMetadata: true, // Required to get blockTimestamp
+            order: 'desc', // Newest first (descending order)
+            // No fromBlock/toBlock - fetch all and filter by date
             pageKey: pageKey
           }]
         })
