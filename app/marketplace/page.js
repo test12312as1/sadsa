@@ -2,7 +2,7 @@
 
 import { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Search, Heart, ShoppingCart, ChevronRight } from 'lucide-react';
+import { Heart, BarChart3, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 
 // Demo listings data - per casino account
@@ -100,7 +100,6 @@ function MarketplaceContent() {
   
   const [selectedCasino, setSelectedCasino] = useState('all');
   const [selectedTier, setSelectedTier] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
   const [showSellModal, setShowSellModal] = useState(false);
 
   const casinos = ['all', 'Stake', 'Rollbit', 'Shuffle', 'Roobet', 'Gamdom'];
@@ -109,7 +108,6 @@ function MarketplaceContent() {
   const filteredListings = DEMO_LISTINGS.filter(listing => {
     if (selectedCasino !== 'all' && listing.casino !== selectedCasino) return false;
     if (selectedTier !== 'all' && listing.tier !== selectedTier) return false;
-    if (searchQuery && !listing.id.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     return true;
   });
 
@@ -141,10 +139,10 @@ function MarketplaceContent() {
               </div>
 
               <div className="hidden md:flex items-center gap-1">
-                <span className="px-3 py-1.5 text-sm text-white font-medium">
+                <span className="px-3 py-1.5 text-sm text-purple-400 font-medium">
                   Account Marketplace
                 </span>
-                <Link href="/vip-dashboard" className="px-3 py-1.5 text-sm text-gray-400 hover:text-white transition-colors">
+                <Link href="/vip-dashboard" className="px-3 py-1.5 text-sm text-purple-400 hover:text-purple-300 transition-colors">
                   VIP Offers
                 </Link>
               </div>
@@ -163,29 +161,16 @@ function MarketplaceContent() {
       </nav>
 
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-        {/* Header */}
+        {/* Header - Matching Casinos page style */}
         <div className="mb-6">
           <div className="flex items-center gap-3 mb-2">
-            <ShoppingCart className="text-purple-400" size={24} />
-            <h1 className="text-2xl font-bold text-white">Account Marketplace</h1>
-          </div>
-          <p className="text-gray-400 text-sm">Buy and sell verified casino accounts</p>
-        </div>
-
-        {/* Search Bar - Same style as Players page */}
-        <div className="w-full max-w-2xl mb-6">
-          <div className="flex items-center bg-[#0a0a14] border border-gray-800 rounded-lg overflow-hidden focus-within:border-gray-700 transition-colors">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by ID..."
-              className="flex-1 bg-transparent px-5 py-4 text-white placeholder-gray-600 focus:outline-none"
-            />
-            <button className="m-1.5 px-4 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-md font-medium transition-colors flex items-center gap-2">
-              <Search size={16} />
-              Search
-            </button>
+            <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center">
+              <BarChart3 className="text-purple-400" size={20} />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-white">Account Marketplace</h1>
+              <p className="text-sm text-gray-500">Buy and sell verified casino accounts</p>
+            </div>
           </div>
         </div>
 
@@ -225,17 +210,16 @@ function MarketplaceContent() {
 
           <div className="flex-1" />
 
+          <div className="text-sm text-gray-500">
+            {filteredListings.length} accounts
+          </div>
+
           <button
             onClick={() => setShowSellModal(true)}
             className="px-4 py-2 bg-[#1a1a2e] hover:bg-[#252540] text-gray-300 hover:text-white rounded-lg text-sm font-medium transition-colors border border-gray-700/50"
           >
             List Your Account
           </button>
-        </div>
-
-        {/* Results Count */}
-        <div className="text-sm text-gray-500 mb-4">
-          {filteredListings.length} accounts available
         </div>
 
         {/* Listings Table */}
@@ -268,11 +252,7 @@ function MarketplaceContent() {
 
               {/* Tier */}
               <div className="col-span-1 text-center">
-                <span className={`text-xs font-medium ${
-                  listing.tier === 'Diamond' ? 'text-cyan-400' :
-                  listing.tier === 'Platinum' ? 'text-purple-400' :
-                  'text-amber-400'
-                }`}>
+                <span className="text-xs text-gray-400">
                   {listing.tier}
                 </span>
               </div>
