@@ -848,49 +848,59 @@ export default function GamStart() {
               </div>
               
               {/* Chart with gradient area */}
-              <div className="h-44 relative mb-3">
-                {/* Y-axis labels */}
-                <div className="absolute left-0 top-0 bottom-6 w-12 flex flex-col justify-between text-[10px] text-gray-600">
-                  <span>$800M</span>
-                  <span>$600M</span>
-                  <span>$400M</span>
-                  <span>$200M</span>
-                  <span>$0</span>
-                </div>
-                {/* Chart area */}
-                <div className="absolute left-14 right-0 top-0 bottom-6 flex items-end gap-1">
-                  {platformData.weeklyTrends && platformData.weeklyTrends.length > 0 ? (
-                    platformData.weeklyTrends.map((week, i) => {
-                      // Sum ALL numeric values in the week (simple approach)
-                      const weekKeys = Object.keys(week).filter(k => k !== 'week');
-                      const weekTotal = weekKeys.reduce((sum, key) => {
-                        if (typeof week[key] === 'number') {
-                          return sum + week[key];
-                        }
-                        return sum;
-                      }, 0);
-                      
-                      // Scale based on max possible value (800 = $800M)
-                      const maxValue = 800;
-                      const heightPercent = Math.min((weekTotal / maxValue) * 100, 100);
-                      
-                      return (
-                        <div key={i} className="flex-1 flex flex-col items-center gap-1 group">
-                          <div className="w-full relative h-full flex items-end">
-                            <div 
-                              className="w-full bg-gradient-to-t from-purple-500/60 to-purple-400/20 rounded-t transition-all group-hover:from-purple-500/80 group-hover:to-purple-400/40"
-                              style={{ height: `${Math.max(heightPercent, 2)}%` }}
-                            />
+              <div className="mb-3">
+                <div className="flex">
+                  {/* Y-axis labels */}
+                  <div className="w-12 h-40 flex flex-col justify-between text-[10px] text-gray-600 pr-2">
+                    <span>$800M</span>
+                    <span>$600M</span>
+                    <span>$400M</span>
+                    <span>$200M</span>
+                    <span>$0</span>
+                  </div>
+                  {/* Chart bars */}
+                  <div className="flex-1 h-40 flex items-end gap-1">
+                    {platformData.weeklyTrends && platformData.weeklyTrends.length > 0 ? (
+                      platformData.weeklyTrends.map((week, i) => {
+                        // Sum ALL numeric values in the week
+                        const weekKeys = Object.keys(week).filter(k => k !== 'week');
+                        const weekTotal = weekKeys.reduce((sum, key) => {
+                          if (typeof week[key] === 'number') {
+                            return sum + week[key];
+                          }
+                          return sum;
+                        }, 0);
+                        
+                        // Scale: weekTotal is in millions (e.g., stake: 580 means $580M)
+                        // maxValue is 800 ($800M)
+                        const maxValue = 800;
+                        const heightPercent = Math.min((weekTotal / maxValue) * 100, 100);
+                        
+                        return (
+                          <div key={i} className="flex-1 flex flex-col h-full group">
+                            <div className="flex-1 flex items-end">
+                              <div 
+                                className="w-full bg-gradient-to-t from-purple-500/60 to-purple-400/20 rounded-t transition-all group-hover:from-purple-500/80 group-hover:to-purple-400/40"
+                                style={{ height: `${Math.max(heightPercent, 5)}%` }}
+                              />
+                            </div>
                           </div>
-                          <div className="text-[8px] text-gray-600 truncate w-full text-center">{week.week}</div>
-                        </div>
-                      );
-                    })
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-500 text-sm">
-                      No trend data available
+                        );
+                      })
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-500 text-sm">
+                        No data
+                      </div>
+                    )}
+                  </div>
+                </div>
+                {/* X-axis labels */}
+                <div className="flex ml-12">
+                  {platformData.weeklyTrends && platformData.weeklyTrends.map((week, i) => (
+                    <div key={i} className="flex-1 text-[8px] text-gray-600 text-center pt-1">
+                      {week.week}
                     </div>
-                  )}
+                  ))}
                 </div>
               </div>
               
@@ -1601,4 +1611,5 @@ export default function GamStart() {
     </div>
   );
 }
+
 
