@@ -95,10 +95,10 @@ function VerifyContent() {
               </div>
 
               <div className="hidden md:flex items-center gap-1">
-                <Link href="/marketplace" className="px-3 py-1.5 text-sm text-gray-400 hover:text-white transition-colors">
+                <Link href="/marketplace" className="px-3 py-1.5 text-sm text-purple-400 hover:text-purple-300 transition-colors">
                   Account Marketplace
                 </Link>
-                <Link href="/vip-dashboard" className="px-3 py-1.5 text-sm text-gray-400 hover:text-white transition-colors">
+                <Link href="/vip-dashboard" className="px-3 py-1.5 text-sm text-purple-400 hover:text-purple-300 transition-colors">
                   VIP Offers
                 </Link>
               </div>
@@ -407,7 +407,3 @@ export default function VerifyPage() {
     </Suspense>
   );
 }
-
-
-
-
