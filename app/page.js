@@ -426,13 +426,17 @@ export default function GamStart() {
       const response = await fetch(`/api/platforms?range=${selectedTimeRange}&metric=${selectedMetric}&rankingPeriod=${rankingTimePeriod}`);
       if (response.ok) {
         const data = await response.json();
+        console.log('Platform data received:', data); // Debug log
         setPlatformData({
-          weekTotals: data.weekTotals,
-          topGainers: data.topGainers,
-          topDeclines: data.topDeclines,
-          casinos: data.casinos,
-          weeklyTrends: data.weeklyTrends
+          weekTotals: data.weekTotals || PLATFORM_DATA.weekTotals,
+          topGainers: data.topGainers || PLATFORM_DATA.topGainers,
+          topDeclines: data.topDeclines || PLATFORM_DATA.topDeclines,
+          casinos: data.casinos || PLATFORM_DATA.casinos,
+          weeklyTrends: data.weeklyTrends || PLATFORM_DATA.weeklyTrends
         });
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('API response error:', response.status, errorData);
       }
     } catch (error) {
       console.error('Failed to fetch platform data:', error);
@@ -869,7 +873,7 @@ export default function GamStart() {
               
               {/* Chart with gradient area */}
               <div className="h-44 relative mb-3 overflow-x-auto">
-                <div className="min-w-full" style={{ minWidth: `${Math.max(platformData.weeklyTrends.length * 40, 600)}px` }}>
+                <div className="min-w-full" style={{ minWidth: `${Math.max((platformData.weeklyTrends?.length || 0) * 40, 600)}px` }}>
                   {/* Y-axis labels */}
                   <div className="absolute left-0 top-0 bottom-6 w-12 flex flex-col justify-between text-[10px] text-gray-600">
                     <span>$800M</span>
@@ -879,84 +883,89 @@ export default function GamStart() {
                     <span>$0</span>
                   </div>
                   {/* Chart area */}
-                  <div className="absolute left-14 right-0 top-0 bottom-0 flex items-end gap-0.5" style={{ minWidth: `${platformData.weeklyTrends.length * 40}px` }}>
-                    {platformData.weeklyTrends.map((week, i) => {
-                      // Calculate total volume for selected casinos
-                      let selectedCasinoData = 0;
-                      
-                      // Get all casino keys from the week data (excluding 'week')
-                      const weekKeys = Object.keys(week).filter(k => k !== 'week');
-                      
-                      if (selectedCasinos.length > 0 && selectedCasinos.length < platformData.casinos.length) {
-                        // Sum volumes for selected casinos only
-                        selectedCasinoData = selectedCasinos.reduce((sum, casinoName) => {
-                          // Try to find matching key in week data
-                          const normalizedName = casinoName.toLowerCase();
-                          const matchingKey = weekKeys.find(key => {
-                            const normalizedKey = key.toLowerCase();
-                            return normalizedKey === normalizedName || 
-                                   normalizedKey.includes(normalizedName) ||
-                                   normalizedName.includes(normalizedKey) ||
-                                   normalizedKey.replace(/[^a-z0-9]/g, '') === normalizedName.replace(/[^a-z0-9]/g, '');
-                          });
+                  <div className="absolute left-14 right-0 top-0 bottom-0 flex items-end gap-0.5" style={{ minWidth: `${Math.max(platformData.weeklyTrends?.length || 0, 1) * 40}px` }}>
+                    {platformData.weeklyTrends && platformData.weeklyTrends.length > 0 ? (
+                      (() => {
+                        // Helper function to normalize casino names for matching
+                        const normalizeKey = (str) => str.toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+                        
+                        // Calculate max value from all weeks for proper scaling (do this once)
+                        const allWeekValues = platformData.weeklyTrends.map(w => {
+                          const wKeys = Object.keys(w).filter(k => k !== 'week');
+                          let weekTotal = 0;
                           
-                          if (matchingKey && typeof week[matchingKey] === 'number') {
-                            return sum + (week[matchingKey] * 1000000); // Convert back from millions
+                          if (selectedCasinos.length > 0 && selectedCasinos.length < platformData.casinos.length) {
+                            // Sum volumes for selected casinos only
+                            weekTotal = selectedCasinos.reduce((sum, casinoName) => {
+                              const normalizedName = normalizeKey(casinoName);
+                              const matchingKey = wKeys.find(key => normalizeKey(key) === normalizedName);
+                              if (matchingKey && typeof w[matchingKey] === 'number') {
+                                return sum + (w[matchingKey] * 1000000);
+                              }
+                              return sum;
+                            }, 0);
+                          } else {
+                            // If all casinos selected or none selected, show sum of all
+                            weekTotal = wKeys.reduce((sum, key) => {
+                              if (typeof w[key] === 'number') {
+                                return sum + (w[key] * 1000000);
+                              }
+                              return sum;
+                            }, 0);
                           }
-                          return sum;
-                        }, 0);
-                      } else {
-                        // If all casinos selected or none selected, show sum of all
-                        selectedCasinoData = weekKeys.reduce((sum, key) => {
-                          if (typeof week[key] === 'number') {
-                            return sum + (week[key] * 1000000);
+                          return weekTotal;
+                        });
+                        const maxValue = Math.max(...allWeekValues.filter(v => v > 0), 800000000); // At least $800M
+                        
+                        return platformData.weeklyTrends.map((week, i) => {
+                          // Calculate total volume for selected casinos
+                          let selectedCasinoData = 0;
+                          
+                          // Get all casino keys from the week data (excluding 'week')
+                          const weekKeys = Object.keys(week).filter(k => k !== 'week');
+                          
+                          if (selectedCasinos.length > 0 && selectedCasinos.length < platformData.casinos.length) {
+                            // Sum volumes for selected casinos only
+                            selectedCasinoData = selectedCasinos.reduce((sum, casinoName) => {
+                              const normalizedName = normalizeKey(casinoName);
+                              // Try to find matching key in week data
+                              const matchingKey = weekKeys.find(key => normalizeKey(key) === normalizedName);
+                              
+                              if (matchingKey && typeof week[matchingKey] === 'number') {
+                                return sum + (week[matchingKey] * 1000000); // Convert back from millions
+                              }
+                              return sum;
+                            }, 0);
+                          } else {
+                            // If all casinos selected or none selected, show sum of all
+                            selectedCasinoData = weekKeys.reduce((sum, key) => {
+                              if (typeof week[key] === 'number') {
+                                return sum + (week[key] * 1000000);
+                              }
+                              return sum;
+                            }, 0);
                           }
-                          return sum;
-                        }, 0);
-                      }
-                      
-                      // Calculate max value from all weeks for proper scaling
-                      const allWeekValues = platformData.weeklyTrends.map(w => {
-                        const wKeys = Object.keys(w).filter(k => k !== 'week');
-                        if (selectedCasinos.length > 0 && selectedCasinos.length < platformData.casinos.length) {
-                          return selectedCasinos.reduce((sum, casinoName) => {
-                            const normalizedName = casinoName.toLowerCase();
-                            const matchingKey = wKeys.find(key => {
-                              const normalizedKey = key.toLowerCase();
-                              return normalizedKey === normalizedName || 
-                                     normalizedKey.includes(normalizedName) ||
-                                     normalizedName.includes(normalizedKey) ||
-                                     normalizedKey.replace(/[^a-z0-9]/g, '') === normalizedName.replace(/[^a-z0-9]/g, '');
-                            });
-                            if (matchingKey && typeof w[matchingKey] === 'number') {
-                              return sum + (w[matchingKey] * 1000000);
-                            }
-                            return sum;
-                          }, 0);
-                        } else {
-                          return wKeys.reduce((sum, key) => {
-                            if (typeof w[key] === 'number') {
-                              return sum + (w[key] * 1000000);
-                            }
-                            return sum;
-                          }, 0);
-                        }
-                      });
-                      const maxValue = Math.max(...allWeekValues, 800000000); // At least $800M
-                      const heightPercent = maxValue > 0 ? Math.min((selectedCasinoData / maxValue) * 100, 100) : 0;
-                      
-                      return (
-                        <div key={i} className="flex-1 flex flex-col items-center gap-1 group min-w-[40px]">
-                          <div className="w-full relative h-full flex items-end">
-                            <div 
-                              className="w-full bg-gradient-to-t from-purple-500/60 to-purple-400/20 rounded-t transition-all group-hover:from-purple-500/80 group-hover:to-purple-400/40"
-                              style={{ height: `${heightPercent}%`, minHeight: '2px' }}
-                            />
-                          </div>
-                          <div className="text-[8px] text-gray-600 truncate w-full text-center opacity-0 group-hover:opacity-100 transition-opacity">{week.week}</div>
-                        </div>
-                      );
-                    })}
+                          
+                          const heightPercent = maxValue > 0 ? Math.min((selectedCasinoData / maxValue) * 100, 100) : 0;
+                          
+                          return (
+                            <div key={i} className="flex-1 flex flex-col items-center gap-1 group min-w-[40px]">
+                              <div className="w-full relative h-full flex items-end">
+                                <div 
+                                  className="w-full bg-gradient-to-t from-purple-500/60 to-purple-400/20 rounded-t transition-all group-hover:from-purple-500/80 group-hover:to-purple-400/40"
+                                  style={{ height: `${heightPercent}%`, minHeight: '2px' }}
+                                />
+                              </div>
+                              <div className="text-[8px] text-gray-600 truncate w-full text-center opacity-0 group-hover:opacity-100 transition-opacity">{week.week || `Week ${i + 1}`}</div>
+                            </div>
+                          );
+                        });
+                      })()
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-500 text-sm">
+                        No trend data available
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
