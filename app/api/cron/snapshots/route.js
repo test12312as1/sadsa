@@ -308,11 +308,21 @@ async function fetchDepositsToHotWallet(hotWallet, startDate, endDate) {
         console.log(`   Sample transfer dates: ${sampleDates.join(', ')}`);
         
         // Test value conversion on first transfer
-        if (sampleTransfer.value) {
-          const testValue = typeof sampleTransfer.value === 'string' && sampleTransfer.value.startsWith('0x')
-            ? parseInt(sampleTransfer.value, 16)
-            : parseFloat(sampleTransfer.value) || 0;
-          console.log(`   Sample value conversion: ${sampleTransfer.value} -> ${testValue} -> USD: ${testValue / 1e18 * 3300}`);
+        if (sampleTransfer.value !== undefined) {
+          const testValue = parseFloat(sampleTransfer.value) || 0;
+          const testAsset = sampleTransfer.asset || 'ETH';
+          let testUSD = 0;
+          if (sampleTransfer.category === 'external') {
+            testUSD = testValue * 3300;
+          } else if (sampleTransfer.category === 'erc20') {
+            const stablecoins = ['USDT', 'USDC', 'DAI', 'BUSD', 'TUSD', 'USDP', 'GUSD', 'FRAX'];
+            if (stablecoins.includes(testAsset.toUpperCase())) {
+              testUSD = testValue;
+            } else if (testAsset.toUpperCase() === 'ETH' || testAsset.toUpperCase() === 'WETH') {
+              testUSD = testValue * 3300;
+            }
+          }
+          console.log(`   Sample value conversion: ${sampleTransfer.value} ${testAsset} -> USD: ${testUSD}`);
         }
       }
 
@@ -365,63 +375,29 @@ async function fetchDepositsToHotWallet(hotWallet, startDate, endDate) {
           foundDepositsInPage = true;
           allTransfersTooOld = false;
           
-          // Convert value to USD - use same logic as scan/route.js
+          // Convert value to USD
+          // IMPORTANT: Alchemy's getAssetTransfers with withMetadata:true returns values
+          // that are ALREADY NORMALIZED (already in token units, not raw wei)
+          // So 0.000267 USDT means 0.000267 USDT, not 0.000267 * 10^6
           const asset = transfer.asset || (transfer.category === 'external' ? 'ETH' : 'UNKNOWN');
-          let rawValue = 0;
-          
-          // Parse value - Alchemy returns values as strings, could be hex or decimal
-          if (transfer.value) {
-            if (typeof transfer.value === 'string') {
-              if (transfer.value.startsWith('0x')) {
-                // Hex string
-                rawValue = parseInt(transfer.value, 16);
-              } else {
-                // Decimal string
-                rawValue = parseFloat(transfer.value) || 0;
-              }
-            } else {
-              // Already a number
-              rawValue = transfer.value;
-            }
-          }
+          const normalizedValue = parseFloat(transfer.value) || 0;
           
           let valueUSD = 0;
           
           if (transfer.category === 'external') {
-            // Native ETH transfer - value is in wei
-            const ethValue = rawValue / 1e18;
-            valueUSD = ethValue * 3300; // TODO: Use real price API
+            // Native ETH transfer - value is already in ETH (not wei)
+            valueUSD = normalizedValue * 3300; // TODO: Use real price API
           } else if (transfer.category === 'erc20') {
-            // ERC20 token transfer
-            // Parse decimals - could be hex string or number
-            let decimals = 18; // default
-            if (transfer.rawContract?.decimals !== undefined) {
-              if (typeof transfer.rawContract.decimals === 'string') {
-                if (transfer.rawContract.decimals.startsWith('0x')) {
-                  decimals = parseInt(transfer.rawContract.decimals, 16);
-                } else {
-                  decimals = parseInt(transfer.rawContract.decimals, 10);
-                }
-              } else {
-                decimals = parseInt(transfer.rawContract.decimals);
-              }
-            }
-            
-            const adjustedValue = rawValue / Math.pow(10, decimals);
-            
-            // Check if it's a stablecoin
+            // ERC20 token transfer - value is already normalized (already in token units)
             const tokenSymbol = asset.toUpperCase();
             const stablecoins = ['USDT', 'USDC', 'DAI', 'BUSD', 'TUSD', 'USDP', 'GUSD', 'FRAX'];
+            
             if (stablecoins.includes(tokenSymbol)) {
-              valueUSD = adjustedValue; // 1:1 for stablecoins
+              valueUSD = normalizedValue; // 1:1 for stablecoins
             } else if (tokenSymbol === 'ETH' || tokenSymbol === 'WETH') {
-              valueUSD = adjustedValue * 3300;
+              valueUSD = normalizedValue * 3300;
             } else {
               // Unknown token - set to 0 to avoid inflating totals
-              // Log first few to see what tokens we're missing
-              if (deposits.length < 5) {
-                console.log(`   Unknown token: ${tokenSymbol}, value: ${adjustedValue}, setting USD to 0`);
-              }
               valueUSD = 0;
             }
           }
@@ -522,4 +498,3 @@ async function fetchDepositsToHotWallet(hotWallet, startDate, endDate) {
   console.log(`   Found ${deposits.length} deposits for ${hotWallet}`);
   return deposits;
 }
-
