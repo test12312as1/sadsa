@@ -1,128 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { Crown, Lock, Clock, ChevronRight, Info } from 'lucide-react';
+import { useState, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Gift, Upload, CheckCircle, Clock, AlertCircle, MessageSquare, Wallet, Camera, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
-
-// Demo verified VIPs (anonymized)
-const DEMO_VIPS = [
-  {
-    id: 'VIP-8A2F',
-    casino: 'Stake',
-    tier: 'Diamond',
-    volumeCasino: 285000,
-    volumeSports: 42000,
-    pnlCasino: -38000,
-    pnlSports: -4200,
-    lastActive: '2h ago',
-  },
-  {
-    id: 'VIP-3K9D',
-    casino: 'Rollbit',
-    tier: 'Platinum',
-    volumeCasino: 142000,
-    volumeSports: 0,
-    pnlCasino: -18500,
-    pnlSports: 0,
-    lastActive: '5h ago',
-  },
-  {
-    id: 'VIP-7M1X',
-    casino: 'Shuffle',
-    tier: 'Platinum',
-    volumeCasino: 195000,
-    volumeSports: 67000,
-    pnlCasino: -31000,
-    pnlSports: 3200,
-    lastActive: '1d ago',
-  },
-  {
-    id: 'VIP-2P5N',
-    casino: 'Stake',
-    tier: 'Gold',
-    volumeCasino: 78000,
-    volumeSports: 28000,
-    pnlCasino: 12000,
-    pnlSports: -1800,
-    lastActive: '3h ago',
-  },
-  {
-    id: 'VIP-9Q4R',
-    casino: 'Roobet',
-    tier: 'Diamond',
-    volumeCasino: 420000,
-    volumeSports: 0,
-    pnlCasino: -89000,
-    pnlSports: 0,
-    lastActive: '30m ago',
-  },
-  {
-    id: 'VIP-5T8W',
-    casino: 'Gamdom',
-    tier: 'Gold',
-    volumeCasino: 52000,
-    volumeSports: 35000,
-    pnlCasino: -8200,
-    pnlSports: -5000,
-    lastActive: '1w ago',
-  },
-  {
-    id: 'VIP-4L2M',
-    casino: 'Shuffle',
-    tier: 'Diamond',
-    volumeCasino: 380000,
-    volumeSports: 120000,
-    pnlCasino: -65000,
-    pnlSports: -18000,
-    lastActive: '4h ago',
-  },
-  {
-    id: 'VIP-6N8P',
-    casino: 'Stake',
-    tier: 'Platinum',
-    volumeCasino: 165000,
-    volumeSports: 45000,
-    pnlCasino: -28000,
-    pnlSports: 5200,
-    lastActive: '12h ago',
-  }
-];
-
-// Demo past/example offers (personalized offers that were made)
-const DEMO_PAST_OFFERS = [
-  {
-    id: 'offer-001',
-    casino: 'Stake',
-    offer: '$2,500 Welcome Package',
-    vipId: 'VIP-8A2F',
-    tier: 'Diamond',
-    timeAgo: '3 days ago'
-  },
-  {
-    id: 'offer-002',
-    casino: 'Rollbit',
-    offer: '$1,000 Reload Bonus',
-    vipId: 'VIP-3K9D',
-    tier: 'Platinum',
-    timeAgo: '1 week ago'
-  },
-  {
-    id: 'offer-003',
-    casino: 'Shuffle',
-    offer: 'Personal VIP Host + $500',
-    vipId: 'VIP-7M1X',
-    tier: 'Platinum',
-    timeAgo: '2 weeks ago'
-  },
-  {
-    id: 'offer-004',
-    casino: 'Gamdom',
-    offer: '$750 No-Strings Bonus',
-    vipId: 'VIP-9Q4R',
-    tier: 'Diamond',
-    timeAgo: '5 days ago'
-  }
-];
 
 // Twitter/X Icon
 const TwitterIcon = ({ size = 18 }) => (
@@ -138,23 +19,58 @@ const DiscordIcon = ({ size = 18 }) => (
   </svg>
 );
 
-export default function VIPDashboard() {
-  const [selectedCasino, setSelectedCasino] = useState('all');
-  const [selectedTier, setSelectedTier] = useState('all');
+const VERIFICATION_STEPS = [
+  {
+    id: 'wallet',
+    title: 'Wallet Ownership',
+    description: 'Prove you own the scanned wallet',
+    icon: Wallet
+  },
+  {
+    id: 'casino',
+    title: 'Casino Screenshot',
+    description: 'Upload proof of your VIP status',
+    icon: Camera
+  },
+  {
+    id: 'chat',
+    title: 'Username Verification',
+    description: 'Verify your casino username',
+    icon: MessageSquare
+  }
+];
 
-  const casinos = ['all', 'Stake', 'Rollbit', 'Shuffle', 'Roobet', 'Gamdom'];
-  const tiers = ['all', 'Diamond', 'Platinum', 'Gold'];
-
-  const filteredVIPs = DEMO_VIPS.filter(vip => {
-    if (selectedCasino !== 'all' && vip.casino !== selectedCasino) return false;
-    if (selectedTier !== 'all' && vip.tier !== selectedTier) return false;
-    return true;
+function VerifyContent() {
+  const searchParams = useSearchParams();
+  const walletParam = searchParams.get('wallet');
+  
+  const [currentStep, setCurrentStep] = useState(0);
+  const [verificationComplete, setVerificationComplete] = useState(false);
+  const [formData, setFormData] = useState({
+    casinoUsername: '',
+    preferredCasino: 'Stake',
+  });
+  const [uploadedFiles, setUploadedFiles] = useState({
+    casino: null,
+    chat: null
   });
 
-  const formatPnL = (value) => {
-    if (value === 0) return '-';
-    const prefix = value >= 0 ? '+' : '';
-    return `${prefix}$${Math.abs(value).toLocaleString()}`;
+  const handleFileUpload = (stepId, e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setUploadedFiles({
+        ...uploadedFiles,
+        [stepId]: { name: file.name }
+      });
+    }
+  };
+
+  const handleNext = () => {
+    if (currentStep < VERIFICATION_STEPS.length - 1) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      setVerificationComplete(true);
+    }
   };
 
   return (
@@ -182,7 +98,9 @@ export default function VIPDashboard() {
                 <Link href="/marketplace" className="text-sm text-gray-300 hover:text-white transition-colors">
                   Account Marketplace
                 </Link>
-                <span className="text-sm text-white font-medium">VIP Offers</span>
+                <Link href="/vip-dashboard" className="text-sm text-gray-300 hover:text-white transition-colors">
+                  VIP Offers
+                </Link>
               </div>
             </div>
 
@@ -198,189 +116,263 @@ export default function VIPDashboard() {
         </div>
       </nav>
 
-      <main className="flex-1 max-w-[1400px] mx-auto px-6 py-8 w-full">
-        {/* Combined Header + CTA */}
-        <div className="mb-10">
-          <div className="flex items-start justify-between">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <Crown className="text-yellow-400" size={28} />
-                <h1 className="text-3xl font-bold text-white">VIP Offers</h1>
-              </div>
-              <p className="text-gray-400 max-w-xl">
-                Verify your wagering history and have casinos compete for your action with personalized VIP offers.
-              </p>
+      <main className="flex-1 max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {!verificationComplete ? (
+          <>
+            {/* Header */}
+            <div className="text-center mb-8">
+              <h1 className="text-2xl font-bold text-white mb-2">VIP Verification</h1>
+              <p className="text-sm text-gray-500">Complete verification to receive personalized casino offers</p>
             </div>
+
+            {/* Progress */}
+            <div className="flex items-center justify-center gap-2 mb-8">
+              {VERIFICATION_STEPS.map((step, index) => (
+                <div key={step.id} className="flex items-center">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                    index < currentStep 
+                      ? 'bg-purple-500 text-white' 
+                      : index === currentStep 
+                        ? 'bg-purple-500/20 text-purple-400 border border-purple-500'
+                        : 'bg-[#1a1a2e] text-gray-500'
+                  }`}>
+                    {index < currentStep ? <CheckCircle size={14} /> : index + 1}
+                  </div>
+                  {index < VERIFICATION_STEPS.length - 1 && (
+                    <div className={`w-12 h-0.5 mx-1 ${
+                      index < currentStep ? 'bg-purple-500' : 'bg-[#1a1a2e]'
+                    }`} />
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Step Content */}
+            <div className="bg-[#12121c] rounded-xl p-6 border border-gray-800/50">
+              {/* Step 0: Wallet */}
+              {currentStep === 0 && (
+                <div className="space-y-6">
+                  <div>
+                    <h2 className="text-lg font-semibold text-white mb-2">Wallet Ownership</h2>
+                    <p className="text-sm text-gray-400">
+                      Verify you own the wallet that was scanned.
+                    </p>
+                  </div>
+
+                  {walletParam && (
+                    <div className="bg-[#1a1a2e] rounded-lg p-3">
+                      <div className="text-xs text-gray-500 mb-1">Connected Wallet</div>
+                      <div className="font-mono text-sm text-gray-300 break-all">{walletParam}</div>
+                    </div>
+                  )}
+
+                  <div className="bg-[#1a1a2e] rounded-lg p-4">
+                    <div className="text-sm text-gray-400 mb-3">Choose verification method:</div>
+                    <div className="space-y-2">
+                      <button className="w-full p-3 bg-[#12121c] hover:bg-[#252540] rounded-lg border border-gray-700 hover:border-purple-500/50 text-left transition-all">
+                        <div className="text-sm text-white font-medium">Sign Message</div>
+                        <div className="text-xs text-gray-500">Free - Sign with your wallet</div>
+                      </button>
+                      <button className="w-full p-3 bg-[#12121c] hover:bg-[#252540] rounded-lg border border-gray-700 hover:border-purple-500/50 text-left transition-all">
+                        <div className="text-sm text-white font-medium">Micro Transaction</div>
+                        <div className="text-xs text-gray-500">Send 0.0001 ETH to verify</div>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="text-yellow-500 flex-shrink-0 mt-0.5" size={14} />
+                      <p className="text-xs text-gray-400">
+                        <span className="text-yellow-400">Demo:</span> Click continue to proceed without actual verification.
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleNext}
+                    className="w-full py-3 bg-yellow-500 hover:bg-yellow-400 text-black text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                  >
+                    Continue
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
+              )}
+
+              {/* Step 1: Casino Screenshot */}
+              {currentStep === 1 && (
+                <div className="space-y-6">
+                  <div>
+                    <h2 className="text-lg font-semibold text-white mb-2">Casino Screenshot</h2>
+                    <p className="text-sm text-gray-400">
+                      Upload a screenshot showing your VIP status.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-gray-400 mb-2">Casino</label>
+                    <select
+                      value={formData.preferredCasino}
+                      onChange={(e) => setFormData({ ...formData, preferredCasino: e.target.value })}
+                      className="w-full bg-[#1a1a2e] border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500"
+                    >
+                      <option>Stake</option>
+                      <option>Rollbit</option>
+                      <option>Shuffle</option>
+                      <option>Roobet</option>
+                      <option>Gamdom</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-gray-400 mb-2">Username</label>
+                    <input
+                      type="text"
+                      placeholder="Your casino username"
+                      value={formData.casinoUsername}
+                      onChange={(e) => setFormData({ ...formData, casinoUsername: e.target.value })}
+                      className="w-full bg-[#1a1a2e] border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-gray-400 mb-2">Screenshot</label>
+                    <div className="border border-dashed border-gray-700 rounded-lg p-6 text-center relative hover:border-purple-500/50 transition-colors">
+                      {uploadedFiles.casino ? (
+                        <div className="space-y-1">
+                          <CheckCircle className="text-purple-400 mx-auto" size={24} />
+                          <div className="text-sm text-white">{uploadedFiles.casino.name}</div>
+                          <button
+                            onClick={() => setUploadedFiles({ ...uploadedFiles, casino: null })}
+                            className="text-xs text-gray-500 hover:text-purple-400"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <Upload className="text-gray-500 mx-auto mb-2" size={24} />
+                          <div className="text-sm text-gray-400">Click to upload</div>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleFileUpload('casino', e)}
+                            className="absolute inset-0 opacity-0 cursor-pointer"
+                          />
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setCurrentStep(0)}
+                      className="flex-1 py-2.5 bg-[#1a1a2e] hover:bg-[#252540] text-gray-300 rounded-lg font-medium transition-colors"
+                    >
+                      Back
+                    </button>
+                    <button
+                      onClick={handleNext}
+                      className="flex-1 py-2.5 bg-yellow-500 hover:bg-yellow-400 text-black text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                    >
+                      Continue
+                      <ChevronRight size={16} />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 2: Chat Verification */}
+              {currentStep === 2 && (
+                <div className="space-y-6">
+                  <div>
+                    <h2 className="text-lg font-semibold text-white mb-2">Username Verification</h2>
+                    <p className="text-sm text-gray-400">
+                      Post a message in casino chat to verify your username.
+                    </p>
+                  </div>
+
+                  <div className="bg-[#1a1a2e] rounded-lg p-4 space-y-3">
+                    <div className="text-sm text-gray-400">Post this in {formData.preferredCasino}'s chat:</div>
+                    <div className="bg-[#0f0f1a] rounded p-3 font-mono text-sm text-purple-300 break-all">
+                      GamStart Verify: GS-{Date.now().toString(36).toUpperCase().slice(0, 6)}
+                    </div>
+                    <div className="text-xs text-gray-500">Then screenshot the chat showing your message</div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-gray-400 mb-2">Chat Screenshot</label>
+                    <div className="border border-dashed border-gray-700 rounded-lg p-6 text-center relative hover:border-purple-500/50 transition-colors">
+                      {uploadedFiles.chat ? (
+                        <div className="space-y-1">
+                          <CheckCircle className="text-purple-400 mx-auto" size={24} />
+                          <div className="text-sm text-white">{uploadedFiles.chat.name}</div>
+                          <button
+                            onClick={() => setUploadedFiles({ ...uploadedFiles, chat: null })}
+                            className="text-xs text-gray-500 hover:text-purple-400"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <Upload className="text-gray-500 mx-auto mb-2" size={24} />
+                          <div className="text-sm text-gray-400">Click to upload</div>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleFileUpload('chat', e)}
+                            className="absolute inset-0 opacity-0 cursor-pointer"
+                          />
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setCurrentStep(1)}
+                      className="flex-1 py-2.5 bg-[#1a1a2e] hover:bg-[#252540] text-gray-300 rounded-lg font-medium transition-colors"
+                    >
+                      Back
+                    </button>
+                    <button
+                      onClick={handleNext}
+                      className="flex-1 py-2.5 bg-yellow-500 hover:bg-yellow-400 text-black text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                    >
+                      Complete
+                      <CheckCircle size={16} />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </>
+        ) : (
+          /* Verification Complete */
+          <div className="text-center py-12">
+            <div className="w-16 h-16 rounded-full bg-purple-500/20 flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="text-purple-400" size={32} />
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-2">Verification Submitted</h2>
+            <p className="text-gray-400 mb-8 max-w-md mx-auto">
+              Your verification is being reviewed. You'll receive offers from casinos once approved.
+            </p>
             <Link
-              href="/verify"
-              className="px-6 py-3 bg-yellow-500 hover:bg-yellow-400 text-black rounded-lg font-medium transition-colors flex items-center gap-2"
+              href="/vip-dashboard"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-yellow-500 hover:bg-yellow-400 text-black text-white rounded-lg font-medium transition-colors"
             >
-              Get Verified
+              View VIP Dashboard
               <ChevronRight size={18} />
             </Link>
           </div>
-        </div>
-
-        {/* Recent Offers Section */}
-        <div className="mb-10">
-          <h2 className="text-lg font-semibold text-white mb-4">Recent Offers Accepted</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {DEMO_PAST_OFFERS.map((offer) => (
-              <div
-                key={offer.id}
-                className="bg-[#1a1a2e] rounded-xl p-5 border border-gray-800/50 hover:border-gray-700 transition-colors"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-white font-medium text-lg">{offer.casino}</span>
-                  <span className={`text-xs font-medium px-2 py-1 rounded ${
-                    offer.tier === 'Diamond' ? 'bg-cyan-500/20 text-cyan-400' :
-                    offer.tier === 'Platinum' ? 'bg-purple-500/20 text-purple-400' : 'bg-yellow-500/20 text-yellow-400'
-                  }`}>
-                    {offer.tier}
-                  </span>
-                </div>
-                <div className="text-xl font-semibold text-white mb-3">{offer.offer}</div>
-                <div className="flex items-center justify-between text-xs text-gray-500">
-                  <span className="font-mono">{offer.vipId}</span>
-                  <span className="flex items-center gap-1">
-                    <Clock size={10} />
-                    {offer.timeAgo}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Filters */}
-        <div className="flex flex-wrap items-center gap-3 mb-6">
-          <div className="flex items-center gap-2 px-4 py-2 bg-[#1a1a2e] rounded-lg border border-gray-700">
-            <span className="text-sm text-gray-400">Casino</span>
-            <select 
-              value={selectedCasino}
-              onChange={(e) => setSelectedCasino(e.target.value)}
-              className="bg-transparent text-white text-sm focus:outline-none cursor-pointer"
-            >
-              {casinos.map(c => <option key={c} value={c} className="bg-[#1a1a2e]">{c === 'all' ? 'All' : c}</option>)}
-            </select>
-          </div>
-          
-          <div className="flex items-center gap-2 px-4 py-2 bg-[#1a1a2e] rounded-lg border border-gray-700">
-            <span className="text-sm text-gray-400">Tier</span>
-            <select 
-              value={selectedTier}
-              onChange={(e) => setSelectedTier(e.target.value)}
-              className="bg-transparent text-white text-sm focus:outline-none cursor-pointer"
-            >
-              {tiers.map(t => <option key={t} value={t} className="bg-[#1a1a2e]">{t === 'all' ? 'All' : t}</option>)}
-            </select>
-          </div>
-
-          <div className="flex-1" />
-          <div className="text-sm text-gray-400">{filteredVIPs.length} verified VIPs</div>
-        </div>
-
-        {/* VIP Cards Grid - Luxurious Style */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {filteredVIPs.map((vip) => (
-            <div
-              key={vip.id}
-              className="bg-[#12121c] rounded-xl border border-gray-800/50 overflow-hidden hover:border-gray-700 transition-all group"
-            >
-              {/* Card Header with Tier Color */}
-              <div className={`px-4 py-3 ${
-                vip.tier === 'Diamond' ? 'bg-gradient-to-r from-cyan-500/10 to-transparent' :
-                vip.tier === 'Platinum' ? 'bg-gradient-to-r from-purple-500/10 to-transparent' :
-                'bg-gradient-to-r from-yellow-500/10 to-transparent'
-              }`}>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Lock className="text-gray-500" size={12} />
-                    <span className="font-mono text-sm text-gray-400">{vip.id}</span>
-                  </div>
-                  <span className={`text-xs font-semibold ${
-                    vip.tier === 'Diamond' ? 'text-cyan-400' :
-                    vip.tier === 'Platinum' ? 'text-purple-400' : 'text-yellow-400'
-                  }`}>
-                    {vip.tier}
-                  </span>
-                </div>
-              </div>
-
-              {/* Card Body */}
-              <div className="p-4 space-y-4">
-                {/* Casino */}
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold ${
-                    vip.tier === 'Diamond' ? 'bg-cyan-500/20' :
-                    vip.tier === 'Platinum' ? 'bg-purple-500/20' : 'bg-yellow-500/20'
-                  }`}>
-                    {vip.casino[0]}
-                  </div>
-                  <div>
-                    <div className="text-white font-medium">{vip.casino}</div>
-                    <div className="text-xs text-gray-500">{vip.lastActive}</div>
-                  </div>
-                </div>
-
-                {/* Stats */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-[#1a1a2e] rounded-lg p-3">
-                    <div className="text-xs text-gray-500 mb-1">Casino Vol</div>
-                    <div className="text-white font-medium">${(vip.volumeCasino / 1000).toFixed(0)}K</div>
-                  </div>
-                  <div className="bg-[#1a1a2e] rounded-lg p-3">
-                    <div className="text-xs text-gray-500 mb-1">Sports Vol</div>
-                    <div className="text-white font-medium">
-                      {vip.volumeSports > 0 ? `$${(vip.volumeSports / 1000).toFixed(0)}K` : '-'}
-                    </div>
-                  </div>
-                </div>
-
-                {/* P&L */}
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-500">P&L Casino</span>
-                  <span className={vip.pnlCasino >= 0 ? 'text-green-400 font-medium' : 'text-red-400 font-medium'}>
-                    {formatPnL(vip.pnlCasino)}
-                  </span>
-                </div>
-                {vip.pnlSports !== 0 && (
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-500">P&L Sports</span>
-                    <span className={vip.pnlSports >= 0 ? 'text-green-400 font-medium' : 'text-red-400 font-medium'}>
-                      {formatPnL(vip.pnlSports)}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {/* Card Footer */}
-              <div className="px-4 pb-4">
-                <button className="w-full py-2.5 bg-[#2a2a3e] hover:bg-[#3a3a4e] text-gray-300 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 group-hover:text-white">
-                  <Info size={14} />
-                  View Profile
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {filteredVIPs.length === 0 && (
-          <div className="py-16 text-center text-gray-500">
-            No VIPs match your filters
-          </div>
         )}
-
-        {/* Info */}
-        <div className="mt-10 text-center text-sm text-gray-600">
-          All player data is anonymized. Personal information is only shared after mutual consent.
-        </div>
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-gray-800/50 bg-[#0a0a14]">
-        <div className="max-w-[1400px] mx-auto px-6">
-          <div className="flex items-center justify-between h-14">
+      <footer className="border-t border-gray-800/50 bg-[#0a0a14]/80">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-12">
             <div className="text-gray-500 text-sm">© 2026 GamStart</div>
             <div className="flex items-center gap-4">
               <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-white transition-colors">
@@ -394,5 +386,24 @@ export default function VIPDashboard() {
         </div>
       </footer>
     </div>
+  );
+}
+
+function VerifyLoading() {
+  return (
+    <div className="min-h-screen bg-[#0f0f1a] flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-8 h-8 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-gray-400 text-sm">Loading...</p>
+      </div>
+    </div>
+  );
+}
+
+export default function VerifyPage() {
+  return (
+    <Suspense fallback={<VerifyLoading />}>
+      <VerifyContent />
+    </Suspense>
   );
 }
