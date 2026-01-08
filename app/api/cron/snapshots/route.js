@@ -230,15 +230,9 @@ async function fetchDepositsToHotWallet(hotWallet, startDate, endDate) {
   let page = 0;
   const MAX_PAGES = 500; // Safety limit to prevent timeouts
 
-  // For yesterday's data, we can use a wider block range since it's complete
-  // Go back 3 days to ensure we capture all of yesterday's transfers
-  const threeDaysAgo = new Date(startDate);
-  threeDaysAgo.setUTCDate(threeDaysAgo.getUTCDate() - 3);
-  const fromBlockNumber = await getBlockNumberForDate(threeDaysAgo);
-  const fromBlock = fromBlockNumber ? `0x${fromBlockNumber.toString(16)}` : '0x0';
-  
-  console.log(`   Using fromBlock: ${fromBlock} (approx block ${fromBlockNumber}, ~3 days ago)`);
-  console.log(`   Looking for transfers between ${startDate.toISOString()} and ${endDate.toISOString()}`);
+  // Don't use fromBlock - fetch all transfers and filter by date
+  // This avoids block estimation errors and ensures we get all transfers in our date range
+  console.log(`   Fetching all transfers (no block limit), filtering for ${startDate.toISOString()} to ${endDate.toISOString()}`);
 
   while (true) {
     try {
@@ -255,8 +249,7 @@ async function fetchDepositsToHotWallet(hotWallet, startDate, endDate) {
             maxCount: '0x3E8', // 1000 per page
             excludeZeroValue: true,
             withMetadata: true, // Required to get blockTimestamp
-            fromBlock: fromBlock, // Start from today's approximate block
-            toBlock: 'latest',
+            // No fromBlock/toBlock - fetch all and filter by date
             pageKey: pageKey
           }]
         })
@@ -323,11 +316,16 @@ async function fetchDepositsToHotWallet(hotWallet, startDate, endDate) {
           }
 
           // Check if transfer is too old (before our date range)
-          // Since transfers come in reverse chronological order, if we see one too old,
-          // all subsequent ones will also be too old
+          // Note: Transfers come in reverse chronological order (newest first)
+          // So if we see a transfer that's too old, we need to check if we've already
+          // found deposits in our range. If we have, we can stop. If not, we should continue.
           if (txDate < startDate) {
             transfersTooOld++;
-            allTransfersTooOld = true;
+            // Only mark as "all too old" if we haven't found any deposits yet
+            // This allows us to continue searching through pages
+            if (deposits.length === 0) {
+              allTransfersTooOld = true;
+            }
             return; // This transfer is too old
           }
 
@@ -392,11 +390,28 @@ async function fetchDepositsToHotWallet(hotWallet, startDate, endDate) {
         console.log(`   Page ${page}: Checked ${transfersChecked} transfers, ${transfersInRange} in range, ${transfersTooOld} too old, ${transfersTooNew} too new`);
       }
 
-      // Early exit: if all transfers in this page are too old, stop fetching
-      // (transfers come in reverse chronological order from Alchemy)
-      if (allTransfersTooOld && !foundDepositsInPage) {
-        console.log(`   All transfers too old, stopping fetch for ${hotWallet}`);
+      // Early exit logic:
+      // Since transfers come in reverse chronological order (newest first):
+      // 1. If we found deposits in this page, continue to see if there are more
+      // 2. If we found deposits previously but now all transfers are too old, we've passed our date range - stop
+      // 3. If we haven't found any deposits and all transfers are too old, continue for a few pages
+      //    in case there are transfers in our range on later pages (unlikely but possible)
+      // 4. If we've checked many pages with no deposits and all are too old, stop
+      
+      if (foundDepositsInPage && allTransfersTooOld && deposits.length > 0) {
+        // We found deposits but now seeing older transfers - we've passed our date range
+        console.log(`   Found ${deposits.length} deposits total, now seeing older transfers - stopping for ${hotWallet}`);
         break;
+      }
+      
+      if (!foundDepositsInPage && allTransfersTooOld) {
+        // No deposits found yet, but all transfers in this page are too old
+        // Continue for a few more pages in case there are transfers in range
+        if (page >= 10) {
+          // Checked 10+ pages, all too old, likely no transfers in range
+          console.log(`   No deposits found after ${page} pages (all transfers too old), stopping for ${hotWallet}`);
+          break;
+        }
       }
 
       // Reset counters for next page
@@ -443,4 +458,3 @@ async function fetchDepositsToHotWallet(hotWallet, startDate, endDate) {
   console.log(`   Found ${deposits.length} deposits for ${hotWallet}`);
   return deposits;
 }
-
