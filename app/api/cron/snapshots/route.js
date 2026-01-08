@@ -54,16 +54,18 @@ export async function POST(request) {
 }
 
 async function aggregatePlatformSnapshots() {
+  // Use UTC dates to match Alchemy's timestamp format
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const snapshotDate = today.toISOString().split('T')[0]; // YYYY-MM-DD
+  const todayUTC = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+  const snapshotDate = todayUTC.toISOString().split('T')[0]; // YYYY-MM-DD
 
-  // Get all transactions from today
-  const startOfDay = new Date(today);
-  const endOfDay = new Date(today);
-  endOfDay.setHours(23, 59, 59, 999);
+  // Get all transactions from today (UTC)
+  const startOfDay = new Date(todayUTC);
+  const endOfDay = new Date(todayUTC);
+  endOfDay.setUTCHours(23, 59, 59, 999);
 
   console.log(`Aggregating snapshots for ${snapshotDate} from casino hot wallets`);
+  console.log(`Date range (UTC): ${startOfDay.toISOString()} to ${endOfDay.toISOString()}`);
 
   // Fetch deposits to each casino hot wallet for today
   const casinoMap = {};
@@ -73,6 +75,7 @@ async function aggregatePlatformSnapshots() {
     console.log(`Fetching deposits for ${casinoName} (${hotWallet})...`);
     
     const deposits = await fetchDepositsToHotWallet(hotWallet, startOfDay, endOfDay);
+    console.log(`   Found ${deposits.length} deposits for ${casinoName}`);
     
     if (!casinoMap[casinoName]) {
       casinoMap[casinoName] = {
@@ -226,10 +229,14 @@ async function fetchDepositsToHotWallet(hotWallet, startDate, endDate) {
 
   // Get approximate block number for start of today
   // This limits the API query to recent blocks only
-  const fromBlockNumber = await getBlockNumberForDate(startDate);
+  // Go back 2 days to ensure we don't miss any transfers due to block time estimation errors
+  const twoDaysAgo = new Date(startDate);
+  twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+  const fromBlockNumber = await getBlockNumberForDate(twoDaysAgo);
   const fromBlock = fromBlockNumber ? `0x${fromBlockNumber.toString(16)}` : '0x0';
   
   console.log(`   Using fromBlock: ${fromBlock} (approx block ${fromBlockNumber}) for date filtering`);
+  console.log(`   Looking for transfers between ${startDate.toISOString()} and ${endDate.toISOString()}`);
 
   while (true) {
     try {
@@ -266,12 +273,26 @@ async function fetchDepositsToHotWallet(hotWallet, startDate, endDate) {
         break;
       }
 
+      // Log sample transfer dates for debugging (first page only)
+      if (page === 0 && transfers.length > 0) {
+        const sampleDates = transfers.slice(0, 3).map(t => 
+          t.metadata?.blockTimestamp ? new Date(t.metadata.blockTimestamp).toISOString() : 'N/A'
+        );
+        console.log(`   Sample transfer dates: ${sampleDates.join(', ')}`);
+      }
+
       let foundDepositsInPage = false;
       let allTransfersTooOld = true;
+      let transfersChecked = 0;
+      let transfersInRange = 0;
+      let transfersTooOld = 0;
+      let transfersTooNew = 0;
 
       // Filter transfers by date and process
       transfers.forEach(transfer => {
         try {
+          transfersChecked++;
+          
           // Skip transfers without metadata or blockTimestamp
           if (!transfer || !transfer.metadata || !transfer.metadata.blockTimestamp) {
             return; // Silently skip invalid transfers
@@ -288,16 +309,19 @@ async function fetchDepositsToHotWallet(hotWallet, startDate, endDate) {
           // Since transfers come in reverse chronological order, if we see one too old,
           // all subsequent ones will also be too old
           if (txDate < startDate) {
+            transfersTooOld++;
             allTransfersTooOld = true;
             return; // This transfer is too old
           }
 
           // Check if transfer is too new (after our date range)
           if (txDate > endDate) {
+            transfersTooNew++;
             return; // This transfer is too new, skip it
           }
           
           // Transfer is within our date range
+          transfersInRange++;
           foundDepositsInPage = true;
           allTransfersTooOld = false;
           
@@ -346,12 +370,23 @@ async function fetchDepositsToHotWallet(hotWallet, startDate, endDate) {
         }
       });
 
+      // Log page statistics
+      if (page % 10 === 0 || transfersInRange > 0) {
+        console.log(`   Page ${page}: Checked ${transfersChecked} transfers, ${transfersInRange} in range, ${transfersTooOld} too old, ${transfersTooNew} too new`);
+      }
+
       // Early exit: if all transfers in this page are too old, stop fetching
       // (transfers come in reverse chronological order from Alchemy)
       if (allTransfersTooOld && !foundDepositsInPage) {
         console.log(`   All transfers too old, stopping fetch for ${hotWallet}`);
         break;
       }
+
+      // Reset counters for next page
+      transfersChecked = 0;
+      transfersInRange = 0;
+      transfersTooOld = 0;
+      transfersTooNew = 0;
 
       // Safety limit: prevent infinite loops and timeouts
       if (page >= MAX_PAGES) {
