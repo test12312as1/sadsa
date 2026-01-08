@@ -827,8 +827,8 @@ export function toPlatformSnapshots(type = 'all') {
         unique_depositors: estimated.unique_depositors,
         new_depositors: estimated.new_depositors,
         avg_deposit_size: estimated.avg_deposit_size,
-        market_share: Math.round(casino.market_share * 100) / 100,
-        period_type: snapshot.period_type || 'daily'
+        market_share: Math.round(casino.market_share * 100) / 100
+        // Note: period_type is not in database schema, removed from insert
       };
     })
   );
