@@ -179,14 +179,57 @@ async function aggregatePlatformSnapshots() {
   };
 }
 
+async function getBlockNumberForDate(targetDate) {
+  // Get current block number
+  try {
+    const response = await fetch(ALCHEMY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'eth_blockNumber',
+        params: []
+      })
+    });
+
+    const data = await response.json();
+    if (data.error || !data.result) {
+      return null;
+    }
+
+    const currentBlock = parseInt(data.result, 16);
+    const now = Date.now();
+    const targetTime = targetDate.getTime();
+    const timeDiff = now - targetTime;
+    
+    // Ethereum blocks are ~12 seconds apart on average
+    const blocksPerSecond = 1 / 12;
+    const blocksToGoBack = Math.floor(timeDiff / 1000 * blocksPerSecond);
+    
+    // Add 10% buffer to ensure we don't miss any blocks
+    const estimatedBlock = currentBlock - Math.floor(blocksToGoBack * 1.1);
+    
+    // Ensure we don't go below block 0
+    return Math.max(0, estimatedBlock);
+  } catch (e) {
+    console.error('Error getting block number:', e);
+    return null;
+  }
+}
+
 async function fetchDepositsToHotWallet(hotWallet, startDate, endDate) {
   const deposits = [];
   let pageKey = undefined;
   let page = 0;
+  const MAX_PAGES = 500; // Safety limit to prevent timeouts
 
-  // Convert dates to Unix timestamps (Alchemy uses hex timestamps)
-  const startTimestamp = `0x${Math.floor(startDate.getTime() / 1000).toString(16)}`;
-  const endTimestamp = `0x${Math.floor(endDate.getTime() / 1000).toString(16)}`;
+  // Get approximate block number for start of today
+  // This limits the API query to recent blocks only
+  const fromBlockNumber = await getBlockNumberForDate(startDate);
+  const fromBlock = fromBlockNumber ? `0x${fromBlockNumber.toString(16)}` : '0x0';
+  
+  console.log(`   Using fromBlock: ${fromBlock} (approx block ${fromBlockNumber}) for date filtering`);
 
   while (true) {
     try {
@@ -202,7 +245,7 @@ async function fetchDepositsToHotWallet(hotWallet, startDate, endDate) {
             category: ['external', 'erc20'],
             maxCount: '0x3E8', // 1000 per page
             excludeZeroValue: true,
-            fromBlock: '0x0', // Start from beginning, filter by timestamp
+            fromBlock: fromBlock, // Start from today's approximate block
             toBlock: 'latest',
             pageKey: pageKey
           }]
@@ -223,6 +266,9 @@ async function fetchDepositsToHotWallet(hotWallet, startDate, endDate) {
         break;
       }
 
+      let foundDepositsInPage = false;
+      let allTransfersTooOld = true;
+
       // Filter transfers by date and process
       transfers.forEach(transfer => {
         try {
@@ -237,44 +283,58 @@ async function fetchDepositsToHotWallet(hotWallet, startDate, endDate) {
           if (isNaN(txDate.getTime())) {
             return; // Silently skip invalid dates
           }
-          
-          // Only include transfers within our date range
-          if (txDate >= startDate && txDate <= endDate) {
-            // Convert value to USD (simplified - should use price API)
-            let valueUSD = 0;
-            if (transfer.asset === 'ETH' || transfer.category === 'external') {
-              // ETH transfer
-              const ethValue = parseFloat(transfer.value || 0) / 1e18;
-              valueUSD = ethValue * 3300; // TODO: Use real price API
-            } else if (transfer.category === 'erc20') {
-              // ERC20 token transfer
-              const tokenValue = parseFloat(transfer.value || 0);
-              const decimals = transfer.rawContract?.decimals ? parseInt(transfer.rawContract.decimals, 16) : 18;
-              const adjustedValue = tokenValue / Math.pow(10, decimals);
-              
-              // Check if it's a stablecoin
-              const tokenSymbol = transfer.asset?.toUpperCase() || '';
-              if (tokenSymbol === 'USDT' || tokenSymbol === 'USDC' || tokenSymbol === 'DAI') {
-                valueUSD = adjustedValue; // 1:1 for stablecoins
-              } else {
-                // For other tokens, use ETH price as placeholder (TODO: use real price API)
-                valueUSD = adjustedValue * 3300;
-              }
-            }
 
-            // Ensure required fields exist
-            if (!transfer.from || !transfer.hash) {
-              return; // Silently skip transfers missing required fields
-            }
-
-            deposits.push({
-              from_address: transfer.from.toLowerCase(),
-              value_usd: valueUSD,
-              block_timestamp: txDate.toISOString(),
-              tx_hash: transfer.hash,
-              asset: transfer.asset || 'ETH'
-            });
+          // Check if transfer is too old (before our date range)
+          // Since transfers come in reverse chronological order, if we see one too old,
+          // all subsequent ones will also be too old
+          if (txDate < startDate) {
+            allTransfersTooOld = true;
+            return; // This transfer is too old
           }
+
+          // Check if transfer is too new (after our date range)
+          if (txDate > endDate) {
+            return; // This transfer is too new, skip it
+          }
+          
+          // Transfer is within our date range
+          foundDepositsInPage = true;
+          allTransfersTooOld = false;
+          
+          // Convert value to USD (simplified - should use price API)
+          let valueUSD = 0;
+          if (transfer.asset === 'ETH' || transfer.category === 'external') {
+            // ETH transfer
+            const ethValue = parseFloat(transfer.value || 0) / 1e18;
+            valueUSD = ethValue * 3300; // TODO: Use real price API
+          } else if (transfer.category === 'erc20') {
+            // ERC20 token transfer
+            const tokenValue = parseFloat(transfer.value || 0);
+            const decimals = transfer.rawContract?.decimals ? parseInt(transfer.rawContract.decimals, 16) : 18;
+            const adjustedValue = tokenValue / Math.pow(10, decimals);
+            
+            // Check if it's a stablecoin
+            const tokenSymbol = transfer.asset?.toUpperCase() || '';
+            if (tokenSymbol === 'USDT' || tokenSymbol === 'USDC' || tokenSymbol === 'DAI') {
+              valueUSD = adjustedValue; // 1:1 for stablecoins
+            } else {
+              // For other tokens, use ETH price as placeholder (TODO: use real price API)
+              valueUSD = adjustedValue * 3300;
+            }
+          }
+
+          // Ensure required fields exist
+          if (!transfer.from || !transfer.hash) {
+            return; // Silently skip transfers missing required fields
+          }
+
+          deposits.push({
+            from_address: transfer.from.toLowerCase(),
+            value_usd: valueUSD,
+            block_timestamp: txDate.toISOString(),
+            tx_hash: transfer.hash,
+            asset: transfer.asset || 'ETH'
+          });
         } catch (transferError) {
           // Silently skip individual transfer errors to continue processing
           // Log only if it's not a common validation error
@@ -286,6 +346,19 @@ async function fetchDepositsToHotWallet(hotWallet, startDate, endDate) {
         }
       });
 
+      // Early exit: if all transfers in this page are too old, stop fetching
+      // (transfers come in reverse chronological order from Alchemy)
+      if (allTransfersTooOld && !foundDepositsInPage) {
+        console.log(`   All transfers too old, stopping fetch for ${hotWallet}`);
+        break;
+      }
+
+      // Safety limit: prevent infinite loops and timeouts
+      if (page >= MAX_PAGES) {
+        console.log(`   Reached max pages limit (${MAX_PAGES}) for ${hotWallet}, stopping`);
+        break;
+      }
+
       // Rate limit protection
       await new Promise(r => setTimeout(r, 200));
 
@@ -295,7 +368,7 @@ async function fetchDepositsToHotWallet(hotWallet, startDate, endDate) {
 
       page++;
       if (page % 10 === 0) {
-        console.log(`   Processed ${page} pages for ${hotWallet}...`);
+        console.log(`   Processed ${page} pages, found ${deposits.length} deposits so far...`);
       }
     } catch (e) {
       // Check if it's a network/API error vs data validation error
@@ -318,4 +391,3 @@ async function fetchDepositsToHotWallet(hotWallet, startDate, endDate) {
   console.log(`   Found ${deposits.length} deposits for ${hotWallet}`);
   return deposits;
 }
-
