@@ -678,7 +678,7 @@ export default function GamStart() {
                   href="/vip-dashboard"
                   className="px-3 py-1.5 text-sm text-gray-400 hover:text-white transition-colors"
                 >
-                  Verified VIPs
+                  VIP Offers
                 </a>
               </div>
             </div>
@@ -1511,26 +1511,26 @@ export default function GamStart() {
 
                 {/* Bottom Actions */}
                 <div className="space-y-4 pt-4">
-                  {/* Sell & VIP Buttons - Side by Side */}
+                  {/* Sell & VIP Buttons - Matrix Pill Colors */}
                   <div className="flex gap-3 justify-center">
                     <a
                       href="/marketplace"
-                      className="flex items-center gap-2 px-4 py-2.5 bg-[#1a1a2e] hover:bg-[#252540] rounded-lg border border-gray-700 hover:border-purple-500/50 transition-all"
+                      className="flex items-center gap-2 px-4 py-2.5 bg-[#0a1628] hover:bg-[#0d1e38] rounded-lg border border-blue-500/30 hover:border-blue-400/50 transition-all"
                     >
-                      <ShoppingCart className="text-purple-400" size={16} />
+                      <ShoppingCart className="text-blue-400" size={16} />
                       <div className="text-left">
-                        <div className="text-xs text-gray-400">Sell Account</div>
-                        <div className="text-sm font-semibold text-white">Est. ${Math.round((results.financialImpact?.totalUSD || 0) * 0.15).toLocaleString()}</div>
+                        <div className="text-xs text-blue-300/70">Sell Account</div>
+                        <div className="text-sm font-semibold text-blue-100">Est. ${Math.round((results.financialImpact?.totalUSD || 0) * 0.15).toLocaleString()}</div>
                       </div>
                     </a>
                     <a
                       href="/vip-dashboard"
-                      className="flex items-center gap-2 px-4 py-2.5 bg-[#1a1a2e] hover:bg-[#252540] rounded-lg border border-gray-700 hover:border-purple-500/50 transition-all"
+                      className="flex items-center gap-2 px-4 py-2.5 bg-[#1a0a0a] hover:bg-[#2a0f0f] rounded-lg border border-red-500/30 hover:border-red-400/50 transition-all"
                     >
-                      <Gift className="text-purple-400" size={16} />
+                      <Gift className="text-red-400" size={16} />
                       <div className="text-left">
-                        <div className="text-xs text-gray-400">VIP Offers</div>
-                        <div className="text-sm font-semibold text-white">{results.financialImpact?.totalUSD >= 50000 ? '5+' : results.financialImpact?.totalUSD >= 10000 ? '3+' : '1+'} Available</div>
+                        <div className="text-xs text-red-300/70">VIP Offers</div>
+                        <div className="text-sm font-semibold text-red-100">{results.financialImpact?.totalUSD >= 50000 ? '5+' : results.financialImpact?.totalUSD >= 10000 ? '3+' : '1+'} Available</div>
                       </div>
                     </a>
                   </div>
@@ -1577,3 +1577,4 @@ export default function GamStart() {
     </div>
   );
 }
+
