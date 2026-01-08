@@ -14,12 +14,13 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const timeRange = searchParams.get('range') || '12w';
     const metric = searchParams.get('metric') || 'volume';
+    const rankingPeriod = searchParams.get('rankingPeriod') || 'week';
 
     // Get current week totals
     const weekTotals = await getWeekTotals();
 
-    // Get casino stats
-    const casinos = await getCasinoStats();
+    // Get casino stats (filtered by ranking period)
+    const casinos = await getCasinoStats(rankingPeriod);
 
     // Get top gainers and declines
     const { gainers, declines } = await getMovers();
@@ -105,22 +106,32 @@ async function getWeekTotals() {
   };
 }
 
-async function getCasinoStats() {
+async function getCasinoStats(period = 'week') {
   // Get stats from platform_snapshots (populated from hot wallets)
-  // Use the most recent snapshot for each casino
-  const today = new Date().toISOString().split('T')[0];
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  // Filter by period: week (7 days), month (30 days), year (365 days)
+  const today = new Date();
+  const startDate = new Date();
   
-  // Get latest snapshot for each casino (within last 7 days)
+  if (period === 'week') {
+    startDate.setDate(today.getDate() - 7);
+  } else if (period === 'month') {
+    startDate.setDate(today.getDate() - 30);
+  } else if (period === 'year') {
+    startDate.setDate(today.getDate() - 365);
+  } else {
+    startDate.setDate(today.getDate() - 7); // Default to week
+  }
+  
+  // Get snapshots for the selected period
   const { data: snapshots } = await supabase
     .from('platform_snapshots')
     .select('casino_name, total_volume, total_deposits, unique_depositors, snapshot_date')
-    .gte('snapshot_date', sevenDaysAgo.toISOString().split('T')[0])
+    .gte('snapshot_date', startDate.toISOString().split('T')[0])
     .order('snapshot_date', { ascending: false });
 
   if (snapshots && snapshots.length > 0) {
-    // Get the most recent snapshot for each casino
+    // For rankings, use the most recent snapshot for each casino (not aggregated)
+    // This gives current rankings rather than cumulative totals
     const casinoMap = {};
     snapshots.forEach(s => {
       if (!casinoMap[s.casino_name] || 
@@ -441,6 +452,3 @@ function getDefaultTrends() {
     { week: 'Jan 5', stake: 441, duel: 65, shuffle: 40, roobet: 93, gamdom: 37 }
   ];
 }
-
-
-
