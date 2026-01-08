@@ -1,125 +1,89 @@
 'use client';
 
 import { useState } from 'react';
-import { Crown, Lock, Clock, ChevronRight, BarChart3 } from 'lucide-react';
+import { Crown, Clock, ChevronRight, BarChart3, Building2 } from 'lucide-react';
 import Link from 'next/link';
 
-// Demo verified VIPs (anonymized)
+// Demo verified VIPs (anonymized) - with game preferences instead of casino
 const DEMO_VIPS = [
   {
-    id: 'VIP-8A2F',
-    casino: 'Stake',
-    tier: 'Diamond',
+    gameOfChoice: 'Hacksaw Slots Player',
     volumeCasino: 285000,
     volumeSports: 42000,
-    pnlCasino: -38000,
-    pnlSports: -4200,
     lastActive: '2h ago',
   },
   {
-    id: 'VIP-3K9D',
-    casino: 'Rollbit',
-    tier: 'Platinum',
+    gameOfChoice: 'Basketball Bettor',
     volumeCasino: 142000,
     volumeSports: 0,
-    pnlCasino: -18500,
-    pnlSports: 0,
     lastActive: '5h ago',
   },
   {
-    id: 'VIP-7M1X',
-    casino: 'Shuffle',
-    tier: 'Platinum',
+    gameOfChoice: 'Plinko Player',
     volumeCasino: 195000,
     volumeSports: 67000,
-    pnlCasino: -31000,
-    pnlSports: 3200,
     lastActive: '1d ago',
   },
   {
-    id: 'VIP-2P5N',
-    casino: 'Stake',
-    tier: 'Gold',
+    gameOfChoice: 'Roulette Specialist',
     volumeCasino: 78000,
     volumeSports: 28000,
-    pnlCasino: 12000,
-    pnlSports: -1800,
     lastActive: '3h ago',
   },
   {
-    id: 'VIP-9Q4R',
-    casino: 'Roobet',
-    tier: 'Diamond',
+    gameOfChoice: 'Blackjack Pro',
     volumeCasino: 420000,
     volumeSports: 0,
-    pnlCasino: -89000,
-    pnlSports: 0,
     lastActive: '30m ago',
   },
   {
-    id: 'VIP-5T8W',
-    casino: 'Gamdom',
-    tier: 'Gold',
+    gameOfChoice: 'Football Bettor',
     volumeCasino: 52000,
     volumeSports: 35000,
-    pnlCasino: -8200,
-    pnlSports: -5000,
     lastActive: '1w ago',
   },
   {
-    id: 'VIP-4L2M',
-    casino: 'Shuffle',
-    tier: 'Diamond',
+    gameOfChoice: 'Crash Game Enthusiast',
     volumeCasino: 380000,
     volumeSports: 120000,
-    pnlCasino: -65000,
-    pnlSports: -18000,
     lastActive: '4h ago',
   },
   {
-    id: 'VIP-6N8P',
-    casino: 'Stake',
-    tier: 'Platinum',
+    gameOfChoice: 'Live Dealer Regular',
     volumeCasino: 165000,
     volumeSports: 45000,
-    pnlCasino: -28000,
-    pnlSports: 5200,
     lastActive: '12h ago',
   }
 ];
 
-// Demo past/example offers (personalized offers that were made)
+// Demo recent offers - more general, showcasing possibilities
 const DEMO_PAST_OFFERS = [
   {
     id: 'offer-001',
-    casino: 'Stake',
-    offer: '$2,500 Welcome Package',
-    vipId: 'VIP-8A2F',
-    tier: 'Diamond',
+    offer: 'VIP Transfer',
+    description: 'High-volume player with $285K casino wagering',
+    wager: '$285K',
     timeAgo: '3 days ago'
   },
   {
     id: 'offer-002',
-    casino: 'Rollbit',
-    offer: '$1,000 Reload Bonus',
-    vipId: 'VIP-3K9D',
-    tier: 'Platinum',
+    offer: 'Custom Sports Betting Limits',
+    description: 'Verified bettor with $67K sports volume',
+    wager: '$67K',
     timeAgo: '1 week ago'
   },
   {
     id: 'offer-003',
-    casino: 'Shuffle',
-    offer: 'Personal VIP Host + $500',
-    vipId: 'VIP-7M1X',
-    tier: 'Platinum',
+    offer: 'Personal VIP Host',
+    description: 'Dedicated host assigned to $195K casino player',
+    wager: '$195K',
     timeAgo: '2 weeks ago'
   },
   {
     id: 'offer-004',
-    casino: 'Gamdom',
-    offer: '$750 No-Strings Bonus',
-    vipId: 'VIP-9Q4R',
-    tier: 'Diamond',
+    offer: 'Exclusive Reload Bonus',
+    description: 'Custom reload package for $420K volume player',
+    wager: '$420K',
     timeAgo: '5 days ago'
   }
 ];
@@ -139,19 +103,19 @@ const DiscordIcon = ({ size = 18 }) => (
 );
 
 export default function VIPDashboard() {
-  const [selectedCasino, setSelectedCasino] = useState('all');
-
-  const casinos = ['all', 'Stake', 'Rollbit', 'Shuffle', 'Roobet', 'Gamdom'];
-
-  const filteredVIPs = DEMO_VIPS.filter(vip => {
-    if (selectedCasino !== 'all' && vip.casino !== selectedCasino) return false;
-    return true;
+  const [showCasinoVerifyModal, setShowCasinoVerifyModal] = useState(false);
+  const [casinoFormData, setCasinoFormData] = useState({
+    type: 'operator',
+    brandName: '',
+    telegram: ''
   });
 
-  const formatPnL = (value) => {
-    if (value === 0) return '-';
-    const prefix = value >= 0 ? '+' : '';
-    return `${prefix}$${Math.abs(value).toLocaleString()}`;
+  const handleCasinoVerify = async (e) => {
+    e.preventDefault();
+    // Handle casino/affiliate verification submission
+    console.log('Casino verification:', casinoFormData);
+    setShowCasinoVerifyModal(false);
+    // Show success message
   };
 
   return (
@@ -271,13 +235,10 @@ export default function VIPDashboard() {
                 key={offer.id}
                 className="bg-[#12121c] rounded-xl p-4 border border-gray-800/50 hover:border-purple-500/30 transition-colors"
               >
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-white font-medium">{offer.casino}</span>
-                  <span className="text-xs text-gray-500">{offer.tier}</span>
-                </div>
                 <div className="text-lg font-semibold text-white mb-2">{offer.offer}</div>
+                <div className="text-sm text-gray-400 mb-3">{offer.description}</div>
                 <div className="flex items-center justify-between text-xs text-gray-500">
-                  <span className="font-mono">{offer.vipId}</span>
+                  <span>Wager: {offer.wager}</span>
                   <span className="flex items-center gap-1">
                     <Clock size={10} />
                     {offer.timeAgo}
@@ -288,63 +249,46 @@ export default function VIPDashboard() {
           </div>
         </div>
 
-        {/* Filters */}
-        <div className="flex flex-wrap items-center gap-3 mb-6">
-          <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wide">Verified VIPs</h2>
-          <div className="flex-1" />
-          
-          <div className="flex items-center bg-[#1a1a2e] rounded-lg p-0.5">
-            {casinos.map(c => (
-              <button 
-                key={c}
-                onClick={() => setSelectedCasino(c)}
-                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                  selectedCasino === c
-                    ? 'bg-purple-500 text-white'
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                {c === 'all' ? 'All' : c}
-              </button>
-            ))}
+        {/* Casino/Affiliate Representative Section */}
+        <div className="bg-[#12121c] rounded-xl p-6 border border-gray-800/50 mb-8">
+          <div className="flex items-center gap-3 mb-3">
+            <Building2 className="text-purple-400" size={20} />
+            <h2 className="text-lg font-semibold text-white">For Casino & Affiliate Representatives</h2>
           </div>
+          <p className="text-sm text-gray-400 mb-4">
+            Are you a representative of a casino or an affiliate? Get verified and send offers to verified high rollers.
+          </p>
+          <button
+            onClick={() => setShowCasinoVerifyModal(true)}
+            className="px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-medium transition-colors inline-flex items-center gap-2"
+          >
+            Get Verified
+            <ChevronRight size={16} />
+          </button>
+        </div>
 
-          <div className="text-sm text-gray-500">
-            {filteredVIPs.length} VIPs
+        {/* Verified VIPs Section */}
+        <div className="mb-6">
+          <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wide mb-4">Verified VIPs</h2>
+          <div className="text-sm text-gray-500 mb-4">
+            {DEMO_VIPS.length} verified VIPs
           </div>
         </div>
 
-        {/* VIP Cards Grid - Consistent Purple Branding */}
+        {/* VIP Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {filteredVIPs.map((vip) => (
+          {DEMO_VIPS.map((vip, index) => (
             <div
-              key={vip.id}
+              key={index}
               className="bg-[#12121c] rounded-xl border border-gray-800/50 overflow-hidden hover:border-purple-500/30 transition-all group"
             >
               {/* Card Header */}
               <div className="px-4 py-3 border-b border-gray-800/50 bg-purple-500/5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Lock className="text-gray-600" size={12} />
-                    <span className="font-mono text-sm text-gray-400">{vip.id}</span>
-                  </div>
-                  <span className="text-xs text-gray-500">{vip.tier}</span>
-                </div>
+                <div className="text-white font-medium text-sm">{vip.gameOfChoice}</div>
               </div>
 
               {/* Card Body */}
               <div className="p-4 space-y-4">
-                {/* Casino */}
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 font-bold">
-                    {vip.casino[0]}
-                  </div>
-                  <div>
-                    <div className="text-white font-medium">{vip.casino}</div>
-                    <div className="text-xs text-gray-500">{vip.lastActive}</div>
-                  </div>
-                </div>
-
                 {/* Stats */}
                 <div className="grid grid-cols-2 gap-2">
                   <div className="bg-[#0a0a14] rounded-lg p-2.5">
@@ -359,31 +303,17 @@ export default function VIPDashboard() {
                   </div>
                 </div>
 
-                {/* P&L */}
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-500">P&L Casino</span>
-                    <span className={vip.pnlCasino >= 0 ? 'text-green-400' : 'text-red-400'}>
-                      {formatPnL(vip.pnlCasino)}
-                    </span>
-                  </div>
-                  {vip.pnlSports !== 0 && (
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-gray-500">P&L Sports</span>
-                      <span className={vip.pnlSports >= 0 ? 'text-green-400' : 'text-red-400'}>
-                        {formatPnL(vip.pnlSports)}
-                      </span>
-                    </div>
-                  )}
+                <div className="text-xs text-gray-500">
+                  Last active: {vip.lastActive}
                 </div>
               </div>
             </div>
           ))}
         </div>
 
-        {filteredVIPs.length === 0 && (
+        {DEMO_VIPS.length === 0 && (
           <div className="py-16 text-center text-gray-500">
-            No VIPs match your filters
+            No VIPs available
           </div>
         )}
 
@@ -409,6 +339,81 @@ export default function VIPDashboard() {
           </div>
         </div>
       </footer>
+
+      {/* Casino/Affiliate Verify Modal */}
+      {showCasinoVerifyModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-[#12121c] rounded-xl p-6 max-w-md w-full border border-gray-800">
+            <h3 className="text-lg font-semibold text-white mb-4">Casino / Affiliate Verification</h3>
+            <form onSubmit={handleCasinoVerify} className="space-y-4">
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">Type</label>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setCasinoFormData({...casinoFormData, type: 'operator'})}
+                    className={`flex-1 py-2.5 rounded-lg font-medium transition-colors ${
+                      casinoFormData.type === 'operator'
+                        ? 'bg-purple-600 text-white'
+                        : 'bg-[#1a1a2e] text-gray-300 hover:bg-[#252540]'
+                    }`}
+                  >
+                    Operator
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCasinoFormData({...casinoFormData, type: 'affiliate'})}
+                    className={`flex-1 py-2.5 rounded-lg font-medium transition-colors ${
+                      casinoFormData.type === 'affiliate'
+                        ? 'bg-purple-600 text-white'
+                        : 'bg-[#1a1a2e] text-gray-300 hover:bg-[#252540]'
+                    }`}
+                  >
+                    Affiliate
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">Brand Name</label>
+                <input
+                  type="text"
+                  value={casinoFormData.brandName}
+                  onChange={(e) => setCasinoFormData({...casinoFormData, brandName: e.target.value})}
+                  className="w-full bg-[#0a0a14] border border-gray-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-purple-500"
+                  placeholder="Enter brand name"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">Telegram</label>
+                <input
+                  type="text"
+                  value={casinoFormData.telegram}
+                  onChange={(e) => setCasinoFormData({...casinoFormData, telegram: e.target.value})}
+                  className="w-full bg-[#0a0a14] border border-gray-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-purple-500"
+                  placeholder="@username"
+                  required
+                />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowCasinoVerifyModal(false)}
+                  className="flex-1 py-2.5 bg-[#1a1a2e] hover:bg-[#252540] text-gray-300 rounded-lg font-medium transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-medium transition-colors"
+                >
+                  Submit
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
