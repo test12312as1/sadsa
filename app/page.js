@@ -629,38 +629,37 @@ export default function GamStart() {
 
   return (
     <div className="min-h-screen bg-[#0f0f1a] flex flex-col">
-      {/* Navbar - DexCheck Style */}
-      <nav className="bg-[#1a1a1a] sticky top-0 z-50">
-        <div className="max-w-[1400px] mx-auto px-6">
-          <div className="flex items-center justify-between h-16">
-            {/* Left: Logo + Primary Tabs */}
-            <div className="flex items-center gap-8">
+      {/* Navbar */}
+      <nav className="border-b border-gray-800/50 bg-[#0a0a14]/80 backdrop-blur-sm sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-14">
+            <div className="flex items-center gap-6">
               <button 
                 onClick={() => { setResults(null); setAddress(''); setExpandedMetric(null); setReportView('traits'); setActiveTab('players'); }}
-                className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+                className="flex items-center gap-2 text-white font-semibold text-lg hover:opacity-80 transition-opacity"
               >
-                <span className="text-yellow-400 text-2xl">◈</span>
-                <span className="text-white font-bold text-xl">GamStart</span>
+                <span className="text-purple-500">◈</span>
+                GamStart
               </button>
               
-              {/* Primary Tabs */}
-              <div className="flex items-center bg-[#2a2a2a] rounded-lg p-1">
+              {/* Primary Tabs - Players & Casinos */}
+              <div className="flex items-center bg-[#1a1a2e] rounded-lg p-0.5">
                 <button
                   onClick={() => { setActiveTab('players'); setResults(null); setAddress(''); }}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                  className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
                     activeTab === 'players'
-                      ? 'bg-[#3a3a3a] text-white'
-                      : 'text-gray-400 hover:text-white'
+                      ? 'bg-[#2a2a3e] text-white'
+                      : 'text-gray-400 hover:text-gray-300'
                   }`}
                 >
                   Players
                 </button>
                 <button
                   onClick={() => { setActiveTab('platforms'); setResults(null); }}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                  className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
                     activeTab === 'platforms'
-                      ? 'bg-[#3a3a3a] text-white'
-                      : 'text-gray-400 hover:text-white'
+                      ? 'bg-[#2a2a3e] text-white'
+                      : 'text-gray-400 hover:text-gray-300'
                   }`}
                 >
                   Casinos
@@ -668,28 +667,27 @@ export default function GamStart() {
               </div>
 
               {/* Secondary Links */}
-              <div className="hidden lg:flex items-center gap-6">
+              <div className="hidden md:flex items-center gap-1">
                 <a
                   href="/marketplace"
-                  className="text-sm text-gray-300 hover:text-white transition-colors"
+                  className="px-3 py-1.5 text-sm text-gray-400 hover:text-white transition-colors"
                 >
                   Account Marketplace
                 </a>
                 <a
                   href="/vip-dashboard"
-                  className="text-sm text-gray-300 hover:text-white transition-colors"
+                  className="px-3 py-1.5 text-sm text-gray-400 hover:text-white transition-colors"
                 >
                   VIP Offers
                 </a>
               </div>
             </div>
 
-            {/* Right: Social + Actions */}
-            <div className="flex items-center gap-4">
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
+            <div className="flex items-center gap-3">
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="p-2 text-gray-400 hover:text-white transition-colors">
                 <TwitterIcon size={18} />
               </a>
-              <a href="https://discord.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
+              <a href="https://discord.com" target="_blank" rel="noopener noreferrer" className="p-2 text-gray-400 hover:text-white transition-colors">
                 <DiscordIcon size={18} />
               </a>
             </div>
@@ -1579,3 +1577,4 @@ export default function GamStart() {
     </div>
   );
 }
+
