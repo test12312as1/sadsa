@@ -411,6 +411,7 @@ export default function GamStart() {
   const [selectedCasinos, setSelectedCasinos] = useState(['Stake', 'Duel', 'Roobet', 'Shuffle', 'Gamdom']);
   const [platformData, setPlatformData] = useState(PLATFORM_DATA); // Start with default data
   const [platformLoading, setPlatformLoading] = useState(false);
+  const [rankingTimePeriod, setRankingTimePeriod] = useState('week'); // week, month, year
 
   // Fetch platform data when tab changes to platforms
   useEffect(() => {
@@ -809,7 +810,10 @@ export default function GamStart() {
                   <span className="text-xs text-gray-500 uppercase tracking-wide">Casino Selection</span>
                   <div className="flex gap-2">
                     <button
-                      onClick={() => setSelectedCasinos(['Stake', 'Duel', 'Roobet', 'Shuffle', 'Gamdom'])}
+                      onClick={() => {
+                        const top5 = platformData.casinos.slice(0, 5).map(c => c.name);
+                        setSelectedCasinos(top5);
+                      }}
                       className="px-2 py-1 text-[10px] bg-[#1a1a2e] text-gray-400 hover:text-white rounded transition-colors"
                     >
                       Top 5
@@ -828,9 +832,10 @@ export default function GamStart() {
                     </button>
             </div>
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className="overflow-x-auto -mx-4 px-4">
+                  <div className="flex gap-2 min-w-max pb-2">
                     {platformData.casinos.map((casino) => (
-                    <div key={casino.name} className="flex items-center gap-1">
+                    <div key={casino.name} className="flex items-center gap-1 shrink-0">
                       <button
                         onClick={() => {
                           if (selectedCasinos.includes(casino.name)) {
@@ -839,27 +844,28 @@ export default function GamStart() {
                             setSelectedCasinos([...selectedCasinos, casino.name]);
                           }
                         }}
-                        className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-2 ${
+                        className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-2 whitespace-nowrap ${
                           selectedCasinos.includes(casino.name)
                             ? 'bg-purple-500/20 text-purple-300 border border-purple-500/50'
                             : 'bg-[#1a1a2e] text-gray-500 hover:text-gray-300 border border-transparent'
                         }`}
                       >
                         <div 
-                          className="w-2 h-2 rounded-full" 
+                          className="w-2 h-2 rounded-full shrink-0" 
                           style={{ backgroundColor: selectedCasinos.includes(casino.name) ? casino.color : '#4b5563' }} 
                         />
                         {casino.name}
                       </button>
                       <a
                         href={`/casino/${encodeURIComponent(casino.name)}`}
-                        className="px-2 py-1.5 text-xs text-gray-500 hover:text-purple-400 transition-colors"
+                        className="px-2 py-1.5 text-xs text-gray-500 hover:text-purple-400 transition-colors shrink-0"
                         title="View details"
                       >
                         →
                       </a>
                     </div>
                   ))}
+                  </div>
                 </div>
               </div>
         </div>
@@ -875,39 +881,61 @@ export default function GamStart() {
               </div>
               
               {/* Chart with gradient area */}
-              <div className="h-44 relative mb-3">
-                {/* Y-axis labels */}
-                <div className="absolute left-0 top-0 bottom-6 w-12 flex flex-col justify-between text-[10px] text-gray-600">
-                  <span>$800M</span>
-                  <span>$600M</span>
-                  <span>$400M</span>
-                  <span>$200M</span>
-                  <span>$0</span>
-                </div>
-                {/* Chart area */}
-                <div className="absolute left-14 right-0 top-0 bottom-0 flex items-end justify-between gap-0.5">
-                  {platformData.weeklyTrends.map((week, i) => (
-                    <div key={i} className="flex-1 flex flex-col items-center gap-1 group">
-                      <div className="w-full relative">
-                        <div 
-                          className="w-full bg-gradient-to-t from-purple-500/60 to-purple-400/20 rounded-t transition-all group-hover:from-purple-500/80 group-hover:to-purple-400/40"
-                          style={{ height: `${(week.stake / 720) * 140}px` }}
-                        />
-                      </div>
-                      <div className="text-[8px] text-gray-600 truncate w-full text-center opacity-0 group-hover:opacity-100 transition-opacity">{week.week}</div>
-                    </div>
-                  ))}
+              <div className="h-44 relative mb-3 overflow-x-auto">
+                <div className="min-w-full" style={{ minWidth: `${Math.max(platformData.weeklyTrends.length * 40, 600)}px` }}>
+                  {/* Y-axis labels */}
+                  <div className="absolute left-0 top-0 bottom-6 w-12 flex flex-col justify-between text-[10px] text-gray-600">
+                    <span>$800M</span>
+                    <span>$600M</span>
+                    <span>$400M</span>
+                    <span>$200M</span>
+                    <span>$0</span>
+                  </div>
+                  {/* Chart area */}
+                  <div className="absolute left-14 right-0 top-0 bottom-0 flex items-end gap-0.5" style={{ minWidth: `${platformData.weeklyTrends.length * 40}px` }}>
+                    {platformData.weeklyTrends.map((week, i) => {
+                      // Calculate total volume for selected casinos
+                      const selectedCasinoData = selectedCasinos.length > 0 
+                        ? selectedCasinos.map(casinoName => {
+                            const casinoKey = casinoName.toLowerCase().replace(/[^a-z0-9]/g, '');
+                            return (week[casinoKey] || 0) * 1000000; // Convert back from millions
+                          }).reduce((sum, val) => sum + val, 0)
+                        : platformData.casinos.reduce((sum, c) => {
+                            const casinoKey = c.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+                            return sum + ((week[casinoKey] || 0) * 1000000);
+                          }, 0);
+                      
+                      const maxValue = 800000000; // $800M
+                      const heightPercent = Math.min((selectedCasinoData / maxValue) * 100, 100);
+                      
+                      return (
+                        <div key={i} className="flex-1 flex flex-col items-center gap-1 group min-w-[40px]">
+                          <div className="w-full relative h-full flex items-end">
+                            <div 
+                              className="w-full bg-gradient-to-t from-purple-500/60 to-purple-400/20 rounded-t transition-all group-hover:from-purple-500/80 group-hover:to-purple-400/40"
+                              style={{ height: `${heightPercent}%`, minHeight: '2px' }}
+                            />
+                          </div>
+                          <div className="text-[8px] text-gray-600 truncate w-full text-center opacity-0 group-hover:opacity-100 transition-opacity">{week.week}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
               
               {/* Legend */}
               <div className="flex flex-wrap gap-3 text-xs border-t border-gray-800/50 pt-3">
-                {platformData.casinos.filter(c => selectedCasinos.includes(c.name)).slice(0, 5).map((casino) => (
-                  <div key={casino.name} className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: casino.color }} />
-                    <span className="text-gray-400">{casino.name}</span>
-                  </div>
-                ))}
+                {selectedCasinos.length > 0 ? (
+                  platformData.casinos.filter(c => selectedCasinos.includes(c.name)).map((casino) => (
+                    <div key={casino.name} className="flex items-center gap-1.5">
+                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: casino.color }} />
+                      <span className="text-gray-400">{casino.name}</span>
+                    </div>
+                  ))
+                ) : (
+                  <span className="text-gray-500 text-xs">Select casinos to view trends</span>
+                )}
               </div>
             </div>
 
@@ -915,9 +943,12 @@ export default function GamStart() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
               {/* Top Gainers */}
               <div className="bg-[#12121c] rounded-xl p-4 border border-gray-800/50">
-                <div className="flex items-center gap-2 mb-3">
-                  <TrendingUp className="text-green-400" size={16} />
-                  <span className="text-sm font-medium text-white">Top Gainers</span>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="text-green-400" size={16} />
+                    <span className="text-sm font-medium text-white">Top Gainers</span>
+                  </div>
+                  <span className="text-xs text-gray-500">Week</span>
                 </div>
                 <div className="space-y-2">
                   {platformData.topGainers.slice(0, 4).map((casino, i) => (
@@ -939,9 +970,12 @@ export default function GamStart() {
 
               {/* Biggest Declines */}
               <div className="bg-[#12121c] rounded-xl p-4 border border-gray-800/50">
-                <div className="flex items-center gap-2 mb-3">
-                  <TrendingDown className="text-red-400" size={16} />
-                  <span className="text-sm font-medium text-white">Biggest Declines</span>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <TrendingDown className="text-red-400" size={16} />
+                    <span className="text-sm font-medium text-white">Biggest Declines</span>
+                  </div>
+                  <span className="text-xs text-gray-500">Week</span>
                 </div>
                 <div className="space-y-2">
                   {platformData.topDeclines.slice(0, 4).map((casino, i) => (
@@ -965,11 +999,31 @@ export default function GamStart() {
             {/* Casino Leaderboard - Cleaner table */}
             <div className="bg-[#12121c] rounded-xl border border-gray-800/50 overflow-hidden">
               <div className="px-4 py-3 border-b border-gray-800/50">
-                <div className="flex items-center gap-2">
-                  <Trophy className="text-purple-400" size={16} />
-                  <span className="text-sm font-medium text-white">Casino Rankings</span>
-                          </div>
-                          </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Trophy className="text-purple-400" size={16} />
+                    <span className="text-sm font-medium text-white">Casino Rankings</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-500 uppercase tracking-wide">Period:</span>
+                    <div className="flex items-center bg-[#1a1a2e] rounded-lg p-0.5">
+                      {['week', 'month', 'year'].map((period) => (
+                        <button
+                          key={period}
+                          onClick={() => setRankingTimePeriod(period)}
+                          className={`px-3 py-1 rounded-md text-xs font-medium transition-all capitalize ${
+                            rankingTimePeriod === period
+                              ? 'bg-purple-500 text-white'
+                              : 'text-gray-400 hover:text-white'
+                          }`}
+                        >
+                          {period}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
@@ -1577,3 +1631,4 @@ export default function GamStart() {
     </div>
   );
 }
+
