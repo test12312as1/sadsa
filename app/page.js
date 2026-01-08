@@ -652,23 +652,23 @@ export default function GamStart() {
               </button>
               
               {/* Primary Tabs - Players & Casinos */}
-              <div className="flex items-center bg-[#1a1a2e] rounded-lg p-0.5 border border-purple-500/20">
+              <div className="flex items-center bg-[#1a1a2e] rounded-lg p-0.5">
                 <button
                   onClick={() => { setActiveTab('players'); setResults(null); setAddress(''); }}
-                  className={`px-5 py-2 rounded-md text-sm font-semibold transition-all ${
+                  className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
                     activeTab === 'players'
-                      ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
-                      : 'text-gray-400 hover:text-white hover:bg-[#252540]'
+                      ? 'bg-[#252540] text-white'
+                      : 'text-gray-500 hover:text-gray-300'
                   }`}
                 >
                   Players
                 </button>
                 <button
                   onClick={() => { setActiveTab('platforms'); setResults(null); }}
-                  className={`px-5 py-2 rounded-md text-sm font-semibold transition-all ${
+                  className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
                     activeTab === 'platforms'
-                      ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
-                      : 'text-gray-400 hover:text-white hover:bg-[#252540]'
+                      ? 'bg-[#252540] text-white'
+                      : 'text-gray-500 hover:text-gray-300'
                   }`}
                 >
                   Casinos
@@ -693,7 +693,7 @@ export default function GamStart() {
             </div>
 
             <div className="flex items-center gap-3">
-              <button className="px-4 py-1.5 text-sm font-medium text-white bg-purple-600 hover:bg-purple-500 rounded-lg transition-colors">
+              <button className="px-4 py-1.5 text-sm font-medium text-gray-300 hover:text-white bg-[#1a1a2e] hover:bg-[#252540] rounded-lg border border-gray-700/50 transition-colors">
                 Sign In
               </button>
             </div>
@@ -1692,6 +1692,7 @@ export default function GamStart() {
     </div>
   );
 }
+
 
 
 
