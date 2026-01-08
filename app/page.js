@@ -413,19 +413,12 @@ export default function GamStart() {
   const [platformLoading, setPlatformLoading] = useState(false);
   const [rankingTimePeriod, setRankingTimePeriod] = useState('week'); // week, month, year
   
-  // Refetch when ranking period changes
-  useEffect(() => {
-    if (activeTab === 'platforms' && rankingTimePeriod) {
-      fetchPlatformData();
-    }
-  }, [rankingTimePeriod]);
-
   // Fetch platform data when tab changes to platforms or inputs change
   useEffect(() => {
     if (activeTab === 'platforms') {
       fetchPlatformData();
     }
-  }, [activeTab, selectedTimeRange, selectedMetric]);
+  }, [activeTab, selectedTimeRange, selectedMetric, rankingTimePeriod]);
 
   const fetchPlatformData = async () => {
     setPlatformLoading(true);
@@ -841,8 +834,8 @@ export default function GamStart() {
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
                     {platformData.casinos.map((casino) => (
-                    <div key={casino.name} className="flex items-center gap-1">
                       <button
+                        key={casino.name}
                         onClick={() => {
                           if (selectedCasinos.includes(casino.name)) {
                             setSelectedCasinos(selectedCasinos.filter(c => c !== casino.name));
@@ -850,7 +843,7 @@ export default function GamStart() {
                             setSelectedCasinos([...selectedCasinos, casino.name]);
                           }
                         }}
-                        className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-2 ${
+                        className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-2 ${
                           selectedCasinos.includes(casino.name)
                             ? 'bg-purple-500/20 text-purple-300 border border-purple-500/50'
                             : 'bg-[#1a1a2e] text-gray-500 hover:text-gray-300 border border-transparent'
@@ -862,14 +855,6 @@ export default function GamStart() {
                         />
                         <span className="truncate">{casino.name}</span>
                       </button>
-                      <a
-                        href={`/casino/${encodeURIComponent(casino.name)}`}
-                        className="px-2 py-1.5 text-xs text-gray-500 hover:text-purple-400 transition-colors shrink-0"
-                        title="View details"
-                      >
-                        →
-                      </a>
-                    </div>
                   ))}
                 </div>
               </div>
@@ -897,18 +882,68 @@ export default function GamStart() {
                   <div className="absolute left-14 right-0 top-0 bottom-0 flex items-end gap-0.5" style={{ minWidth: `${platformData.weeklyTrends.length * 40}px` }}>
                     {platformData.weeklyTrends.map((week, i) => {
                       // Calculate total volume for selected casinos
-                      const selectedCasinoData = selectedCasinos.length > 0 
-                        ? selectedCasinos.map(casinoName => {
-                            const casinoKey = casinoName.toLowerCase().replace(/[^a-z0-9]/g, '');
-                            return (week[casinoKey] || 0) * 1000000; // Convert back from millions
-                          }).reduce((sum, val) => sum + val, 0)
-                        : platformData.casinos.reduce((sum, c) => {
-                            const casinoKey = c.name.toLowerCase().replace(/[^a-z0-9]/g, '');
-                            return sum + ((week[casinoKey] || 0) * 1000000);
-                          }, 0);
+                      let selectedCasinoData = 0;
                       
-                      const maxValue = 800000000; // $800M
-                      const heightPercent = Math.min((selectedCasinoData / maxValue) * 100, 100);
+                      // Get all casino keys from the week data (excluding 'week')
+                      const weekKeys = Object.keys(week).filter(k => k !== 'week');
+                      
+                      if (selectedCasinos.length > 0 && selectedCasinos.length < platformData.casinos.length) {
+                        // Sum volumes for selected casinos only
+                        selectedCasinoData = selectedCasinos.reduce((sum, casinoName) => {
+                          // Try to find matching key in week data
+                          const normalizedName = casinoName.toLowerCase();
+                          const matchingKey = weekKeys.find(key => {
+                            const normalizedKey = key.toLowerCase();
+                            return normalizedKey === normalizedName || 
+                                   normalizedKey.includes(normalizedName) ||
+                                   normalizedName.includes(normalizedKey) ||
+                                   normalizedKey.replace(/[^a-z0-9]/g, '') === normalizedName.replace(/[^a-z0-9]/g, '');
+                          });
+                          
+                          if (matchingKey && typeof week[matchingKey] === 'number') {
+                            return sum + (week[matchingKey] * 1000000); // Convert back from millions
+                          }
+                          return sum;
+                        }, 0);
+                      } else {
+                        // If all casinos selected or none selected, show sum of all
+                        selectedCasinoData = weekKeys.reduce((sum, key) => {
+                          if (typeof week[key] === 'number') {
+                            return sum + (week[key] * 1000000);
+                          }
+                          return sum;
+                        }, 0);
+                      }
+                      
+                      // Calculate max value from all weeks for proper scaling
+                      const allWeekValues = platformData.weeklyTrends.map(w => {
+                        const wKeys = Object.keys(w).filter(k => k !== 'week');
+                        if (selectedCasinos.length > 0 && selectedCasinos.length < platformData.casinos.length) {
+                          return selectedCasinos.reduce((sum, casinoName) => {
+                            const normalizedName = casinoName.toLowerCase();
+                            const matchingKey = wKeys.find(key => {
+                              const normalizedKey = key.toLowerCase();
+                              return normalizedKey === normalizedName || 
+                                     normalizedKey.includes(normalizedName) ||
+                                     normalizedName.includes(normalizedKey) ||
+                                     normalizedKey.replace(/[^a-z0-9]/g, '') === normalizedName.replace(/[^a-z0-9]/g, '');
+                            });
+                            if (matchingKey && typeof w[matchingKey] === 'number') {
+                              return sum + (w[matchingKey] * 1000000);
+                            }
+                            return sum;
+                          }, 0);
+                        } else {
+                          return wKeys.reduce((sum, key) => {
+                            if (typeof w[key] === 'number') {
+                              return sum + (w[key] * 1000000);
+                            }
+                            return sum;
+                          }, 0);
+                        }
+                      });
+                      const maxValue = Math.max(...allWeekValues, 800000000); // At least $800M
+                      const heightPercent = maxValue > 0 ? Math.min((selectedCasinoData / maxValue) * 100, 100) : 0;
                       
                       return (
                         <div key={i} className="flex-1 flex flex-col items-center gap-1 group min-w-[40px]">
