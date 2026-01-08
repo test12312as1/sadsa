@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ArrowLeft, Gift, Shield, Upload, CheckCircle, Clock, AlertCircle, MessageSquare, Wallet, Camera, Link as LinkIcon, ChevronRight, Star, Lock, Eye, Users, TrendingUp, X } from 'lucide-react';
 import Link from 'next/link';
@@ -74,7 +74,7 @@ const VERIFICATION_STEPS = [
   }
 ];
 
-export default function VerifyPage() {
+function VerifyContent() {
   const searchParams = useSearchParams();
   const walletParam = searchParams.get('wallet');
   
@@ -585,3 +585,25 @@ export default function VerifyPage() {
     </div>
   );
 }
+
+// Loading fallback component
+function VerifyLoading() {
+  return (
+    <div className="min-h-screen bg-[#0f0f1a] flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-8 h-8 border-2 border-red-500/30 border-t-red-500 rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-gray-400 text-sm">Loading verification...</p>
+      </div>
+    </div>
+  );
+}
+
+// Wrap in Suspense boundary for useSearchParams
+export default function VerifyPage() {
+  return (
+    <Suspense fallback={<VerifyLoading />}>
+      <VerifyContent />
+    </Suspense>
+  );
+}
+
