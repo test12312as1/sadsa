@@ -15,7 +15,7 @@ const ALCHEMY_URL = `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`;
 // Verify this is called from Vercel Cron (or allow manual trigger with secret)
 const CRON_SECRET = process.env.CRON_SECRET;
 
-import { CASINO_HOT_WALLETS } from '../utils/casino-hot-wallets';
+import { CASINO_HOT_WALLETS } from '../../utils/casino-hot-wallets';
 
 export async function GET(request) {
   try {
