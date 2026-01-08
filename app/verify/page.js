@@ -80,42 +80,25 @@ function VerifyContent() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14">
             <div className="flex items-center gap-6">
-              <Link 
-                href="/"
-                className="flex items-center gap-2 text-white font-semibold text-lg hover:opacity-80 transition-opacity"
-              >
+              <Link href="/" className="flex items-center gap-2 text-white font-semibold text-lg hover:opacity-80 transition-opacity">
                 <span className="text-purple-500">◈</span>
                 GamStart
               </Link>
               
-              {/* Primary Tabs */}
               <div className="flex items-center bg-[#1a1a2e] rounded-lg p-0.5">
-                <Link
-                  href="/"
-                  className="px-4 py-1.5 rounded-md text-sm font-medium text-gray-400 hover:text-gray-300 transition-all"
-                >
+                <Link href="/" className="px-4 py-1.5 rounded-md text-sm font-medium text-gray-400 hover:text-gray-300 transition-all">
                   Players
                 </Link>
-                <Link
-                  href="/?tab=platforms"
-                  className="px-4 py-1.5 rounded-md text-sm font-medium text-gray-400 hover:text-gray-300 transition-all"
-                >
+                <Link href="/?tab=platforms" className="px-4 py-1.5 rounded-md text-sm font-medium text-gray-400 hover:text-gray-300 transition-all">
                   Casinos
                 </Link>
               </div>
 
-              {/* Secondary Links */}
               <div className="hidden md:flex items-center gap-1">
-                <Link
-                  href="/marketplace"
-                  className="px-3 py-1.5 text-sm text-gray-400 hover:text-white transition-colors"
-                >
+                <Link href="/marketplace" className="px-3 py-1.5 text-sm text-gray-400 hover:text-white transition-colors">
                   Account Marketplace
                 </Link>
-                <Link
-                  href="/vip-dashboard"
-                  className="px-3 py-1.5 text-sm text-gray-400 hover:text-white transition-colors"
-                >
+                <Link href="/vip-dashboard" className="px-3 py-1.5 text-sm text-gray-400 hover:text-white transition-colors">
                   VIP Offers
                 </Link>
               </div>
@@ -208,7 +191,7 @@ function VerifyContent() {
 
                   <button
                     onClick={handleNext}
-                    className="w-full py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                    className="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
                   >
                     Continue
                     <ChevronRight size={16} />
@@ -290,7 +273,7 @@ function VerifyContent() {
                     </button>
                     <button
                       onClick={handleNext}
-                      className="flex-1 py-2.5 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                      className="flex-1 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
                     >
                       Continue
                       <ChevronRight size={16} />
@@ -355,7 +338,7 @@ function VerifyContent() {
                     </button>
                     <button
                       onClick={handleNext}
-                      className="flex-1 py-2.5 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                      className="flex-1 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
                     >
                       Complete
                       <CheckCircle size={16} />
@@ -377,7 +360,7 @@ function VerifyContent() {
             </p>
             <Link
               href="/vip-dashboard"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-medium transition-colors"
             >
               View VIP Dashboard
               <ChevronRight size={18} />
@@ -424,6 +407,7 @@ export default function VerifyPage() {
     </Suspense>
   );
 }
+
 
 
 
