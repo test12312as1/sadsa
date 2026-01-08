@@ -342,8 +342,8 @@ async function getTrendData(timeRange) {
         weeklyData[weekKey] = { week: formatWeekLabel(weekStart.toISOString().split('T')[0]) };
       }
       
-      // Use casino name as key (lowercase for consistency)
-      const casinoKey = s.casino_name.toLowerCase();
+      // Use casino name as key (lowercase, normalize spaces and special chars)
+      const casinoKey = s.casino_name.toLowerCase().trim();
       if (!weeklyData[weekKey][casinoKey]) {
         weeklyData[weekKey][casinoKey] = 0;
       }
