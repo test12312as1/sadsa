@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Crown, Lock, Clock, ChevronRight, Info } from 'lucide-react';
+import { Crown, Lock, Clock, ChevronRight, BarChart3 } from 'lucide-react';
 import Link from 'next/link';
 
 // Demo verified VIPs (anonymized)
@@ -140,14 +140,11 @@ const DiscordIcon = ({ size = 18 }) => (
 
 export default function VIPDashboard() {
   const [selectedCasino, setSelectedCasino] = useState('all');
-  const [selectedTier, setSelectedTier] = useState('all');
 
   const casinos = ['all', 'Stake', 'Rollbit', 'Shuffle', 'Roobet', 'Gamdom'];
-  const tiers = ['all', 'Diamond', 'Platinum', 'Gold'];
 
   const filteredVIPs = DEMO_VIPS.filter(vip => {
     if (selectedCasino !== 'all' && vip.casino !== selectedCasino) return false;
-    if (selectedTier !== 'all' && vip.tier !== selectedTier) return false;
     return true;
   });
 
@@ -179,10 +176,10 @@ export default function VIPDashboard() {
               </div>
 
               <div className="hidden md:flex items-center gap-1">
-                <Link href="/marketplace" className="px-3 py-1.5 text-sm text-gray-400 hover:text-white transition-colors">
+                <Link href="/marketplace" className="px-3 py-1.5 text-sm text-purple-400 hover:text-purple-300 transition-colors">
                   Account Marketplace
                 </Link>
-                <span className="px-3 py-1.5 text-sm text-white font-medium">
+                <span className="px-3 py-1.5 text-sm text-purple-400 font-medium">
                   VIP Offers
                 </span>
               </div>
@@ -201,25 +198,67 @@ export default function VIPDashboard() {
       </nav>
 
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-        {/* Header + CTA Combined */}
-        <div className="bg-[#12121c] rounded-xl p-6 border border-purple-500/20 mb-8">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <Crown className="text-purple-400" size={24} />
-                <h1 className="text-2xl font-bold text-white">VIP Offers</h1>
-              </div>
-              <p className="text-gray-400 text-sm">
-                Verify your wagering history and have casinos bid on your action with personalized VIP offers.
-              </p>
+        {/* Header - Matching Casinos page style */}
+        <div className="mb-6">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center">
+              <Crown className="text-purple-400" size={20} />
             </div>
-            <Link
-              href="/verify"
-              className="px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-medium transition-colors flex items-center gap-2 shrink-0"
-            >
-              Get Verified
-              <ChevronRight size={16} />
-            </Link>
+            <div>
+              <h1 className="text-2xl font-bold text-white">VIP Offers</h1>
+              <p className="text-sm text-gray-500">Personalized offers from top crypto casinos</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Hero Section - Luxurious Copy + Process Flow */}
+        <div className="bg-gradient-to-br from-purple-500/10 to-transparent rounded-xl p-6 border border-purple-500/20 mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Left - Value Proposition */}
+            <div>
+              <h2 className="text-xl font-semibold text-white mb-3">Casinos compete for your action</h2>
+              <p className="text-gray-400 mb-4 leading-relaxed">
+                Stop chasing generic bonuses. Verify your wagering history and let casinos come to you with 
+                personalized VIP offers tailored to your playing style. High-volume players receive exclusive 
+                reload bonuses, dedicated VIP hosts, and custom promotions not available anywhere else.
+              </p>
+              <Link
+                href="/verify"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-medium transition-colors"
+              >
+                Get Verified
+                <ChevronRight size={16} />
+              </Link>
+            </div>
+
+            {/* Right - Process Flow (Text Only) */}
+            <div className="flex flex-col justify-center">
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 font-semibold text-sm shrink-0">1</div>
+                  <div>
+                    <div className="text-white font-medium">Verify Wager</div>
+                    <div className="text-sm text-gray-500">Scan your wallet to verify your casino activity</div>
+                  </div>
+                </div>
+                <div className="ml-4 border-l border-purple-500/20 h-4" />
+                <div className="flex items-center gap-4">
+                  <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 font-semibold text-sm shrink-0">2</div>
+                  <div>
+                    <div className="text-white font-medium">Get Matched</div>
+                    <div className="text-sm text-gray-500">Casinos see your anonymized profile and stats</div>
+                  </div>
+                </div>
+                <div className="ml-4 border-l border-purple-500/20 h-4" />
+                <div className="flex items-center gap-4">
+                  <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 font-semibold text-sm shrink-0">3</div>
+                  <div>
+                    <div className="text-white font-medium">Receive Offers</div>
+                    <div className="text-sm text-gray-500">Accept personalized offers from competing casinos</div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -234,12 +273,7 @@ export default function VIPDashboard() {
               >
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-white font-medium">{offer.casino}</span>
-                  <span className={`text-xs font-medium px-2 py-0.5 rounded ${
-                    offer.tier === 'Diamond' ? 'bg-cyan-500/20 text-cyan-400' :
-                    offer.tier === 'Platinum' ? 'bg-purple-500/20 text-purple-400' : 'bg-amber-500/20 text-amber-400'
-                  }`}>
-                    {offer.tier}
-                  </span>
+                  <span className="text-xs text-gray-500">{offer.tier}</span>
                 </div>
                 <div className="text-lg font-semibold text-white mb-2">{offer.offer}</div>
                 <div className="flex items-center justify-between text-xs text-gray-500">
@@ -274,25 +308,13 @@ export default function VIPDashboard() {
               </button>
             ))}
           </div>
-          
-          <div className="flex items-center bg-[#1a1a2e] rounded-lg p-0.5">
-            {tiers.map(t => (
-              <button 
-                key={t}
-                onClick={() => setSelectedTier(t)}
-                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                  selectedTier === t
-                    ? 'bg-purple-500 text-white'
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                {t === 'all' ? 'All' : t}
-              </button>
-            ))}
+
+          <div className="text-sm text-gray-500">
+            {filteredVIPs.length} VIPs
           </div>
         </div>
 
-        {/* VIP Cards Grid */}
+        {/* VIP Cards Grid - Consistent Purple Branding */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {filteredVIPs.map((vip) => (
             <div
@@ -300,22 +322,13 @@ export default function VIPDashboard() {
               className="bg-[#12121c] rounded-xl border border-gray-800/50 overflow-hidden hover:border-purple-500/30 transition-all group"
             >
               {/* Card Header */}
-              <div className={`px-4 py-3 border-b border-gray-800/50 ${
-                vip.tier === 'Diamond' ? 'bg-gradient-to-r from-cyan-500/10 to-transparent' :
-                vip.tier === 'Platinum' ? 'bg-gradient-to-r from-purple-500/10 to-transparent' :
-                'bg-gradient-to-r from-amber-500/10 to-transparent'
-              }`}>
+              <div className="px-4 py-3 border-b border-gray-800/50 bg-purple-500/5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Lock className="text-gray-600" size={12} />
                     <span className="font-mono text-sm text-gray-400">{vip.id}</span>
                   </div>
-                  <span className={`text-xs font-semibold ${
-                    vip.tier === 'Diamond' ? 'text-cyan-400' :
-                    vip.tier === 'Platinum' ? 'text-purple-400' : 'text-amber-400'
-                  }`}>
-                    {vip.tier}
-                  </span>
+                  <span className="text-xs text-gray-500">{vip.tier}</span>
                 </div>
               </div>
 
@@ -323,10 +336,7 @@ export default function VIPDashboard() {
               <div className="p-4 space-y-4">
                 {/* Casino */}
                 <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold ${
-                    vip.tier === 'Diamond' ? 'bg-cyan-500/20' :
-                    vip.tier === 'Platinum' ? 'bg-purple-500/20' : 'bg-amber-500/20'
-                  }`}>
+                  <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 font-bold">
                     {vip.casino[0]}
                   </div>
                   <div>
@@ -367,14 +377,6 @@ export default function VIPDashboard() {
                   )}
                 </div>
               </div>
-
-              {/* Card Footer */}
-              <div className="px-4 pb-4">
-                <button className="w-full py-2 bg-[#1a1a2e] hover:bg-[#252540] text-gray-400 hover:text-white rounded-lg text-xs font-medium transition-colors flex items-center justify-center gap-1.5">
-                  <Info size={12} />
-                  View Profile
-                </button>
-              </div>
             </div>
           ))}
         </div>
@@ -410,4 +412,3 @@ export default function VIPDashboard() {
     </div>
   );
 }
-
