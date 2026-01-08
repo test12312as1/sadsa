@@ -1,8 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { Crown, Clock, ChevronRight, BarChart3, Building2, CheckCircle2, MessageCircle } from 'lucide-react';
+import { Crown, Clock, ChevronRight, BarChart3, Building2, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
+
+// Telegram Icon
+const TelegramIcon = ({ size = 14 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.12l-6.87 4.326-2.96-.924c-.64-.203-.658-.64.135-.954l11.566-4.458c.538-.196 1.006.128.832.941z"/>
+  </svg>
+);
 
 // Demo verified VIPs (anonymized) - with game preferences instead of casino
 const DEMO_VIPS = [
@@ -21,7 +28,6 @@ const DEMO_VIPS = [
     volumeSports: 0,
     lastActive: '5h ago',
     telegram: '@betting_pro',
-    discord: 'bettor#7890',
     lookingFor: ['Higher Soccer Limits', 'Daily Lossback Deal']
   },
   {
@@ -29,7 +35,6 @@ const DEMO_VIPS = [
     volumeCasino: 195000,
     volumeSports: 67000,
     lastActive: '1d ago',
-    telegram: '@plinko_master',
     discord: 'plinko#1234',
     lookingFor: ['VIP Transfer', 'Cashback On Originals']
   },
@@ -57,7 +62,6 @@ const DEMO_VIPS = [
     volumeSports: 35000,
     lastActive: '1w ago',
     telegram: '@football_bet',
-    discord: 'football#3456',
     lookingFor: ['Higher Soccer Limits']
   },
   {
@@ -65,7 +69,6 @@ const DEMO_VIPS = [
     volumeCasino: 380000,
     volumeSports: 120000,
     lastActive: '4h ago',
-    telegram: '@crash_king',
     discord: 'crash#7890',
     lookingFor: ['VIP Transfer', 'Daily Lossback Deal']
   },
@@ -348,18 +351,26 @@ export default function VIPDashboard() {
 
                 {/* Blurred Contact Info */}
                 <div className="space-y-1.5 pt-2 border-t border-gray-800/50">
-                  <div className="flex items-center gap-2">
-                    <MessageCircle className="text-gray-600" size={12} />
-                    <div className="text-xs text-gray-500 font-mono blur-sm select-none">
-                      {vip.telegram}
+                  {vip.telegram && (
+                    <div className="flex items-center gap-2">
+                      <div className="text-gray-600">
+                        <TelegramIcon size={14} />
+                      </div>
+                      <div className="text-xs text-gray-500 font-mono blur-sm select-none">
+                        {vip.telegram}
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MessageCircle className="text-gray-600" size={12} />
-                    <div className="text-xs text-gray-500 font-mono blur-sm select-none">
-                      {vip.discord}
+                  )}
+                  {vip.discord && (
+                    <div className="flex items-center gap-2">
+                      <div className="text-gray-600">
+                        <DiscordIcon size={14} />
+                      </div>
+                      <div className="text-xs text-gray-500 font-mono blur-sm select-none">
+                        {vip.discord}
+                      </div>
                     </div>
-                  </div>
+                  )}
                   <div className="text-[10px] text-gray-600 italic mt-1">
                     Verify to access contact info
                   </div>
@@ -479,3 +490,4 @@ export default function VIPDashboard() {
     </div>
   );
 }
+
