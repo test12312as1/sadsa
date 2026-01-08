@@ -140,8 +140,7 @@ async function getCasinoStats() {
         uniqueDepositors: c.unique_depositors || 0,
         color: getCasinoColor(c.casino_name)
       }))
-      .sort((a, b) => b.volume - a.volume)
-      .slice(0, 10);
+      .sort((a, b) => b.volume - a.volume);
 
     if (casinos.length > 0) {
       return casinos;
@@ -186,8 +185,7 @@ async function getCasinoStats() {
       uniqueDepositors: c.depositors.size,
       color: getCasinoColor(c.name)
     }))
-    .sort((a, b) => b.volume - a.volume)
-    .slice(0, 10);
+    .sort((a, b) => b.volume - a.volume);
 
   return casinos.length > 0 ? casinos : getDefaultCasinoStats();
 }
@@ -365,15 +363,26 @@ function formatWeekLabel(dateStr) {
 function getCasinoColor(name) {
   const colors = {
     'Stake': '#22c55e',
-    'Rollbit': '#ef4444',
-    'Duel': '#f97316',
     'Roobet': '#8b5cf6',
+    'Duel': '#f97316',
     'Gamdom': '#eab308',
-    'Duelbits': '#ec4899',
-    '500 Casino': '#3b82f6',
     'Shuffle': '#f472b6',
     'Rainbet': '#06b6d4',
-    'BC.Game': '#fbbf24'
+    'Rollbit': '#ef4444',
+    'StakeUS': '#a855f7',
+    'Yeet': '#fbbf24',
+    'Winna': '#10b981',
+    'BetFury': '#f59e0b',
+    'Yolo.com': '#ec4899',
+    'Thrill': '#ef4444',
+    '500 Casino': '#3b82f6',
+    'Solcasino': '#06b6d4',
+    'Razed': '#8b5cf6',
+    'Duelbits': '#ec4899',
+    'MetaWin': '#6366f1',
+    'Chips.gg': '#14b8a6',
+    'BC.GAME': '#fbbf24',
+    'BC.Game': '#fbbf24' // Handle both variations
   };
   return colors[name] || '#6b7280';
 }
@@ -432,5 +441,6 @@ function getDefaultTrends() {
     { week: 'Jan 5', stake: 441, duel: 65, shuffle: 40, roobet: 93, gamdom: 37 }
   ];
 }
+
 
 
