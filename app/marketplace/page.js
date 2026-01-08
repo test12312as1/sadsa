@@ -2,82 +2,76 @@
 
 import { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Heart, BarChart3, ChevronRight } from 'lucide-react';
+import { BarChart3, ChevronRight, Shield } from 'lucide-react';
 import Link from 'next/link';
 
 // Demo listings data - per casino account
 const DEMO_LISTINGS = [
   {
-    id: 'GS-2026-001',
     casino: 'Stake',
     tier: 'Diamond',
+    verificationLevel: 3,
     volumeCasino: 285000,
     volumeSports: 42000,
     pnlCasino: -38000,
     pnlSports: -4200,
     price: 8500,
     created: '2 days ago',
-    watchlist: 46
   },
   {
-    id: 'GS-2026-002',
     casino: 'Rollbit',
     tier: 'Platinum',
+    verificationLevel: 2,
     volumeCasino: 142000,
     volumeSports: 0,
     pnlCasino: -18500,
     pnlSports: 0,
     price: 4200,
     created: '5 days ago',
-    watchlist: 38
   },
   {
-    id: 'GS-2026-003',
     casino: 'Shuffle',
     tier: 'Platinum',
+    verificationLevel: 2,
     volumeCasino: 95000,
     volumeSports: 67000,
     pnlCasino: -12000,
     pnlSports: 3200,
     price: 5800,
     created: '1 week ago',
-    watchlist: 32
   },
   {
-    id: 'GS-2026-004',
     casino: 'Stake',
     tier: 'Gold',
+    verificationLevel: 1,
     volumeCasino: 52000,
     volumeSports: 28000,
     pnlCasino: -8200,
     pnlSports: -1800,
     price: 2400,
     created: '3 days ago',
-    watchlist: 21
   },
   {
-    id: 'GS-2026-005',
     casino: 'Roobet',
     tier: 'Gold',
+    verificationLevel: 1,
     volumeCasino: 78000,
     volumeSports: 0,
     pnlCasino: 12000,
     pnlSports: 0,
     price: 3100,
     created: '4 days ago',
-    watchlist: 28
   },
   {
-    id: 'GS-2026-006',
     casino: 'Gamdom',
     tier: 'Platinum',
+    verificationLevel: 2,
     volumeCasino: 120000,
     volumeSports: 35000,
     pnlCasino: -22000,
     pnlSports: -5000,
     price: 4600,
     created: '1 day ago',
-    watchlist: 19
   }
 ];
 
@@ -174,6 +168,17 @@ function MarketplaceContent() {
           </div>
         </div>
 
+        {/* Free Middleman Service Banner */}
+        <div className="bg-gradient-to-r from-purple-500/10 to-transparent rounded-xl p-4 border border-purple-500/20 mb-6">
+          <div className="flex items-center gap-3">
+            <Shield className="text-purple-400" size={20} />
+            <div>
+              <div className="text-white font-medium">Free Middleman Service</div>
+              <div className="text-sm text-gray-400">All transactions are securely facilitated through our brokerage service at no additional cost</div>
+            </div>
+          </div>
+        </div>
+
         {/* Filters Row */}
         <div className="flex flex-wrap items-center gap-3 mb-6">
           <div className="flex items-center bg-[#1a1a2e] rounded-lg p-0.5">
@@ -227,7 +232,7 @@ function MarketplaceContent() {
           {/* Table Header */}
           <div className="grid grid-cols-12 gap-4 px-4 py-3 border-b border-gray-800/50 text-[10px] text-gray-500 uppercase tracking-wider">
             <div className="col-span-3">Account</div>
-            <div className="col-span-1 text-center">Tier</div>
+            <div className="col-span-1 text-center">Verified</div>
             <div className="col-span-2 text-right">Volume</div>
             <div className="col-span-2 text-right">P&L</div>
             <div className="col-span-2 text-right">Price</div>
@@ -235,8 +240,8 @@ function MarketplaceContent() {
           </div>
 
           {/* Listings */}
-          {filteredListings.map((listing) => (
-            <div key={listing.id} className="grid grid-cols-12 gap-4 px-4 py-4 border-b border-gray-800/30 hover:bg-[#1a1a2e]/50 transition-colors items-center">
+          {filteredListings.map((listing, index) => (
+            <div key={index} className="grid grid-cols-12 gap-4 px-4 py-4 border-b border-gray-800/30 hover:bg-[#1a1a2e]/50 transition-colors items-center">
               {/* Account Info */}
               <div className="col-span-3">
                 <div className="flex items-center gap-3">
@@ -245,15 +250,15 @@ function MarketplaceContent() {
                   </div>
                   <div>
                     <div className="text-white font-medium text-sm">{listing.casino}</div>
-                    <div className="text-xs text-gray-500 font-mono">{listing.id}</div>
+                    <div className="text-xs text-gray-500">{listing.tier}</div>
                   </div>
                 </div>
               </div>
 
-              {/* Tier */}
+              {/* Verification Level */}
               <div className="col-span-1 text-center">
-                <span className="text-xs text-gray-400">
-                  {listing.tier}
+                <span className="text-xs text-purple-400 font-medium">
+                  Level {listing.verificationLevel} Verified
                 </span>
               </div>
 
@@ -284,12 +289,9 @@ function MarketplaceContent() {
               </div>
 
               {/* Actions */}
-              <div className="col-span-2 flex items-center justify-end gap-2">
+              <div className="col-span-2 flex items-center justify-end">
                 <button className="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-md text-xs font-medium transition-colors">
                   Contact
-                </button>
-                <button className="p-1.5 text-gray-500 hover:text-white transition-colors">
-                  <Heart size={14} />
                 </button>
               </div>
             </div>
