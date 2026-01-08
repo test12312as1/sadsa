@@ -967,7 +967,7 @@ export default function GamStart() {
               <div className="px-4 py-3 border-b border-gray-800/50">
                 <div className="flex items-center gap-2">
                   <Trophy className="text-purple-400" size={16} />
-                  <span className="text-sm font-medium text-white">Top 10 by Volume</span>
+                  <span className="text-sm font-medium text-white">Casino Rankings</span>
                           </div>
                           </div>
               <div className="overflow-x-auto">
