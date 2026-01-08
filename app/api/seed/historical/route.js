@@ -96,12 +96,20 @@ export async function POST(request) {
 
       if (error) {
         console.error(`Error inserting batch ${i / batchSize + 1}:`, error);
-        errors.push({ batch: i / batchSize + 1, error: error.message });
+        console.error('Batch data sample:', batch.slice(0, 2));
+        errors.push({ 
+          batch: i / batchSize + 1, 
+          error: error.message,
+          details: error.details || error.hint || 'No additional details'
+        });
       } else {
-        inserted += data.length;
-        console.log(`Inserted batch ${i / batchSize + 1}/${Math.ceil(snapshots.length / batchSize)}: ${data.length} snapshots`);
+        inserted += data ? data.length : 0;
+        console.log(`Inserted batch ${i / batchSize + 1}/${Math.ceil(snapshots.length / batchSize)}: ${data ? data.length : 0} snapshots`);
       }
     }
+
+    // Get summary by date (even if there were errors)
+    const dates = [...new Set(snapshots.map(s => s.snapshot_date))].sort();
 
     if (errors.length > 0) {
       return NextResponse.json({
@@ -109,12 +117,12 @@ export async function POST(request) {
         message: 'Some batches failed',
         inserted,
         errors,
-        total: snapshots.length
+        total: snapshots.length,
+        dates: dates.length,
+        error_details: errors.map(e => e.error)
       }, { status: 207 }); // 207 Multi-Status
     }
 
-    // Get summary by date
-    const dates = [...new Set(snapshots.map(s => s.snapshot_date))].sort();
     const summary = dates.map(date => {
       const dateSnapshots = snapshots.filter(s => s.snapshot_date === date);
       const totalVolume = dateSnapshots.reduce((sum, s) => sum + s.total_volume, 0);
@@ -127,21 +135,12 @@ export async function POST(request) {
 
     console.log(`Successfully seeded ${inserted} historical snapshots`);
 
-    // Group by period type
-    const byType = snapshots.reduce((acc, s) => {
-      const periodType = s.period_type || 'daily';
-      if (!acc[periodType]) acc[periodType] = 0;
-      acc[periodType]++;
-      return acc;
-    }, {});
-
     return NextResponse.json({
       success: true,
       message: `Successfully seeded ${inserted} historical snapshots (type: ${type})`,
       type,
       inserted,
       total: snapshots.length,
-      by_period_type: byType,
       dates: dates.length,
       summary
     });
@@ -188,19 +187,10 @@ export async function GET(request) {
       };
     });
 
-    // Group by period type
-    const byType = snapshots.reduce((acc, s) => {
-      const periodType = s.period_type || 'daily';
-      if (!acc[periodType]) acc[periodType] = 0;
-      acc[periodType]++;
-      return acc;
-    }, {});
-
     return NextResponse.json({
       preview: true,
       type,
       total_snapshots: snapshots.length,
-      by_period_type: byType,
       dates: dates.length,
       date_range: {
         from: dates[0],
@@ -218,3 +208,4 @@ export async function GET(request) {
     );
   }
 }
+
