@@ -405,28 +405,29 @@ function formatWeekLabel(dateStr) {
 }
 
 function getCasinoColor(name) {
+  // Muted color palette - less bright, more consistent with dark theme
   const colors = {
-    'Stake': '#22c55e',
-    'Roobet': '#8b5cf6',
-    'Duel': '#f97316',
-    'Gamdom': '#eab308',
-    'Shuffle': '#f472b6',
-    'Rainbet': '#06b6d4',
-    'Rollbit': '#ef4444',
-    'StakeUS': '#a855f7',
-    'Yeet': '#fbbf24',
-    'Winna': '#10b981',
-    'BetFury': '#f59e0b',
-    'Yolo.com': '#ec4899',
-    'Thrill': '#ef4444',
-    '500 Casino': '#3b82f6',
-    'Solcasino': '#06b6d4',
-    'Razed': '#8b5cf6',
-    'Duelbits': '#ec4899',
-    'MetaWin': '#6366f1',
-    'Chips.gg': '#14b8a6',
-    'BC.GAME': '#fbbf24',
-    'BC.Game': '#fbbf24' // Handle both variations
+    'Stake': '#16a34a',
+    'Roobet': '#7c3aed',
+    'Duel': '#c2410c',
+    'Gamdom': '#a16207',
+    'Shuffle': '#be185d',
+    'Rainbet': '#0891b2',
+    'Rollbit': '#dc2626',
+    'StakeUS': '#9333ea',
+    'Yeet': '#d97706',
+    'Winna': '#059669',
+    'BetFury': '#b45309',
+    'Yolo.com': '#be185d',
+    'Thrill': '#b91c1c',
+    '500 Casino': '#2563eb',
+    'Solcasino': '#0891b2',
+    'Razed': '#7c3aed',
+    'Duelbits': '#be185d',
+    'MetaWin': '#4f46e5',
+    'Chips.gg': '#0d9488',
+    'BC.GAME': '#d97706',
+    'BC.Game': '#d97706' // Handle both variations
   };
   return colors[name] || '#6b7280';
 }
@@ -437,17 +438,18 @@ function getCasinoColor(name) {
 
 function getDefaultCasinoStats(multiplier = 1) {
   // Base weekly stats - multiplier scales for month/year views
+  // Using muted colors consistent with dark theme
   const baseStats = [
-    { name: 'Stake', volume: 441000000, marketShare: 54.8, deposits: 666000, color: '#22c55e' },
-    { name: 'Roobet', volume: 93400000, marketShare: 11.6, deposits: 142000, color: '#8b5cf6' },
-    { name: 'Duel', volume: 65200000, marketShare: 8.1, deposits: 89000, color: '#f97316' },
-    { name: 'Shuffle', volume: 40000000, marketShare: 5.0, deposits: 108000, color: '#f472b6' },
-    { name: 'Gamdom', volume: 36800000, marketShare: 4.6, deposits: 28500, color: '#eab308' },
-    { name: 'Rainbet', volume: 33900000, marketShare: 4.2, deposits: 157000, color: '#06b6d4' },
-    { name: 'Rollbit', volume: 17000000, marketShare: 2.1, deposits: 36300, color: '#ef4444' },
-    { name: 'StakeUS', volume: 14800000, marketShare: 1.8, deposits: 62600, color: '#f472b6' },
-    { name: 'Yeet', volume: 8660000, marketShare: 1.1, deposits: 12400, color: '#fbbf24' },
-    { name: 'BC.Game', volume: 6310000, marketShare: 0.8, deposits: 24000, color: '#3b82f6' }
+    { name: 'Stake', volume: 441000000, marketShare: 54.8, deposits: 666000, color: '#16a34a' },
+    { name: 'Roobet', volume: 93400000, marketShare: 11.6, deposits: 142000, color: '#7c3aed' },
+    { name: 'Duel', volume: 65200000, marketShare: 8.1, deposits: 89000, color: '#c2410c' },
+    { name: 'Shuffle', volume: 40000000, marketShare: 5.0, deposits: 108000, color: '#be185d' },
+    { name: 'Gamdom', volume: 36800000, marketShare: 4.6, deposits: 28500, color: '#a16207' },
+    { name: 'Rainbet', volume: 33900000, marketShare: 4.2, deposits: 157000, color: '#0891b2' },
+    { name: 'Rollbit', volume: 17000000, marketShare: 2.1, deposits: 36300, color: '#dc2626' },
+    { name: 'StakeUS', volume: 14800000, marketShare: 1.8, deposits: 62600, color: '#db2777' },
+    { name: 'Yeet', volume: 8660000, marketShare: 1.1, deposits: 12400, color: '#d97706' },
+    { name: 'BC.Game', volume: 6310000, marketShare: 0.8, deposits: 24000, color: '#2563eb' }
   ];
   
   // Scale volume and deposits by multiplier, keep marketShare as is
@@ -493,5 +495,6 @@ function getDefaultTrends() {
     { week: 'Jan 5', stake: 441, duel: 65, shuffle: 40, roobet: 93, gamdom: 37, rainbet: 34, rollbit: 17, stakeus: 15, yeet: 9, 'bc.game': 6 }
   ];
 }
+
 
 
