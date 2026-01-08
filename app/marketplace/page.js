@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ArrowLeft, ShoppingCart, Shield, Lock, DollarSign, Users, CheckCircle, AlertTriangle, Eye, EyeOff, MessageSquare, ChevronRight, Star, TrendingUp, Clock, Filter, Search } from 'lucide-react';
 import Link from 'next/link';
@@ -79,7 +79,7 @@ const getTierColor = (tier) => {
   }
 };
 
-export default function MarketplacePage() {
+function MarketplaceContent() {
   const searchParams = useSearchParams();
   const walletParam = searchParams.get('wallet');
   const valueParam = searchParams.get('value');
@@ -597,3 +597,25 @@ export default function MarketplacePage() {
     </div>
   );
 }
+
+// Loading fallback component
+function MarketplaceLoading() {
+  return (
+    <div className="min-h-screen bg-[#0f0f1a] flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-gray-400 text-sm">Loading marketplace...</p>
+      </div>
+    </div>
+  );
+}
+
+// Wrap in Suspense boundary for useSearchParams
+export default function MarketplacePage() {
+  return (
+    <Suspense fallback={<MarketplaceLoading />}>
+      <MarketplaceContent />
+    </Suspense>
+  );
+}
+
