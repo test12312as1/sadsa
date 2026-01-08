@@ -252,6 +252,7 @@ async function fetchDepositsToHotWallet(hotWallet, startDate, endDate) {
             category: ['external', 'erc20'],
             maxCount: '0x3E8', // 1000 per page
             excludeZeroValue: true,
+            withMetadata: true, // Required to get blockTimestamp
             fromBlock: fromBlock, // Start from today's approximate block
             toBlock: 'latest',
             pageKey: pageKey
@@ -275,9 +276,23 @@ async function fetchDepositsToHotWallet(hotWallet, startDate, endDate) {
 
       // Log sample transfer dates for debugging (first page only)
       if (page === 0 && transfers.length > 0) {
-        const sampleDates = transfers.slice(0, 3).map(t => 
-          t.metadata?.blockTimestamp ? new Date(t.metadata.blockTimestamp).toISOString() : 'N/A'
-        );
+        const sampleTransfer = transfers[0];
+        console.log(`   Sample transfer structure:`, {
+          hasMetadata: !!sampleTransfer.metadata,
+          hasBlockTimestamp: !!sampleTransfer.metadata?.blockTimestamp,
+          hasBlockNum: !!sampleTransfer.blockNum,
+          metadataKeys: sampleTransfer.metadata ? Object.keys(sampleTransfer.metadata) : [],
+          transferKeys: Object.keys(sampleTransfer).slice(0, 10)
+        });
+        
+        const sampleDates = transfers.slice(0, 3).map(t => {
+          if (t.metadata?.blockTimestamp) {
+            return new Date(t.metadata.blockTimestamp).toISOString();
+          } else if (t.blockNum) {
+            return `Block ${parseInt(t.blockNum, 16)} (no timestamp)`;
+          }
+          return 'N/A';
+        });
         console.log(`   Sample transfer dates: ${sampleDates.join(', ')}`);
       }
 
