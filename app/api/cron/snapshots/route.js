@@ -54,17 +54,20 @@ export async function POST(request) {
 }
 
 async function aggregatePlatformSnapshots() {
-  // Use UTC dates to match Alchemy's timestamp format
+  // Use yesterday's data - it's complete and avoids timezone/block estimation issues
   const today = new Date();
-  const todayUTC = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
-  const snapshotDate = todayUTC.toISOString().split('T')[0]; // YYYY-MM-DD
+  const yesterday = new Date(today);
+  yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+  
+  const yesterdayUTC = new Date(Date.UTC(yesterday.getUTCFullYear(), yesterday.getUTCMonth(), yesterday.getUTCDate()));
+  const snapshotDate = yesterdayUTC.toISOString().split('T')[0]; // YYYY-MM-DD
 
-  // Get all transactions from today (UTC)
-  const startOfDay = new Date(todayUTC);
-  const endOfDay = new Date(todayUTC);
+  // Get all transactions from yesterday (UTC)
+  const startOfDay = new Date(yesterdayUTC);
+  const endOfDay = new Date(yesterdayUTC);
   endOfDay.setUTCHours(23, 59, 59, 999);
 
-  console.log(`Aggregating snapshots for ${snapshotDate} from casino hot wallets`);
+  console.log(`Aggregating snapshots for ${snapshotDate} (yesterday) from casino hot wallets`);
   console.log(`Date range (UTC): ${startOfDay.toISOString()} to ${endOfDay.toISOString()}`);
 
   // Fetch deposits to each casino hot wallet for today
@@ -227,15 +230,14 @@ async function fetchDepositsToHotWallet(hotWallet, startDate, endDate) {
   let page = 0;
   const MAX_PAGES = 500; // Safety limit to prevent timeouts
 
-  // Get approximate block number for start of today
-  // This limits the API query to recent blocks only
-  // Go back 2 days to ensure we don't miss any transfers due to block time estimation errors
-  const twoDaysAgo = new Date(startDate);
-  twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
-  const fromBlockNumber = await getBlockNumberForDate(twoDaysAgo);
+  // For yesterday's data, we can use a wider block range since it's complete
+  // Go back 3 days to ensure we capture all of yesterday's transfers
+  const threeDaysAgo = new Date(startDate);
+  threeDaysAgo.setUTCDate(threeDaysAgo.getUTCDate() - 3);
+  const fromBlockNumber = await getBlockNumberForDate(threeDaysAgo);
   const fromBlock = fromBlockNumber ? `0x${fromBlockNumber.toString(16)}` : '0x0';
   
-  console.log(`   Using fromBlock: ${fromBlock} (approx block ${fromBlockNumber}) for date filtering`);
+  console.log(`   Using fromBlock: ${fromBlock} (approx block ${fromBlockNumber}, ~3 days ago)`);
   console.log(`   Looking for transfers between ${startDate.toISOString()} and ${endDate.toISOString()}`);
 
   while (true) {
@@ -441,3 +443,4 @@ async function fetchDepositsToHotWallet(hotWallet, startDate, endDate) {
   console.log(`   Found ${deposits.length} deposits for ${hotWallet}`);
   return deposits;
 }
+
