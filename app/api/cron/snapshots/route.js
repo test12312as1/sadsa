@@ -16,6 +16,7 @@ const ALCHEMY_URL = `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`;
 const CRON_SECRET = process.env.CRON_SECRET;
 
 import { CASINO_HOT_WALLETS } from '../../utils/casino-hot-wallets';
+import { scrapeTanzaniteTerminal, getYesterdayDate } from '../../utils/online-scraper';
 
 export async function GET(request) {
   try {
