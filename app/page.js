@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Clock, DollarSign, Activity, Share2, Wallet, Trophy, Target, Flame, Timer, ExternalLink, ChevronRight, TrendingUp, TrendingDown, BarChart3, PieChart, Users, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { Search, Clock, DollarSign, Activity, Share2, Wallet, Trophy, Target, Flame, Timer, ExternalLink, ChevronRight, TrendingUp, TrendingDown, BarChart3, PieChart, Users, ArrowUpRight, ArrowDownRight, Gift, ShoppingCart } from 'lucide-react';
 
 // Twitter/X Icon
 const TwitterIcon = ({ size = 18 }) => (
@@ -1186,6 +1186,73 @@ export default function GamStart() {
           </div>
                     </div>
 
+                {/* Action Buttons - Sell Account & Get Bonus */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Sell Account Button */}
+                  <a
+                    href={`/marketplace?wallet=${encodeURIComponent(results.address || '')}&value=${results.financialImpact?.totalUSD || 0}`}
+                    className="group bg-gradient-to-br from-blue-500/20 to-blue-600/10 hover:from-blue-500/30 hover:to-blue-600/20 rounded-xl p-5 border border-blue-500/30 hover:border-blue-500/50 transition-all cursor-pointer"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center group-hover:bg-blue-500/30 transition-colors">
+                        <ShoppingCart className="text-blue-400" size={24} />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-1">
+                          <h3 className="text-lg font-semibold text-white">Sell Your Account</h3>
+                          <ChevronRight className="text-blue-400 opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all" size={20} />
+                        </div>
+                        <p className="text-sm text-gray-400 mb-3">
+                          Your gambling history has value. List your verified account on our secure marketplace.
+                        </p>
+                        <div className="flex items-center gap-3">
+                          <div className="px-3 py-1.5 bg-blue-500/20 rounded-lg">
+                            <div className="text-[10px] text-blue-300 uppercase tracking-wide">Est. Value</div>
+                            <div className="text-lg font-bold text-blue-400">
+                              ${Math.round((results.financialImpact?.totalUSD || 0) * 0.15).toLocaleString()}
+                            </div>
+                          </div>
+                          <div className="text-[11px] text-gray-500">
+                            Based on ${(results.financialImpact?.totalUSD || 0).toLocaleString()} deposit volume
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </a>
+
+                  {/* Get No Deposit Bonus Button */}
+                  <a
+                    href={`/verify?wallet=${encodeURIComponent(results.address || '')}`}
+                    className="group bg-gradient-to-br from-red-500/20 to-red-600/10 hover:from-red-500/30 hover:to-red-600/20 rounded-xl p-5 border border-red-500/30 hover:border-red-500/50 transition-all cursor-pointer"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-red-500/20 flex items-center justify-center group-hover:bg-red-500/30 transition-colors">
+                        <Gift className="text-red-400" size={24} />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-1">
+                          <h3 className="text-lg font-semibold text-white">Get Free Bonus</h3>
+                          <ChevronRight className="text-red-400 opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all" size={20} />
+                        </div>
+                        <p className="text-sm text-gray-400 mb-3">
+                          Verify your VIP status and unlock exclusive no-deposit bonuses from top casinos.
+                        </p>
+                        <div className="flex items-center gap-3">
+                          <div className="px-3 py-1.5 bg-red-500/20 rounded-lg">
+                            <div className="text-[10px] text-red-300 uppercase tracking-wide">Available</div>
+                            <div className="text-lg font-bold text-red-400">
+                              {results.financialImpact?.totalUSD >= 50000 ? '5+' : results.financialImpact?.totalUSD >= 10000 ? '3+' : '1+'} Offers
+                            </div>
+                          </div>
+                          <div className="text-[11px] text-gray-500">
+                            No deposit · No wager required
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </a>
+                </div>
+
                 {/* View Toggle */}
                 <div className="flex items-center justify-between">
                   <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
@@ -1533,4 +1600,5 @@ export default function GamStart() {
     </div>
   );
 }
+
 
