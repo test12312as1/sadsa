@@ -1,71 +1,101 @@
 'use client';
 
-import { useState, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { ShoppingCart, Lock, ChevronRight, Clock, MessageSquare, Filter, Search, Trophy, Users, TrendingUp } from 'lucide-react';
+import { useState } from 'react';
+import { Gift, Users, DollarSign, TrendingUp, ChevronRight, Lock, Trophy, Clock, Star } from 'lucide-react';
 import Link from 'next/link';
 
-// Demo listings data - per casino account
-const DEMO_LISTINGS = [
+// Demo verified VIPs (anonymized)
+const DEMO_VIPS = [
   {
-    id: 'GS-2026-001',
+    id: 'VIP-8A2F',
     casino: 'Stake',
     tier: 'Diamond',
     volumeCasino: 285000,
     volumeSports: 42000,
     pnlCasino: -38000,
     pnlSports: -4200,
-    created: '2 days ago',
+    lastActive: '2h ago',
   },
   {
-    id: 'GS-2026-002',
+    id: 'VIP-3K9D',
     casino: 'Rollbit',
     tier: 'Platinum',
     volumeCasino: 142000,
     volumeSports: 0,
     pnlCasino: -18500,
     pnlSports: 0,
-    created: '5 days ago',
+    lastActive: '5h ago',
   },
   {
-    id: 'GS-2026-003',
+    id: 'VIP-7M1X',
     casino: 'Shuffle',
     tier: 'Platinum',
-    volumeCasino: 95000,
+    volumeCasino: 195000,
     volumeSports: 67000,
-    pnlCasino: -12000,
+    pnlCasino: -31000,
     pnlSports: 3200,
-    created: '1 week ago',
+    lastActive: '1d ago',
   },
   {
-    id: 'GS-2026-004',
+    id: 'VIP-2P5N',
     casino: 'Stake',
     tier: 'Gold',
-    volumeCasino: 52000,
-    volumeSports: 28000,
-    pnlCasino: -8200,
-    pnlSports: -1800,
-    created: '3 days ago',
-  },
-  {
-    id: 'GS-2026-005',
-    casino: 'Roobet',
-    tier: 'Gold',
     volumeCasino: 78000,
-    volumeSports: 0,
+    volumeSports: 28000,
     pnlCasino: 12000,
-    pnlSports: 0,
-    created: '4 days ago',
+    pnlSports: -1800,
+    lastActive: '3h ago',
   },
   {
-    id: 'GS-2026-006',
+    id: 'VIP-9Q4R',
+    casino: 'Roobet',
+    tier: 'Diamond',
+    volumeCasino: 420000,
+    volumeSports: 0,
+    pnlCasino: -89000,
+    pnlSports: 0,
+    lastActive: '30m ago',
+  },
+  {
+    id: 'VIP-5T8W',
     casino: 'Gamdom',
-    tier: 'Platinum',
-    volumeCasino: 120000,
+    tier: 'Gold',
+    volumeCasino: 52000,
     volumeSports: 35000,
-    pnlCasino: -22000,
+    pnlCasino: -8200,
     pnlSports: -5000,
-    created: '1 day ago',
+    lastActive: '1w ago',
+  }
+];
+
+// Demo recent offers made/accepted
+const DEMO_OFFERS = [
+  {
+    id: 'offer-001',
+    casino: 'Stake',
+    amount: '$500',
+    type: 'No Deposit Bonus',
+    vipTier: 'Diamond',
+    status: 'accepted',
+    timeAgo: '2 hours ago'
+  },
+  {
+    id: 'offer-002',
+    casino: 'Rollbit',
+    amount: '$250',
+    type: 'Free Play Credit',
+    vipTier: 'Platinum',
+    status: 'accepted',
+    timeAgo: '5 hours ago'
+  },
+  {
+    id: 'offer-003',
+    casino: 'Shuffle',
+    amount: '$1,000',
+    type: 'VIP Welcome Package',
+    vipTier: 'Diamond',
+    status: 'pending',
+    timeAgo: '1 day ago'
   }
 ];
 
@@ -83,21 +113,16 @@ const DiscordIcon = ({ size = 18 }) => (
   </svg>
 );
 
-function MarketplaceContent() {
-  const searchParams = useSearchParams();
-  
+export default function VIPDashboard() {
   const [selectedCasino, setSelectedCasino] = useState('all');
   const [selectedTier, setSelectedTier] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showSellModal, setShowSellModal] = useState(false);
 
   const casinos = ['all', 'Stake', 'Rollbit', 'Shuffle', 'Roobet', 'Gamdom'];
-  const tiers = ['all', 'Diamond', 'Platinum', 'Gold', 'Silver'];
+  const tiers = ['all', 'Diamond', 'Platinum', 'Gold'];
 
-  const filteredListings = DEMO_LISTINGS.filter(listing => {
-    if (selectedCasino !== 'all' && listing.casino !== selectedCasino) return false;
-    if (selectedTier !== 'all' && listing.tier !== selectedTier) return false;
-    if (searchQuery && !listing.id.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+  const filteredVIPs = DEMO_VIPS.filter(vip => {
+    if (selectedCasino !== 'all' && vip.casino !== selectedCasino) return false;
+    if (selectedTier !== 'all' && vip.tier !== selectedTier) return false;
     return true;
   });
 
@@ -109,7 +134,7 @@ function MarketplaceContent() {
 
   return (
     <div className="min-h-screen bg-[#0f0f1a] flex flex-col">
-      {/* Navbar - Same as main page */}
+      {/* Navbar */}
       <nav className="border-b border-gray-800/50 bg-[#0a0a14]/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14">
@@ -140,15 +165,15 @@ function MarketplaceContent() {
 
               {/* Secondary Links */}
               <div className="hidden md:flex items-center gap-1">
-                <span className="px-3 py-1.5 text-sm text-white font-medium">
-                  Account Marketplace
-                </span>
                 <Link
-                  href="/vip-dashboard"
+                  href="/marketplace"
                   className="px-3 py-1.5 text-sm text-gray-400 hover:text-white transition-colors"
                 >
-                  Verified VIPs
+                  Account Marketplace
                 </Link>
+                <span className="px-3 py-1.5 text-sm text-white font-medium">
+                  Verified VIPs
+                </span>
               </div>
             </div>
 
@@ -165,32 +190,67 @@ function MarketplaceContent() {
       </nav>
 
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-bold text-white mb-1">Account Marketplace</h1>
-            <p className="text-sm text-gray-500">Browse verified casino accounts available for transfer</p>
+        {/* Verification CTA */}
+        <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-4 mb-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Gift className="text-purple-400" size={20} />
+              <div>
+                <div className="text-purple-300 font-medium">Get exclusive bonuses from casinos</div>
+                <div className="text-sm text-gray-400">Verify your VIP status to receive personalized offers</div>
+              </div>
+            </div>
+            <Link
+              href="/verify"
+              className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+            >
+              Verify Now
+              <ChevronRight size={16} />
+            </Link>
           </div>
-          <button
-            onClick={() => setShowSellModal(true)}
-            className="px-4 py-2 bg-[#1a1a2e] hover:bg-[#252540] text-gray-300 hover:text-white rounded-lg border border-gray-700 transition-all text-sm font-medium"
-          >
-            List Your Account
-          </button>
+        </div>
+
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-white mb-1">Verified VIPs</h1>
+          <p className="text-sm text-gray-500">Anonymized verified players receiving offers from casinos</p>
+        </div>
+
+        {/* Recent Offers Section */}
+        <div className="mb-8">
+          <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4">Recent Offers</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {DEMO_OFFERS.map((offer) => (
+              <div
+                key={offer.id}
+                className="bg-[#12121c] rounded-xl p-4 border border-gray-800/50"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-white font-medium">{offer.casino}</span>
+                  <span className={`text-xs px-2 py-0.5 rounded ${
+                    offer.status === 'accepted' 
+                      ? 'bg-green-500/20 text-green-400' 
+                      : 'bg-yellow-500/20 text-yellow-400'
+                  }`}>
+                    {offer.status}
+                  </span>
+                </div>
+                <div className="text-2xl font-bold text-white mb-1">{offer.amount}</div>
+                <div className="text-xs text-gray-500 mb-3">{offer.type}</div>
+                <div className="flex items-center justify-between text-xs text-gray-500">
+                  <span>To {offer.vipTier} VIP</span>
+                  <span className="flex items-center gap-1">
+                    <Clock size={10} />
+                    {offer.timeAgo}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Filters */}
         <div className="flex flex-col md:flex-row gap-4 mb-6">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
-            <input
-              type="text"
-              placeholder="Search by ID..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[#12121c] border border-gray-800 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50"
-            />
-          </div>
           <div className="flex items-center gap-2">
             <span className="text-xs text-gray-500 uppercase tracking-wide">Casino:</span>
             <div className="flex gap-1">
@@ -212,7 +272,7 @@ function MarketplaceContent() {
           <div className="flex items-center gap-2">
             <span className="text-xs text-gray-500 uppercase tracking-wide">Tier:</span>
             <div className="flex gap-1">
-              {tiers.slice(0, 4).map((tier) => (
+              {tiers.map((tier) => (
                 <button
                   key={tier}
                   onClick={() => setSelectedTier(tier)}
@@ -229,70 +289,66 @@ function MarketplaceContent() {
           </div>
         </div>
 
-        {/* Listings Table */}
+        {/* VIPs Table */}
         <div className="bg-[#12121c] rounded-xl border border-gray-800/50 overflow-hidden">
           <table className="w-full">
             <thead>
               <tr className="text-[10px] text-gray-500 uppercase bg-[#0f0f1a]">
-                <th className="text-left px-4 py-3 font-medium">ID</th>
+                <th className="text-left px-4 py-3 font-medium">VIP ID</th>
                 <th className="text-left px-4 py-3 font-medium">Casino</th>
                 <th className="text-left px-4 py-3 font-medium">Tier</th>
                 <th className="text-right px-4 py-3 font-medium">Volume (Casino)</th>
                 <th className="text-right px-4 py-3 font-medium">Volume (Sports)</th>
                 <th className="text-right px-4 py-3 font-medium">P&L (Casino)</th>
                 <th className="text-right px-4 py-3 font-medium">P&L (Sports)</th>
-                <th className="text-right px-4 py-3 font-medium">Listed</th>
-                <th className="text-right px-4 py-3 font-medium"></th>
+                <th className="text-right px-4 py-3 font-medium">Active</th>
               </tr>
             </thead>
             <tbody className="text-sm">
-              {filteredListings.map((listing) => (
-                <tr key={listing.id} className="border-t border-gray-800/30 hover:bg-[#1a1a2e]/50 transition-colors">
+              {filteredVIPs.map((vip) => (
+                <tr key={vip.id} className="border-t border-gray-800/30 hover:bg-[#1a1a2e]/50 transition-colors">
                   <td className="px-4 py-3">
-                    <span className="font-mono text-xs text-gray-400">{listing.id}</span>
+                    <div className="flex items-center gap-2">
+                      <Lock className="text-gray-600" size={12} />
+                      <span className="font-mono text-xs text-gray-400">{vip.id}</span>
+                    </div>
                   </td>
-                  <td className="px-4 py-3 text-white font-medium">{listing.casino}</td>
+                  <td className="px-4 py-3 text-white font-medium">{vip.casino}</td>
                   <td className="px-4 py-3">
                     <span className={`text-xs font-medium ${
-                      listing.tier === 'Diamond' ? 'text-cyan-400' :
-                      listing.tier === 'Platinum' ? 'text-purple-400' :
-                      listing.tier === 'Gold' ? 'text-yellow-400' : 'text-gray-400'
+                      vip.tier === 'Diamond' ? 'text-cyan-400' :
+                      vip.tier === 'Platinum' ? 'text-purple-400' :
+                      vip.tier === 'Gold' ? 'text-yellow-400' : 'text-gray-400'
                     }`}>
-                      {listing.tier}
+                      {vip.tier}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-right text-white">${listing.volumeCasino.toLocaleString()}</td>
+                  <td className="px-4 py-3 text-right text-white">${vip.volumeCasino.toLocaleString()}</td>
                   <td className="px-4 py-3 text-right text-gray-400">
-                    {listing.volumeSports > 0 ? `$${listing.volumeSports.toLocaleString()}` : '-'}
+                    {vip.volumeSports > 0 ? `$${vip.volumeSports.toLocaleString()}` : '-'}
                   </td>
-                  <td className={`px-4 py-3 text-right font-medium ${listing.pnlCasino >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                    {formatPnL(listing.pnlCasino)}
+                  <td className={`px-4 py-3 text-right font-medium ${vip.pnlCasino >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    {formatPnL(vip.pnlCasino)}
                   </td>
-                  <td className={`px-4 py-3 text-right font-medium ${listing.pnlSports >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                    {formatPnL(listing.pnlSports)}
+                  <td className={`px-4 py-3 text-right font-medium ${vip.pnlSports >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    {formatPnL(vip.pnlSports)}
                   </td>
-                  <td className="px-4 py-3 text-right text-gray-500 text-xs">{listing.created}</td>
-                  <td className="px-4 py-3 text-right">
-                    <button className="px-3 py-1.5 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded text-xs font-medium transition-colors">
-                      Contact
-                    </button>
-                  </td>
+                  <td className="px-4 py-3 text-right text-gray-500 text-xs">{vip.lastActive}</td>
                 </tr>
               ))}
             </tbody>
           </table>
           
-          {filteredListings.length === 0 && (
+          {filteredVIPs.length === 0 && (
             <div className="py-12 text-center text-gray-500">
-              No listings match your filters
+              No VIPs match your filters
             </div>
           )}
         </div>
 
         {/* Info */}
         <div className="mt-6 text-center text-xs text-gray-600">
-          All transactions are facilitated through our secure brokerage service. 
-          <button className="text-purple-400 hover:text-purple-300 ml-1">Learn more</button>
+          All player data is anonymized. Personal information is only shared after mutual consent.
         </div>
       </main>
 
@@ -312,52 +368,7 @@ function MarketplaceContent() {
           </div>
         </div>
       </footer>
-
-      {/* Sell Modal */}
-      {showSellModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#12121c] rounded-xl p-6 max-w-md w-full border border-gray-800">
-            <h3 className="text-lg font-semibold text-white mb-4">List Your Account</h3>
-            <p className="text-sm text-gray-400 mb-6">
-              To list your casino account, first scan your wallet on our Players page. 
-              Once verified, you can list each casino account separately.
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowSellModal(false)}
-                className="flex-1 py-2.5 bg-[#1a1a2e] hover:bg-[#252540] text-gray-300 rounded-lg font-medium transition-colors"
-              >
-                Cancel
-              </button>
-              <Link
-                href="/"
-                className="flex-1 py-2.5 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium transition-colors text-center"
-              >
-                Scan Wallet
-              </Link>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
 
-function MarketplaceLoading() {
-  return (
-    <div className="min-h-screen bg-[#0f0f1a] flex items-center justify-center">
-      <div className="text-center">
-        <div className="w-8 h-8 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto mb-4" />
-        <p className="text-gray-400 text-sm">Loading...</p>
-      </div>
-    </div>
-  );
-}
-
-export default function MarketplacePage() {
-  return (
-    <Suspense fallback={<MarketplaceLoading />}>
-      <MarketplaceContent />
-    </Suspense>
-  );
-}
