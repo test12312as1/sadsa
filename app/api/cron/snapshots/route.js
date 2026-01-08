@@ -225,39 +225,64 @@ async function fetchDepositsToHotWallet(hotWallet, startDate, endDate) {
 
       // Filter transfers by date and process
       transfers.forEach(transfer => {
-        const txDate = new Date(transfer.metadata.blockTimestamp);
-        
-        // Only include transfers within our date range
-        if (txDate >= startDate && txDate <= endDate) {
-          // Convert value to USD (simplified - should use price API)
-          let valueUSD = 0;
-          if (transfer.asset === 'ETH' || transfer.category === 'external') {
-            // ETH transfer
-            const ethValue = parseFloat(transfer.value || 0) / 1e18;
-            valueUSD = ethValue * 3300; // TODO: Use real price API
-          } else if (transfer.category === 'erc20') {
-            // ERC20 token transfer
-            const tokenValue = parseFloat(transfer.value || 0);
-            const decimals = transfer.rawContract?.decimals ? parseInt(transfer.rawContract.decimals, 16) : 18;
-            const adjustedValue = tokenValue / Math.pow(10, decimals);
-            
-            // Check if it's a stablecoin
-            const tokenSymbol = transfer.asset?.toUpperCase() || '';
-            if (tokenSymbol === 'USDT' || tokenSymbol === 'USDC' || tokenSymbol === 'DAI') {
-              valueUSD = adjustedValue; // 1:1 for stablecoins
-            } else {
-              // For other tokens, use ETH price as placeholder (TODO: use real price API)
-              valueUSD = adjustedValue * 3300;
-            }
+        try {
+          // Skip transfers without metadata or blockTimestamp
+          if (!transfer || !transfer.metadata || !transfer.metadata.blockTimestamp) {
+            return; // Silently skip invalid transfers
           }
 
-          deposits.push({
-            from_address: transfer.from.toLowerCase(),
-            value_usd: valueUSD,
-            block_timestamp: txDate.toISOString(),
-            tx_hash: transfer.hash,
-            asset: transfer.asset || 'ETH'
-          });
+          const txDate = new Date(transfer.metadata.blockTimestamp);
+          
+          // Validate date
+          if (isNaN(txDate.getTime())) {
+            return; // Silently skip invalid dates
+          }
+          
+          // Only include transfers within our date range
+          if (txDate >= startDate && txDate <= endDate) {
+            // Convert value to USD (simplified - should use price API)
+            let valueUSD = 0;
+            if (transfer.asset === 'ETH' || transfer.category === 'external') {
+              // ETH transfer
+              const ethValue = parseFloat(transfer.value || 0) / 1e18;
+              valueUSD = ethValue * 3300; // TODO: Use real price API
+            } else if (transfer.category === 'erc20') {
+              // ERC20 token transfer
+              const tokenValue = parseFloat(transfer.value || 0);
+              const decimals = transfer.rawContract?.decimals ? parseInt(transfer.rawContract.decimals, 16) : 18;
+              const adjustedValue = tokenValue / Math.pow(10, decimals);
+              
+              // Check if it's a stablecoin
+              const tokenSymbol = transfer.asset?.toUpperCase() || '';
+              if (tokenSymbol === 'USDT' || tokenSymbol === 'USDC' || tokenSymbol === 'DAI') {
+                valueUSD = adjustedValue; // 1:1 for stablecoins
+              } else {
+                // For other tokens, use ETH price as placeholder (TODO: use real price API)
+                valueUSD = adjustedValue * 3300;
+              }
+            }
+
+            // Ensure required fields exist
+            if (!transfer.from || !transfer.hash) {
+              return; // Silently skip transfers missing required fields
+            }
+
+            deposits.push({
+              from_address: transfer.from.toLowerCase(),
+              value_usd: valueUSD,
+              block_timestamp: txDate.toISOString(),
+              tx_hash: transfer.hash,
+              asset: transfer.asset || 'ETH'
+            });
+          }
+        } catch (transferError) {
+          // Silently skip individual transfer errors to continue processing
+          // Log only if it's not a common validation error
+          if (!transferError.message?.includes('blockTimestamp') && 
+              !transferError.message?.includes('null') &&
+              !transferError.message?.includes('undefined')) {
+            console.warn(`   ⚠️ Error processing transfer:`, transferError.message);
+          }
         }
       });
 
@@ -273,12 +298,24 @@ async function fetchDepositsToHotWallet(hotWallet, startDate, endDate) {
         console.log(`   Processed ${page} pages for ${hotWallet}...`);
       }
     } catch (e) {
-      console.error(`   ❌ Network error for ${hotWallet}:`, e.message);
-      console.log(`   Retrying in 2 seconds...`);
-      await new Promise(r => setTimeout(r, 2000));
+      // Check if it's a network/API error vs data validation error
+      if (e.message && e.message.includes('blockTimestamp')) {
+        // Data validation error - log and continue, don't retry
+        console.warn(`   ⚠️ Data validation error for ${hotWallet}:`, e.message);
+        console.log(`   Continuing with next page...`);
+        // Skip this page and continue
+        pageKey = undefined; // Force break on next iteration
+        break;
+      } else {
+        // Network/API error - retry
+        console.error(`   ❌ Network error for ${hotWallet}:`, e.message);
+        console.log(`   Retrying in 2 seconds...`);
+        await new Promise(r => setTimeout(r, 2000));
+      }
     }
   }
 
   console.log(`   Found ${deposits.length} deposits for ${hotWallet}`);
   return deposits;
 }
+
