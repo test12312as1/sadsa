@@ -2,7 +2,7 @@
 
 import { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Search, Heart, Clock } from 'lucide-react';
+import { Search, Heart, ShoppingCart, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 
 // Demo listings data - per casino account
@@ -102,7 +102,6 @@ function MarketplaceContent() {
   const [selectedTier, setSelectedTier] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showSellModal, setShowSellModal] = useState(false);
-  const [sortBy, setSortBy] = useState('recent');
 
   const casinos = ['all', 'Stake', 'Rollbit', 'Shuffle', 'Roobet', 'Gamdom'];
   const tiers = ['all', 'Diamond', 'Platinum', 'Gold'];
@@ -122,38 +121,40 @@ function MarketplaceContent() {
 
   return (
     <div className="min-h-screen bg-[#0f0f1a] flex flex-col">
-      {/* Navbar - DexCheck Style */}
-      <nav className="bg-[#1a1a1a] sticky top-0 z-50">
-        <div className="max-w-[1400px] mx-auto px-6">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-8">
-              <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                <span className="text-yellow-400 text-2xl">◈</span>
-                <span className="text-white font-bold text-xl">GamStart</span>
+      {/* Navbar */}
+      <nav className="border-b border-gray-800/50 bg-[#0a0a14]/80 backdrop-blur-sm sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-14">
+            <div className="flex items-center gap-6">
+              <Link href="/" className="flex items-center gap-2 text-white font-semibold text-lg hover:opacity-80 transition-opacity">
+                <span className="text-purple-500">◈</span>
+                GamStart
               </Link>
               
-              <div className="flex items-center bg-[#2a2a2a] rounded-lg p-1">
-                <Link href="/" className="px-4 py-2 rounded-md text-sm font-medium text-gray-400 hover:text-white transition-all">
+              <div className="flex items-center bg-[#1a1a2e] rounded-lg p-0.5">
+                <Link href="/" className="px-4 py-1.5 rounded-md text-sm font-medium text-gray-400 hover:text-gray-300 transition-all">
                   Players
                 </Link>
-                <Link href="/?tab=platforms" className="px-4 py-2 rounded-md text-sm font-medium text-gray-400 hover:text-white transition-all">
+                <Link href="/?tab=platforms" className="px-4 py-1.5 rounded-md text-sm font-medium text-gray-400 hover:text-gray-300 transition-all">
                   Casinos
                 </Link>
               </div>
 
-              <div className="hidden lg:flex items-center gap-6">
-                <span className="text-sm text-white font-medium">Account Marketplace</span>
-                <Link href="/vip-dashboard" className="text-sm text-gray-300 hover:text-white transition-colors">
+              <div className="hidden md:flex items-center gap-1">
+                <span className="px-3 py-1.5 text-sm text-white font-medium">
+                  Account Marketplace
+                </span>
+                <Link href="/vip-dashboard" className="px-3 py-1.5 text-sm text-gray-400 hover:text-white transition-colors">
                   VIP Offers
                 </Link>
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
+            <div className="flex items-center gap-3">
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="p-2 text-gray-400 hover:text-white transition-colors">
                 <TwitterIcon size={18} />
               </a>
-              <a href="https://discord.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
+              <a href="https://discord.com" target="_blank" rel="noopener noreferrer" className="p-2 text-gray-400 hover:text-white transition-colors">
                 <DiscordIcon size={18} />
               </a>
             </div>
@@ -161,96 +162,105 @@ function MarketplaceContent() {
         </div>
       </nav>
 
-      <main className="flex-1 max-w-[1400px] mx-auto px-6 py-8 w-full">
-        {/* Search Bar - Full Width */}
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        {/* Header */}
         <div className="mb-6">
-          <div className="relative">
+          <div className="flex items-center gap-3 mb-2">
+            <ShoppingCart className="text-purple-400" size={24} />
+            <h1 className="text-2xl font-bold text-white">Account Marketplace</h1>
+          </div>
+          <p className="text-gray-400 text-sm">Buy and sell verified casino accounts</p>
+        </div>
+
+        {/* Search Bar - Same style as Players page */}
+        <div className="w-full max-w-2xl mb-6">
+          <div className="flex items-center bg-[#0a0a14] border border-gray-800 rounded-lg overflow-hidden focus-within:border-gray-700 transition-colors">
             <input
               type="text"
-              placeholder="Search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[#1a1a2e] border border-gray-700 rounded-xl px-5 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-gray-500 text-lg"
+              placeholder="Search by ID..."
+              className="flex-1 bg-transparent px-5 py-4 text-white placeholder-gray-600 focus:outline-none"
             />
-            <Search className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
+            <button className="m-1.5 px-4 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-md font-medium transition-colors flex items-center gap-2">
+              <Search size={16} />
+              Search
+            </button>
           </div>
         </div>
 
         {/* Filters Row */}
         <div className="flex flex-wrap items-center gap-3 mb-6">
-          <div className="flex items-center gap-2 px-4 py-2 bg-[#1a1a2e] rounded-lg border border-gray-700">
-            <span className="text-sm text-gray-400">Casino</span>
-            <select 
-              value={selectedCasino}
-              onChange={(e) => setSelectedCasino(e.target.value)}
-              className="bg-transparent text-white text-sm focus:outline-none cursor-pointer"
-            >
-              {casinos.map(c => <option key={c} value={c} className="bg-[#1a1a2e]">{c === 'all' ? 'All' : c}</option>)}
-            </select>
+          <div className="flex items-center bg-[#1a1a2e] rounded-lg p-0.5">
+            {casinos.map(c => (
+              <button 
+                key={c}
+                onClick={() => setSelectedCasino(c)}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                  selectedCasino === c
+                    ? 'bg-purple-500 text-white'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                {c === 'all' ? 'All' : c}
+              </button>
+            ))}
           </div>
           
-          <div className="flex items-center gap-2 px-4 py-2 bg-[#1a1a2e] rounded-lg border border-gray-700">
-            <span className="text-sm text-gray-400">Tier</span>
-            <select 
-              value={selectedTier}
-              onChange={(e) => setSelectedTier(e.target.value)}
-              className="bg-transparent text-white text-sm focus:outline-none cursor-pointer"
-            >
-              {tiers.map(t => <option key={t} value={t} className="bg-[#1a1a2e]">{t === 'all' ? 'All' : t}</option>)}
-            </select>
+          <div className="flex items-center bg-[#1a1a2e] rounded-lg p-0.5">
+            {tiers.map(t => (
+              <button 
+                key={t}
+                onClick={() => setSelectedTier(t)}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                  selectedTier === t
+                    ? 'bg-purple-500 text-white'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                {t === 'all' ? 'All' : t}
+              </button>
+            ))}
           </div>
 
           <div className="flex-1" />
 
           <button
             onClick={() => setShowSellModal(true)}
-            className="px-5 py-2 bg-[#2a2a3e] hover:bg-[#3a3a4e] text-white rounded-lg text-sm font-medium transition-colors border border-gray-600"
+            className="px-4 py-2 bg-[#1a1a2e] hover:bg-[#252540] text-gray-300 hover:text-white rounded-lg text-sm font-medium transition-colors border border-gray-700/50"
           >
             List Your Account
           </button>
         </div>
 
-        {/* Results Count + Sort */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="text-sm text-gray-400">{filteredListings.length} accounts available</div>
-          <div className="flex items-center gap-4 text-sm">
-            <span className="text-gray-500">Sort by:</span>
-            {['Recent', 'Price Low', 'Price High', 'Volume'].map((sort) => (
-              <button
-                key={sort}
-                onClick={() => setSortBy(sort.toLowerCase())}
-                className={`transition-colors ${sortBy === sort.toLowerCase() ? 'text-white' : 'text-gray-500 hover:text-gray-300'}`}
-              >
-                {sort}
-              </button>
-            ))}
-          </div>
+        {/* Results Count */}
+        <div className="text-sm text-gray-500 mb-4">
+          {filteredListings.length} accounts available
         </div>
 
-        {/* Listings Table - Domain Style */}
+        {/* Listings Table */}
         <div className="bg-[#12121c] rounded-xl border border-gray-800/50 overflow-hidden">
           {/* Table Header */}
-          <div className="grid grid-cols-12 gap-4 px-6 py-4 border-b border-gray-800/50 text-xs text-gray-500 uppercase tracking-wider">
+          <div className="grid grid-cols-12 gap-4 px-4 py-3 border-b border-gray-800/50 text-[10px] text-gray-500 uppercase tracking-wider">
             <div className="col-span-3">Account</div>
             <div className="col-span-1 text-center">Tier</div>
             <div className="col-span-2 text-right">Volume</div>
             <div className="col-span-2 text-right">P&L</div>
-            <div className="col-span-1 text-center">Watchlist</div>
             <div className="col-span-2 text-right">Price</div>
-            <div className="col-span-1"></div>
+            <div className="col-span-2 text-right">Actions</div>
           </div>
 
           {/* Listings */}
           {filteredListings.map((listing) => (
-            <div key={listing.id} className="grid grid-cols-12 gap-4 px-6 py-5 border-b border-gray-800/30 hover:bg-[#1a1a2e]/50 transition-colors items-center">
+            <div key={listing.id} className="grid grid-cols-12 gap-4 px-4 py-4 border-b border-gray-800/30 hover:bg-[#1a1a2e]/50 transition-colors items-center">
               {/* Account Info */}
               <div className="col-span-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 font-bold text-sm">
+                  <div className="w-9 h-9 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 font-bold text-sm">
                     {listing.casino[0]}
                   </div>
                   <div>
-                    <div className="text-white font-medium">{listing.casino}</div>
+                    <div className="text-white font-medium text-sm">{listing.casino}</div>
                     <div className="text-xs text-gray-500 font-mono">{listing.id}</div>
                   </div>
                 </div>
@@ -258,10 +268,10 @@ function MarketplaceContent() {
 
               {/* Tier */}
               <div className="col-span-1 text-center">
-                <span className={`text-sm font-medium ${
+                <span className={`text-xs font-medium ${
                   listing.tier === 'Diamond' ? 'text-cyan-400' :
                   listing.tier === 'Platinum' ? 'text-purple-400' :
-                  'text-yellow-400'
+                  'text-amber-400'
                 }`}>
                   {listing.tier}
                 </span>
@@ -269,7 +279,7 @@ function MarketplaceContent() {
 
               {/* Volume */}
               <div className="col-span-2 text-right">
-                <div className="text-white">${listing.volumeCasino.toLocaleString()}</div>
+                <div className="text-white text-sm">${listing.volumeCasino.toLocaleString()}</div>
                 {listing.volumeSports > 0 && (
                   <div className="text-xs text-gray-500">+${listing.volumeSports.toLocaleString()} sports</div>
                 )}
@@ -277,7 +287,7 @@ function MarketplaceContent() {
 
               {/* P&L */}
               <div className="col-span-2 text-right">
-                <div className={listing.pnlCasino >= 0 ? 'text-green-400' : 'text-red-400'}>
+                <div className={`text-sm ${listing.pnlCasino >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                   {formatPnL(listing.pnlCasino)}
                 </div>
                 {listing.pnlSports !== 0 && (
@@ -287,24 +297,19 @@ function MarketplaceContent() {
                 )}
               </div>
 
-              {/* Watchlist */}
-              <div className="col-span-1 text-center text-gray-400">
-                {listing.watchlist}
-              </div>
-
               {/* Price */}
               <div className="col-span-2 text-right">
-                <div className="text-white text-lg font-semibold">${listing.price.toLocaleString()}</div>
+                <div className="text-white text-sm font-semibold">${listing.price.toLocaleString()}</div>
                 <div className="text-xs text-gray-500">{listing.created}</div>
               </div>
 
               {/* Actions */}
-              <div className="col-span-1 flex items-center justify-end gap-2">
-                <button className="px-4 py-2 bg-[#2a2a3e] hover:bg-[#3a3a4e] text-white rounded-lg text-sm font-medium transition-colors">
+              <div className="col-span-2 flex items-center justify-end gap-2">
+                <button className="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-md text-xs font-medium transition-colors">
                   Contact
                 </button>
-                <button className="p-2 text-gray-500 hover:text-white transition-colors">
-                  <Heart size={16} />
+                <button className="p-1.5 text-gray-500 hover:text-white transition-colors">
+                  <Heart size={14} />
                 </button>
               </div>
             </div>
@@ -318,14 +323,14 @@ function MarketplaceContent() {
         </div>
 
         {/* Footer Text */}
-        <div className="mt-8 text-center text-sm text-gray-600">
+        <div className="mt-6 text-center text-xs text-gray-600">
           All transactions are facilitated through our secure brokerage service.
         </div>
       </main>
 
       {/* Footer */}
       <footer className="border-t border-gray-800/50 bg-[#0a0a14]">
-        <div className="max-w-[1400px] mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14">
             <div className="text-gray-500 text-sm">© 2026 GamStart</div>
             <div className="flex items-center gap-4">
@@ -343,7 +348,7 @@ function MarketplaceContent() {
       {/* Sell Modal */}
       {showSellModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1a1a2e] rounded-xl p-6 max-w-md w-full border border-gray-700">
+          <div className="bg-[#12121c] rounded-xl p-6 max-w-md w-full border border-gray-800">
             <h3 className="text-lg font-semibold text-white mb-4">List Your Account</h3>
             <p className="text-sm text-gray-400 mb-6">
               To list your casino account for sale, first scan your wallet on our Players page. 
@@ -352,15 +357,16 @@ function MarketplaceContent() {
             <div className="flex gap-3">
               <button
                 onClick={() => setShowSellModal(false)}
-                className="flex-1 py-2.5 bg-[#2a2a3e] hover:bg-[#3a3a4e] text-gray-300 rounded-lg font-medium transition-colors"
+                className="flex-1 py-2.5 bg-[#1a1a2e] hover:bg-[#252540] text-gray-300 rounded-lg font-medium transition-colors"
               >
                 Cancel
               </button>
               <Link
                 href="/"
-                className="flex-1 py-2.5 bg-yellow-500 hover:bg-yellow-400 text-black rounded-lg font-medium transition-colors text-center"
+                className="flex-1 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-medium transition-colors text-center flex items-center justify-center gap-2"
               >
                 Scan Wallet
+                <ChevronRight size={16} />
               </Link>
             </div>
           </div>
@@ -374,7 +380,7 @@ function MarketplaceLoading() {
   return (
     <div className="min-h-screen bg-[#0f0f1a] flex items-center justify-center">
       <div className="text-center">
-        <div className="w-8 h-8 border-2 border-yellow-500/30 border-t-yellow-500 rounded-full animate-spin mx-auto mb-4" />
+        <div className="w-8 h-8 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto mb-4" />
         <p className="text-gray-400 text-sm">Loading...</p>
       </div>
     </div>
