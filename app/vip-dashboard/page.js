@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Crown, Clock, ChevronRight, BarChart3, Building2 } from 'lucide-react';
+import { Crown, Clock, ChevronRight, BarChart3, Building2, CheckCircle2, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 
 // Demo verified VIPs (anonymized) - with game preferences instead of casino
@@ -11,48 +11,72 @@ const DEMO_VIPS = [
     volumeCasino: 285000,
     volumeSports: 42000,
     lastActive: '2h ago',
+    telegram: '@player_abc123',
+    discord: 'player#4567',
+    lookingFor: ['VIP Transfer', 'Cashback On Originals']
   },
   {
     gameOfChoice: 'Basketball Bettor',
     volumeCasino: 142000,
     volumeSports: 0,
     lastActive: '5h ago',
+    telegram: '@betting_pro',
+    discord: 'bettor#7890',
+    lookingFor: ['Higher Soccer Limits', 'Daily Lossback Deal']
   },
   {
     gameOfChoice: 'Plinko Player',
     volumeCasino: 195000,
     volumeSports: 67000,
     lastActive: '1d ago',
+    telegram: '@plinko_master',
+    discord: 'plinko#1234',
+    lookingFor: ['VIP Transfer', 'Cashback On Originals']
   },
   {
     gameOfChoice: 'Roulette Specialist',
     volumeCasino: 78000,
     volumeSports: 28000,
     lastActive: '3h ago',
+    telegram: '@roulette_vip',
+    discord: 'roulette#5678',
+    lookingFor: ['Daily Lossback Deal', 'Higher Soccer Limits']
   },
   {
     gameOfChoice: 'Blackjack Pro',
     volumeCasino: 420000,
     volumeSports: 0,
     lastActive: '30m ago',
+    telegram: '@blackjack_elite',
+    discord: 'blackjack#9012',
+    lookingFor: ['VIP Transfer', 'Cashback On Originals', 'Daily Lossback Deal']
   },
   {
     gameOfChoice: 'Football Bettor',
     volumeCasino: 52000,
     volumeSports: 35000,
     lastActive: '1w ago',
+    telegram: '@football_bet',
+    discord: 'football#3456',
+    lookingFor: ['Higher Soccer Limits']
   },
   {
     gameOfChoice: 'Crash Game Enthusiast',
     volumeCasino: 380000,
     volumeSports: 120000,
     lastActive: '4h ago',
+    telegram: '@crash_king',
+    discord: 'crash#7890',
+    lookingFor: ['VIP Transfer', 'Daily Lossback Deal']
   },
   {
     gameOfChoice: 'Live Dealer Regular',
     volumeCasino: 165000,
     volumeSports: 45000,
     lastActive: '12h ago',
+    telegram: '@live_dealer',
+    discord: 'live#2345',
+    lookingFor: ['Cashback On Originals', 'Higher Soccer Limits']
   }
 ];
 
@@ -249,29 +273,30 @@ export default function VIPDashboard() {
           </div>
         </div>
 
-        {/* Casino/Affiliate Representative Section */}
-        <div className="bg-[#12121c] rounded-xl p-6 border border-gray-800/50 mb-8">
-          <div className="flex items-center gap-3 mb-3">
-            <Building2 className="text-purple-400" size={20} />
-            <h2 className="text-lg font-semibold text-white">For Casino & Affiliate Representatives</h2>
-          </div>
-          <p className="text-sm text-gray-400 mb-4">
-            Are you a representative of a casino or an affiliate? Get verified and send offers to verified high rollers.
-          </p>
-          <button
-            onClick={() => setShowCasinoVerifyModal(true)}
-            className="px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-medium transition-colors inline-flex items-center gap-2"
-          >
-            Get Verified
-            <ChevronRight size={16} />
-          </button>
-        </div>
-
         {/* Verified VIPs Section */}
         <div className="mb-6">
           <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wide mb-4">Verified VIPs</h2>
-          <div className="text-sm text-gray-500 mb-4">
-            {DEMO_VIPS.length} verified VIPs
+          
+          {/* Casino/Affiliate Representative Section */}
+          <div className="bg-[#12121c] rounded-xl p-6 border border-gray-800/50 mb-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Building2 className="text-purple-400" size={20} />
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-1">For Casino & Affiliate Representatives</h3>
+                  <p className="text-sm text-gray-400">
+                    Are you a representative of a casino or an affiliate? Get verified and send offers to verified high rollers.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowCasinoVerifyModal(true)}
+                className="px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-medium transition-colors inline-flex items-center gap-2 shrink-0"
+              >
+                Get Verified
+                <ChevronRight size={16} />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -284,7 +309,10 @@ export default function VIPDashboard() {
             >
               {/* Card Header */}
               <div className="px-4 py-3 border-b border-gray-800/50 bg-purple-500/5">
-                <div className="text-white font-medium text-sm">{vip.gameOfChoice}</div>
+                <div className="flex items-center justify-between">
+                  <div className="text-white font-medium text-sm">{vip.gameOfChoice}</div>
+                  <CheckCircle2 className="text-green-400" size={16} />
+                </div>
               </div>
 
               {/* Card Body */}
@@ -300,6 +328,40 @@ export default function VIPDashboard() {
                     <div className="text-white text-sm font-medium">
                       {vip.volumeSports > 0 ? `$${(vip.volumeSports / 1000).toFixed(0)}K` : '-'}
                     </div>
+                  </div>
+                </div>
+
+                {/* Looking For */}
+                <div>
+                  <div className="text-[10px] text-gray-500 uppercase mb-2">Looking for:</div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {vip.lookingFor.map((item, idx) => (
+                      <span
+                        key={idx}
+                        className="px-2 py-0.5 bg-purple-500/10 text-purple-300 text-xs rounded border border-purple-500/20"
+                      >
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Blurred Contact Info */}
+                <div className="space-y-1.5 pt-2 border-t border-gray-800/50">
+                  <div className="flex items-center gap-2">
+                    <MessageCircle className="text-gray-600" size={12} />
+                    <div className="text-xs text-gray-500 font-mono blur-sm select-none">
+                      {vip.telegram}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MessageCircle className="text-gray-600" size={12} />
+                    <div className="text-xs text-gray-500 font-mono blur-sm select-none">
+                      {vip.discord}
+                    </div>
+                  </div>
+                  <div className="text-[10px] text-gray-600 italic mt-1">
+                    Verify to access contact info
                   </div>
                 </div>
 
