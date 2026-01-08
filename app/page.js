@@ -286,20 +286,20 @@ const PLATFORM_DATA = {
     { name: 'Yeet', volume: 8660000, marketShare: 1.1, deposits: 12400, color: '#fbbf24' },
     { name: 'BC.Game', volume: 6310000, marketShare: 0.8, deposits: 24000, color: '#3b82f6' }
   ],
-  // Weekly trend data for chart
+  // Weekly trend data for chart (values in millions)
   weeklyTrends: [
-    { week: 'Oct 20', stake: 580, duel: 28, shuffle: 38, roobet: 95, gamdom: 42 },
-    { week: 'Oct 27', stake: 560, duel: 30, shuffle: 40, roobet: 98, gamdom: 44 },
-    { week: 'Nov 3', stake: 590, duel: 32, shuffle: 42, roobet: 102, gamdom: 45 },
-    { week: 'Nov 10', stake: 620, duel: 35, shuffle: 44, roobet: 105, gamdom: 46 },
-    { week: 'Nov 17', stake: 650, duel: 38, shuffle: 45, roobet: 108, gamdom: 47 },
-    { week: 'Nov 24', stake: 680, duel: 42, shuffle: 43, roobet: 110, gamdom: 48 },
-    { week: 'Dec 1', stake: 625, duel: 30, shuffle: 44, roobet: 111, gamdom: 47 },
-    { week: 'Dec 8', stake: 600, duel: 32, shuffle: 42, roobet: 108, gamdom: 45 },
-    { week: 'Dec 15', stake: 580, duel: 35, shuffle: 40, roobet: 105, gamdom: 44 },
-    { week: 'Dec 22', stake: 720, duel: 45, shuffle: 42, roobet: 100, gamdom: 46 },
-    { week: 'Dec 29', stake: 625, duel: 30, shuffle: 40, roobet: 93, gamdom: 47 },
-    { week: 'Jan 5', stake: 441, duel: 65, shuffle: 40, roobet: 93, gamdom: 37 }
+    { week: 'Oct 20', stake: 580, duel: 28, shuffle: 38, roobet: 95, gamdom: 42, rainbet: 32, rollbit: 14, stakeus: 18, yeet: 6, 'bc.game': 15 },
+    { week: 'Oct 27', stake: 560, duel: 30, shuffle: 40, roobet: 98, gamdom: 44, rainbet: 30, rollbit: 12, stakeus: 20, yeet: 7, 'bc.game': 18 },
+    { week: 'Nov 3', stake: 590, duel: 32, shuffle: 42, roobet: 102, gamdom: 45, rainbet: 34, rollbit: 15, stakeus: 22, yeet: 5, 'bc.game': 16 },
+    { week: 'Nov 10', stake: 620, duel: 35, shuffle: 44, roobet: 105, gamdom: 46, rainbet: 36, rollbit: 16, stakeus: 19, yeet: 8, 'bc.game': 14 },
+    { week: 'Nov 17', stake: 650, duel: 38, shuffle: 45, roobet: 108, gamdom: 47, rainbet: 35, rollbit: 18, stakeus: 21, yeet: 7, 'bc.game': 12 },
+    { week: 'Nov 24', stake: 680, duel: 42, shuffle: 43, roobet: 110, gamdom: 48, rainbet: 38, rollbit: 15, stakeus: 24, yeet: 9, 'bc.game': 10 },
+    { week: 'Dec 1', stake: 625, duel: 30, shuffle: 44, roobet: 111, gamdom: 47, rainbet: 36, rollbit: 13, stakeus: 20, yeet: 6, 'bc.game': 11 },
+    { week: 'Dec 8', stake: 600, duel: 32, shuffle: 42, roobet: 108, gamdom: 45, rainbet: 34, rollbit: 14, stakeus: 18, yeet: 7, 'bc.game': 9 },
+    { week: 'Dec 15', stake: 580, duel: 35, shuffle: 40, roobet: 105, gamdom: 44, rainbet: 32, rollbit: 16, stakeus: 16, yeet: 8, 'bc.game': 8 },
+    { week: 'Dec 22', stake: 720, duel: 45, shuffle: 42, roobet: 100, gamdom: 46, rainbet: 38, rollbit: 19, stakeus: 22, yeet: 10, 'bc.game': 7 },
+    { week: 'Dec 29', stake: 625, duel: 30, shuffle: 40, roobet: 93, gamdom: 47, rainbet: 35, rollbit: 15, stakeus: 17, yeet: 9, 'bc.game': 6 },
+    { week: 'Jan 5', stake: 441, duel: 65, shuffle: 40, roobet: 93, gamdom: 37, rainbet: 34, rollbit: 17, stakeus: 15, yeet: 9, 'bc.game': 6 }
   ]
 };
 
@@ -413,13 +413,41 @@ export default function GamStart() {
   const [platformLoading, setPlatformLoading] = useState(false);
   const [rankingTimePeriod, setRankingTimePeriod] = useState('week'); // week, month, year
   
-  // For now, just use default data - API integration can be added later
-  // This ensures the chart works with known-good data
+  // Fetch platform data from API
   const fetchPlatformData = async () => {
-    // Temporarily disabled API fetching - using default data
-    // The chart will show demo data which is guaranteed to work
-    console.log('Using default platform data');
+    setPlatformLoading(true);
+    try {
+      const params = new URLSearchParams({
+        range: selectedTimeRange,
+        metric: selectedMetric,
+        rankingPeriod: rankingTimePeriod
+      });
+      
+      const response = await fetch(`/api/platforms?${params}`);
+      if (response.ok) {
+        const data = await response.json();
+        console.log('API Response received:', {
+          casinosCount: data.casinos?.length,
+          trendsCount: data.weeklyTrends?.length
+        });
+        setPlatformData(data);
+      } else {
+        console.log('API failed, using default data');
+        // Keep using default data on error
+      }
+    } catch (error) {
+      console.error('Failed to fetch platform data:', error);
+      // Keep using default data on error
+    }
+    setPlatformLoading(false);
   };
+
+  // Fetch platform data when tab changes or filters change
+  useEffect(() => {
+    if (activeTab === 'platforms') {
+      fetchPlatformData();
+    }
+  }, [activeTab, selectedTimeRange, selectedMetric, rankingTimePeriod]);
 
   const handleScan = async () => {
     if (!address.trim()) return;
@@ -840,56 +868,98 @@ export default function GamStart() {
               </div>
         </div>
 
-            {/* Trend Chart - Redesigned */}
+            {/* Trend Chart - Per-Casino Stacked Bars */}
             <div className="bg-[#12121c] rounded-xl p-5 border border-gray-800/50 mb-6">
               <div className="mb-4">
                 <div className="text-sm font-semibold text-white">Volume Trends</div>
-                <div className="text-xs text-gray-500">Week over week deposit volume</div>
+                <div className="text-xs text-gray-500">Week over week deposit volume by casino</div>
               </div>
               
-              {/* Chart with gradient area */}
+              {/* Chart with stacked bars */}
               <div className="mb-3">
                 <div className="flex">
                   {/* Y-axis labels */}
-                  <div className="w-12 h-40 flex flex-col justify-between text-[10px] text-gray-600 pr-2">
+                  <div className="w-12 h-48 flex flex-col justify-between text-[10px] text-gray-600 pr-2">
                     <span>$800M</span>
                     <span>$600M</span>
                     <span>$400M</span>
                     <span>$200M</span>
                     <span>$0</span>
                   </div>
-                  {/* Chart bars */}
-                  <div className="flex-1 h-40 flex items-end gap-1">
-                    {platformData.weeklyTrends && platformData.weeklyTrends.length > 0 ? (
+                  {/* Chart bars - stacked by casino */}
+                  <div className="flex-1 h-48 flex items-end gap-1">
+                    {platformData.weeklyTrends && platformData.weeklyTrends.length > 0 && selectedCasinos.length > 0 ? (
                       platformData.weeklyTrends.map((week, i) => {
-                        // Sum ALL numeric values in the week
-                        const weekKeys = Object.keys(week).filter(k => k !== 'week');
-                        const weekTotal = weekKeys.reduce((sum, key) => {
-                          if (typeof week[key] === 'number') {
-                            return sum + week[key];
-                          }
-                          return sum;
-                        }, 0);
+                        // Get selected casinos with their colors and values for this week
+                        const casinoData = selectedCasinos.map(casinoName => {
+                          // Try to find the casino value in the week data
+                          // Keys in weeklyTrends are lowercase (e.g., 'stake', 'roobet')
+                          const casinoKey = casinoName.toLowerCase();
+                          const value = week[casinoKey] || 0;
+                          const casinoInfo = platformData.casinos.find(c => c.name === casinoName);
+                          return {
+                            name: casinoName,
+                            value: value,
+                            color: casinoInfo?.color || '#6b7280'
+                          };
+                        }).filter(c => c.value > 0);
                         
-                        // Scale: weekTotal is in millions (e.g., stake: 580 means $580M)
-                        // maxValue is 800 ($800M)
+                        // Total for this week (only selected casinos)
+                        const weekTotal = casinoData.reduce((sum, c) => sum + c.value, 0);
+                        
+                        // Scale: values are in millions (e.g., stake: 580 means $580M)
                         const maxValue = 800;
-                        const heightPercent = Math.min((weekTotal / maxValue) * 100, 100);
+                        const totalHeightPercent = Math.min((weekTotal / maxValue) * 100, 100);
                         
                         return (
-                          <div key={i} className="flex-1 flex flex-col h-full group">
+                          <div key={i} className="flex-1 flex flex-col h-full group relative">
+                            {/* Tooltip on hover */}
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-[#1a1a2e] border border-gray-700 rounded-lg p-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 whitespace-nowrap">
+                              <div className="text-xs font-medium text-white mb-1">{week.week}</div>
+                              {casinoData.map(c => (
+                                <div key={c.name} className="flex items-center gap-2 text-[10px]">
+                                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: c.color }} />
+                                  <span className="text-gray-400">{c.name}:</span>
+                                  <span className="text-white">${c.value}M</span>
+                                </div>
+                              ))}
+                              <div className="border-t border-gray-700 mt-1 pt-1 text-[10px] text-gray-300">
+                                Total: ${weekTotal.toFixed(0)}M
+                              </div>
+                            </div>
+                            
+                            {/* Stacked bar */}
                             <div className="flex-1 flex items-end">
                               <div 
-                                className="w-full bg-gradient-to-t from-purple-500/60 to-purple-400/20 rounded-t transition-all group-hover:from-purple-500/80 group-hover:to-purple-400/40"
-                                style={{ height: `${Math.max(heightPercent, 5)}%` }}
-                              />
+                                className="w-full rounded-t overflow-hidden flex flex-col-reverse"
+                                style={{ height: `${Math.max(totalHeightPercent, 3)}%` }}
+                              >
+                                {casinoData.map((casino) => {
+                                  const segmentPercent = weekTotal > 0 ? (casino.value / weekTotal) * 100 : 0;
+                                  return (
+                                    <div
+                                      key={casino.name}
+                                      className="w-full transition-all"
+                                      style={{ 
+                                        height: `${segmentPercent}%`,
+                                        backgroundColor: casino.color,
+                                        minHeight: segmentPercent > 0 ? '2px' : '0'
+                                      }}
+                                    />
+                                  );
+                                })}
+                              </div>
                             </div>
                           </div>
                         );
                       })
+                    ) : selectedCasinos.length === 0 ? (
+                      <div className="w-full h-full flex items-center justify-center text-gray-500 text-sm">
+                        Select casinos to view data
+                      </div>
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-gray-500 text-sm">
-                        No data
+                        No data available
                       </div>
                     )}
                   </div>
@@ -1611,5 +1681,6 @@ export default function GamStart() {
     </div>
   );
 }
+
 
 
