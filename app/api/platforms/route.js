@@ -411,29 +411,29 @@ function formatWeekLabel(dateStr) {
 }
 
 function getCasinoColor(name) {
-  // Muted color palette - less bright, more consistent with dark theme
+  // Muted color palette - Stake uses subdued gray-blue since it dominates charts
   const colors = {
-    'Stake': '#16a34a',
-    'Roobet': '#7c3aed',
-    'Duel': '#c2410c',
-    'Gamdom': '#a16207',
-    'Shuffle': '#be185d',
-    'Rainbet': '#0891b2',
-    'Rollbit': '#dc2626',
-    'StakeUS': '#9333ea',
-    'Yeet': '#d97706',
-    'Winna': '#059669',
-    'BetFury': '#b45309',
-    'Yolo.com': '#be185d',
-    'Thrill': '#b91c1c',
-    '500 Casino': '#2563eb',
-    'Solcasino': '#0891b2',
-    'Razed': '#7c3aed',
-    'Duelbits': '#be185d',
-    'MetaWin': '#4f46e5',
-    'Chips.gg': '#0d9488',
-    'BC.GAME': '#d97706',
-    'BC.Game': '#d97706' // Handle both variations
+    'Stake': '#64748b',      // Slate gray - muted since it's largest
+    'Roobet': '#8b5cf6',     // Purple
+    'Duel': '#f97316',       // Orange
+    'Gamdom': '#eab308',     // Yellow
+    'Shuffle': '#ec4899',    // Pink
+    'Rainbet': '#06b6d4',    // Cyan
+    'Rollbit': '#ef4444',    // Red
+    'StakeUS': '#a855f7',    // Light purple
+    'Yeet': '#f59e0b',       // Amber
+    'Winna': '#10b981',      // Emerald
+    'BetFury': '#f97316',    // Orange
+    'Yolo.com': '#d946ef',   // Fuchsia
+    'Thrill': '#dc2626',     // Red
+    '500 Casino': '#3b82f6', // Blue
+    'Solcasino': '#14b8a6',  // Teal
+    'Razed': '#a78bfa',      // Light purple
+    'Duelbits': '#f472b6',   // Pink
+    'MetaWin': '#6366f1',    // Indigo
+    'Chips.gg': '#2dd4bf',   // Teal
+    'BC.GAME': '#fbbf24',    // Yellow
+    'BC.Game': '#fbbf24'     // Handle both variations
   };
   return colors[name] || '#6b7280';
 }
@@ -444,18 +444,28 @@ function getCasinoColor(name) {
 
 function getDefaultCasinoStats(multiplier = 1) {
   // Base weekly stats - multiplier scales for month/year views
-  // Using muted colors consistent with dark theme
+  // Stake uses muted gray since it dominates charts
   const baseStats = [
-    { name: 'Stake', volume: 441000000, marketShare: 54.8, deposits: 666000, color: '#16a34a' },
-    { name: 'Roobet', volume: 93400000, marketShare: 11.6, deposits: 142000, color: '#7c3aed' },
-    { name: 'Duel', volume: 65200000, marketShare: 8.1, deposits: 89000, color: '#c2410c' },
-    { name: 'Shuffle', volume: 40000000, marketShare: 5.0, deposits: 108000, color: '#be185d' },
-    { name: 'Gamdom', volume: 36800000, marketShare: 4.6, deposits: 28500, color: '#a16207' },
-    { name: 'Rainbet', volume: 33900000, marketShare: 4.2, deposits: 157000, color: '#0891b2' },
-    { name: 'Rollbit', volume: 17000000, marketShare: 2.1, deposits: 36300, color: '#dc2626' },
-    { name: 'StakeUS', volume: 14800000, marketShare: 1.8, deposits: 62600, color: '#db2777' },
-    { name: 'Yeet', volume: 8660000, marketShare: 1.1, deposits: 12400, color: '#d97706' },
-    { name: 'BC.Game', volume: 6310000, marketShare: 0.8, deposits: 24000, color: '#2563eb' }
+    { name: 'Stake', volume: 441000000, marketShare: 54.8, deposits: 197000, color: '#64748b' },
+    { name: 'Rainbet', volume: 93400000, marketShare: 11.6, deposits: 56000, color: '#06b6d4' },
+    { name: 'Shuffle', volume: 65200000, marketShare: 8.1, deposits: 36000, color: '#ec4899' },
+    { name: 'Roobet', volume: 40000000, marketShare: 5.0, deposits: 29000, color: '#8b5cf6' },
+    { name: 'Rollbit', volume: 36800000, marketShare: 4.6, deposits: 15000, color: '#ef4444' },
+    { name: 'StakeUS', volume: 33900000, marketShare: 4.2, deposits: 13000, color: '#a855f7' },
+    { name: 'Gamdom', volume: 17000000, marketShare: 2.1, deposits: 10000, color: '#eab308' },
+    { name: 'Thrill', volume: 14800000, marketShare: 1.8, deposits: 9000, color: '#dc2626' },
+    { name: 'Solcasino', volume: 8660000, marketShare: 1.1, deposits: 7000, color: '#14b8a6' },
+    { name: 'Duel', volume: 6310000, marketShare: 0.8, deposits: 5000, color: '#f97316' },
+    { name: '500 Casino', volume: 5000000, marketShare: 0.6, deposits: 4000, color: '#3b82f6' },
+    { name: 'Winna', volume: 4500000, marketShare: 0.5, deposits: 4000, color: '#10b981' },
+    { name: 'Razed', volume: 4000000, marketShare: 0.5, deposits: 4000, color: '#a78bfa' },
+    { name: 'Yeet', volume: 3500000, marketShare: 0.4, deposits: 3000, color: '#f59e0b' },
+    { name: 'BetFury', volume: 3000000, marketShare: 0.4, deposits: 3000, color: '#f97316' },
+    { name: 'Duelbits', volume: 2800000, marketShare: 0.3, deposits: 3000, color: '#f472b6' },
+    { name: 'Chips.gg', volume: 2500000, marketShare: 0.3, deposits: 2000, color: '#2dd4bf' },
+    { name: 'Yolo.com', volume: 2200000, marketShare: 0.3, deposits: 2000, color: '#d946ef' },
+    { name: 'MetaWin', volume: 2000000, marketShare: 0.2, deposits: 2000, color: '#6366f1' },
+    { name: 'BC.Game', volume: 1500000, marketShare: 0.2, deposits: 300, color: '#fbbf24' }
   ];
   
   // Scale volume and deposits by multiplier, keep marketShare as is
@@ -529,6 +539,10 @@ function getDefaultTrends(metric = 'volume') {
   }
   return getDefaultVolumeTrends();
 }
+
+
+
+
 
 
 
