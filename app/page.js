@@ -17,6 +17,27 @@ const DiscordIcon = ({ size = 18 }) => (
   </svg>
 );
 
+// Diamond Eye Logo - Eye with diamond pupil
+const DiamondEyeLogo = ({ size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    {/* Eye outline */}
+    <path 
+      d="M12 5C7 5 2.73 8.11 1 12.5C2.73 16.89 7 20 12 20C17 20 21.27 16.89 23 12.5C21.27 8.11 17 5 12 5Z" 
+      stroke="currentColor" 
+      strokeWidth="1.5" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+      className="text-purple-400"
+    />
+    {/* Diamond pupil */}
+    <path 
+      d="M12 8L15 12.5L12 17L9 12.5L12 8Z" 
+      fill="currentColor"
+      className="text-purple-500"
+    />
+  </svg>
+);
+
 // Demo wallet data with different risk levels
 const DEMO_WALLETS = {
   critical: {
@@ -647,7 +668,7 @@ export default function GambleScan() {
                 onClick={() => { setResults(null); setAddress(''); setExpandedMetric(null); setReportView('traits'); setActiveTab('players'); }}
                 className="flex items-center gap-2 text-white font-semibold text-lg hover:opacity-80 transition-opacity"
               >
-                <span className="text-purple-500">◈</span>
+                <DiamondEyeLogo size={22} />
                 GambleScan
               </button>
               
@@ -868,20 +889,38 @@ export default function GambleScan() {
             {/* Trend Chart - Per-Casino Stacked Bars */}
             <div className="bg-[#12121c] rounded-xl p-5 border border-gray-800/50 mb-6">
               <div className="mb-4">
-                <div className="text-sm font-semibold text-white">Deposit Volume Trends</div>
-                <div className="text-xs text-gray-500">Historical deposit volume by selected casinos</div>
+                <div className="text-sm font-semibold text-white">
+                  {selectedMetric === 'deposits' ? 'Deposit Count Trends' : 'Deposit Volume Trends'}
+                </div>
+                <div className="text-xs text-gray-500">
+                  {selectedMetric === 'deposits' 
+                    ? 'Historical deposit transactions by selected casinos' 
+                    : 'Historical deposit volume by selected casinos'}
+                </div>
               </div>
               
               {/* Chart with stacked bars */}
               <div className="mb-3">
                 <div className="flex">
-                  {/* Y-axis labels */}
+                  {/* Y-axis labels - dynamic based on metric */}
                   <div className="w-12 h-48 flex flex-col justify-between text-[10px] text-gray-600 pr-2">
-                    <span>$800M</span>
-                    <span>$600M</span>
-                    <span>$400M</span>
-                    <span>$200M</span>
-                    <span>$0</span>
+                    {selectedMetric === 'deposits' ? (
+                      <>
+                        <span>400K</span>
+                        <span>300K</span>
+                        <span>200K</span>
+                        <span>100K</span>
+                        <span>0</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>$800M</span>
+                        <span>$600M</span>
+                        <span>$400M</span>
+                        <span>$200M</span>
+                        <span>$0</span>
+                      </>
+                    )}
                   </div>
                   {/* Chart bars - stacked by casino */}
                   <div className="flex-1 h-48 flex items-end gap-1">
@@ -904,9 +943,19 @@ export default function GambleScan() {
                         // Total for this week (only selected casinos)
                         const weekTotal = casinoData.reduce((sum, c) => sum + c.value, 0);
                         
-                        // Scale: values are in millions (e.g., stake: 580 means $580M)
-                        const maxValue = 800;
+                        // Scale: different max values for volume vs deposits
+                        // Volume: values in millions (800M max)
+                        // Deposits: values in thousands (400K max)
+                        const maxValue = selectedMetric === 'deposits' ? 400 : 800;
                         const totalHeightPercent = Math.min((weekTotal / maxValue) * 100, 100);
+                        
+                        // Format value for tooltip based on metric
+                        const formatValue = (val) => {
+                          if (selectedMetric === 'deposits') {
+                            return `${val.toFixed(1)}K`;
+                          }
+                          return `$${val.toFixed(1)}M`;
+                        };
                         
                         return (
                           <div key={i} className="flex-1 flex flex-col h-full group relative">
@@ -917,11 +966,11 @@ export default function GambleScan() {
                                 <div key={c.name} className="flex items-center gap-2 text-[10px]">
                                   <div className="w-2 h-2 rounded-full" style={{ backgroundColor: c.color }} />
                                   <span className="text-gray-400">{c.name}:</span>
-                                  <span className="text-white">${c.value.toFixed(1)}M</span>
+                                  <span className="text-white">{formatValue(c.value)}</span>
                                 </div>
                               ))}
                               <div className="border-t border-gray-700 mt-1 pt-1 text-[10px] text-gray-300">
-                                Total: ${weekTotal.toFixed(1)}M
+                                Total: {formatValue(weekTotal)}
                               </div>
                             </div>
                             
@@ -1694,6 +1743,10 @@ export default function GambleScan() {
     </div>
   );
 }
+
+
+
+
 
 
 
