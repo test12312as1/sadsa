@@ -41,21 +41,21 @@ const KickIcon = ({ size = 18 }) => (
 
 // Sample leaderboard configurations
 const SAMPLE_CONFIGS = {
-  terriblepker: {
-    streamerName: 'TerriblePKER',
+  orange: {
+    streamerName: 'Orange',
     casino: 'Roobet',
     casinoUrl: 'https://roobet.com',
     prizePool: 5000,
     accentColor: '#f97316',
     timeline: 'bi-weekly',
-    affiliateCode: 'terriblepker',
+    affiliateCode: 'orange',
     endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
     socials: {
-      twitter: 'https://twitter.com/terriblepker',
-      discord: 'https://discord.gg/terriblepker',
-      twitch: 'https://twitch.tv/terriblepker',
+      twitter: 'https://twitter.com/gamblescan',
+      discord: 'https://discord.gg/gamblescan',
+      twitch: 'https://twitch.tv/gamblescan',
       youtube: '',
-      kick: 'https://kick.com/terriblepker'
+      kick: 'https://kick.com/gamblescan'
     },
     prizeSplit: [
       { place: 1, percent: 50 },
@@ -63,20 +63,20 @@ const SAMPLE_CONFIGS = {
       { place: 3, percent: 20 }
     ]
   },
-  codeivanb: {
-    streamerName: 'CodeIvanB',
+  purple: {
+    streamerName: 'Purple',
     casino: 'Rainbet',
     casinoUrl: 'https://rainbet.com',
     prizePool: 10000,
     accentColor: '#8b5cf6',
     timeline: 'monthly',
-    affiliateCode: 'codeivanb',
+    affiliateCode: 'purple',
     endDate: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000), // 21 days from now
     socials: {
-      twitter: 'https://twitter.com/codeivanb',
-      discord: 'https://discord.gg/codeivanb',
-      twitch: 'https://twitch.tv/codeivanb',
-      youtube: 'https://youtube.com/@codeivanb',
+      twitter: 'https://twitter.com/gamblescan',
+      discord: 'https://discord.gg/gamblescan',
+      twitch: 'https://twitch.tv/gamblescan',
+      youtube: 'https://youtube.com/@gamblescan',
       kick: ''
     },
     prizeSplit: [
@@ -87,21 +87,21 @@ const SAMPLE_CONFIGS = {
       { place: 5, percent: 8 }
     ]
   },
-  karmacf: {
-    streamerName: 'KarmaCF',
+  green: {
+    streamerName: 'Green',
     casino: 'Stake',
     casinoUrl: 'https://stake.com',
     prizePool: 25000,
     accentColor: '#22c55e',
     timeline: 'weekly',
-    affiliateCode: 'karmacf',
+    affiliateCode: 'green',
     endDate: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000), // 4 days from now
     socials: {
-      twitter: 'https://twitter.com/karmacf',
-      discord: 'https://discord.gg/karmacf',
-      twitch: 'https://twitch.tv/karmacf',
-      youtube: 'https://youtube.com/@karmacf',
-      kick: 'https://kick.com/karmacf'
+      twitter: 'https://twitter.com/gamblescan',
+      discord: 'https://discord.gg/gamblescan',
+      twitch: 'https://twitch.tv/gamblescan',
+      youtube: 'https://youtube.com/@gamblescan',
+      kick: 'https://kick.com/gamblescan'
     },
     prizeSplit: [
       { place: 1, percent: 30 },
@@ -523,6 +523,11 @@ export default function SampleLeaderboard() {
     </div>
   );
 }
+
+
+
+
+
 
 
 
