@@ -63,7 +63,7 @@ const PRICING = {
     price: 0,
     features: [
       { text: '1 Active Leaderboard', included: true },
-      { text: 'Subdomain (you.gamstart.com)', included: true },
+      { text: 'Subdomain (you.gamblescan.com)', included: true },
       { text: 'All Casino Integrations', included: true },
       { text: 'Custom Accent Colors', included: true },
       { text: 'Social Links', included: true },
@@ -77,7 +77,7 @@ const PRICING = {
     price: 199,
     features: [
       { text: 'Unlimited Leaderboards', included: true },
-      { text: 'Subdomain (you.gamstart.com)', included: true },
+      { text: 'Subdomain (you.gamblescan.com)', included: true },
       { text: 'All Casino Integrations', included: true },
       { text: 'Custom Accent Colors', included: true },
       { text: 'Social Links', included: true },
@@ -90,7 +90,7 @@ const PRICING = {
 
 export default function LeaderboardsLanding() {
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white">
+    <div className="min-h-screen bg-[#0f0f1a] text-white">
       {/* Navbar */}
       <nav className="border-b border-gray-800/50 bg-[#0a0a14]/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -101,7 +101,7 @@ export default function LeaderboardsLanding() {
                 className="flex items-center gap-2 text-white font-semibold text-lg hover:opacity-80 transition-opacity"
               >
                 <span className="text-purple-500">◈</span>
-                GamStart
+                GambleScan
               </a>
               
               {/* Primary Tabs */}
@@ -338,7 +338,7 @@ export default function LeaderboardsLanding() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-12">
             <div className="text-gray-500 text-sm">
-              © 2026 GamStart
+              © 2026 GambleScan
             </div>
             <div className="flex items-center gap-4">
               <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-white transition-colors">
@@ -358,5 +358,6 @@ export default function LeaderboardsLanding() {
     </div>
   );
 }
+
 
 
