@@ -248,7 +248,7 @@ export default function SampleLeaderboard() {
           </div>
           
           {/* Affiliate Code */}
-          <div className="mb-8">
+          <div className="mb-12">
             <span className="text-gray-400">Use code: </span>
             <span 
               className="font-bold text-lg"
@@ -523,4 +523,5 @@ export default function SampleLeaderboard() {
     </div>
   );
 }
+
 
