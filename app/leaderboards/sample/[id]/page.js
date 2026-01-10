@@ -510,19 +510,20 @@ export default function SampleLeaderboard() {
             )}
           </div>
           
-          {/* Built by GamStart */}
+          {/* Built by GambleScan */}
           <a 
             href="/"
             className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-purple-400 transition-colors"
           >
             <span className="text-purple-500">◈</span>
-            Built by GamStart
+            Built by GambleScan
           </a>
         </footer>
       </div>
     </div>
   );
 }
+
 
 
 
