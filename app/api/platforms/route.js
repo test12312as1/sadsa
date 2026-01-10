@@ -25,8 +25,8 @@ export async function GET(request) {
     // Get top gainers and declines
     const { gainers, declines } = await getMovers();
 
-    // Get trend data
-    const trends = await getTrendData(timeRange);
+    // Get trend data (metric determines volume vs deposits)
+    const trends = await getTrendData(timeRange, metric);
 
     const responseData = {
       weekTotals,
@@ -344,7 +344,7 @@ async function getMovers() {
   };
 }
 
-async function getTrendData(timeRange) {
+async function getTrendData(timeRange, metric = 'volume') {
   // Calculate weeks to fetch
   const weeks = timeRange === '4w' ? 4 : timeRange === '12w' ? 12 : timeRange === '24w' ? 24 : 52;
   
@@ -378,15 +378,21 @@ async function getTrendData(timeRange) {
       if (!weeklyData[weekKey][casinoKey]) {
         weeklyData[weekKey][casinoKey] = 0;
       }
-      weeklyData[weekKey][casinoKey] += (s.total_volume || 0) / 1000000; // Convert to millions
+      
+      // Use different data based on metric
+      if (metric === 'deposits') {
+        weeklyData[weekKey][casinoKey] += (s.total_deposits || 0) / 1000; // Convert to thousands
+      } else {
+        weeklyData[weekKey][casinoKey] += (s.total_volume || 0) / 1000000; // Convert to millions
+      }
     });
 
     return Object.values(weeklyData);
   }
 
-  // Return default trend data if no snapshots
-  const defaultTrends = getDefaultTrends();
-  console.log('Using default trends:', defaultTrends.length, 'weeks');
+  // Return default trend data if no snapshots (pass metric to get correct data)
+  const defaultTrends = getDefaultTrends(metric);
+  console.log(`Using default ${metric} trends:`, defaultTrends.length, 'weeks');
   return defaultTrends;
 }
 
@@ -479,22 +485,54 @@ function getDefaultMovers() {
   };
 }
 
-function getDefaultTrends() {
+// Volume trends (in millions USD)
+function getDefaultVolumeTrends() {
   return [
-    { week: 'Oct 20', stake: 580, duel: 28, shuffle: 38, roobet: 95, gamdom: 42, rainbet: 32, rollbit: 14, stakeus: 18, yeet: 6, 'bc.game': 15 },
-    { week: 'Oct 27', stake: 560, duel: 30, shuffle: 40, roobet: 98, gamdom: 44, rainbet: 30, rollbit: 12, stakeus: 20, yeet: 7, 'bc.game': 18 },
-    { week: 'Nov 3', stake: 590, duel: 32, shuffle: 42, roobet: 102, gamdom: 45, rainbet: 34, rollbit: 15, stakeus: 22, yeet: 5, 'bc.game': 16 },
-    { week: 'Nov 10', stake: 620, duel: 35, shuffle: 44, roobet: 105, gamdom: 46, rainbet: 36, rollbit: 16, stakeus: 19, yeet: 8, 'bc.game': 14 },
-    { week: 'Nov 17', stake: 650, duel: 38, shuffle: 45, roobet: 108, gamdom: 47, rainbet: 35, rollbit: 18, stakeus: 21, yeet: 7, 'bc.game': 12 },
-    { week: 'Nov 24', stake: 680, duel: 42, shuffle: 43, roobet: 110, gamdom: 48, rainbet: 38, rollbit: 15, stakeus: 24, yeet: 9, 'bc.game': 10 },
-    { week: 'Dec 1', stake: 625, duel: 30, shuffle: 44, roobet: 111, gamdom: 47, rainbet: 36, rollbit: 13, stakeus: 20, yeet: 6, 'bc.game': 11 },
-    { week: 'Dec 8', stake: 600, duel: 32, shuffle: 42, roobet: 108, gamdom: 45, rainbet: 34, rollbit: 14, stakeus: 18, yeet: 7, 'bc.game': 9 },
-    { week: 'Dec 15', stake: 580, duel: 35, shuffle: 40, roobet: 105, gamdom: 44, rainbet: 32, rollbit: 16, stakeus: 16, yeet: 8, 'bc.game': 8 },
-    { week: 'Dec 22', stake: 720, duel: 45, shuffle: 42, roobet: 100, gamdom: 46, rainbet: 38, rollbit: 19, stakeus: 22, yeet: 10, 'bc.game': 7 },
-    { week: 'Dec 29', stake: 625, duel: 30, shuffle: 40, roobet: 93, gamdom: 47, rainbet: 35, rollbit: 15, stakeus: 17, yeet: 9, 'bc.game': 6 },
-    { week: 'Jan 5', stake: 441, duel: 65, shuffle: 40, roobet: 93, gamdom: 37, rainbet: 34, rollbit: 17, stakeus: 15, yeet: 9, 'bc.game': 6 }
+    { week: 'Oct 20', stake: 580, duel: 28, shuffle: 38, roobet: 95, gamdom: 42, rainbet: 32, rollbit: 14, stakeus: 18, yeet: 6, 'bc.game': 15, thrill: 5, solcasino: 8, '500 casino': 10, winna: 4, razed: 3, duelbits: 5, betfury: 3, 'yolo.com': 2, metawin: 2, 'chips.gg': 1 },
+    { week: 'Oct 27', stake: 560, duel: 30, shuffle: 40, roobet: 98, gamdom: 44, rainbet: 30, rollbit: 12, stakeus: 20, yeet: 7, 'bc.game': 18, thrill: 5, solcasino: 8, '500 casino': 10, winna: 4, razed: 3, duelbits: 5, betfury: 3, 'yolo.com': 2, metawin: 2, 'chips.gg': 1 },
+    { week: 'Nov 3', stake: 590, duel: 32, shuffle: 42, roobet: 102, gamdom: 45, rainbet: 34, rollbit: 15, stakeus: 22, yeet: 5, 'bc.game': 16, thrill: 5, solcasino: 8, '500 casino': 10, winna: 5, razed: 3, duelbits: 5, betfury: 3, 'yolo.com': 2, metawin: 2, 'chips.gg': 1 },
+    { week: 'Nov 10', stake: 620, duel: 35, shuffle: 44, roobet: 105, gamdom: 46, rainbet: 36, rollbit: 16, stakeus: 19, yeet: 8, 'bc.game': 14, thrill: 5, solcasino: 8, '500 casino': 10, winna: 5, razed: 3, duelbits: 5, betfury: 3, 'yolo.com': 2, metawin: 2, 'chips.gg': 1 },
+    { week: 'Nov 17', stake: 650, duel: 38, shuffle: 45, roobet: 108, gamdom: 47, rainbet: 35, rollbit: 18, stakeus: 21, yeet: 7, 'bc.game': 12, thrill: 5, solcasino: 8, '500 casino': 10, winna: 5, razed: 3, duelbits: 5, betfury: 3, 'yolo.com': 2, metawin: 2, 'chips.gg': 1 },
+    { week: 'Nov 24', stake: 680, duel: 42, shuffle: 43, roobet: 110, gamdom: 48, rainbet: 38, rollbit: 15, stakeus: 24, yeet: 9, 'bc.game': 10, thrill: 5, solcasino: 8, '500 casino': 10, winna: 5, razed: 3, duelbits: 5, betfury: 3, 'yolo.com': 2, metawin: 2, 'chips.gg': 1 },
+    { week: 'Dec 1', stake: 625, duel: 30, shuffle: 44, roobet: 111, gamdom: 47, rainbet: 36, rollbit: 13, stakeus: 20, yeet: 6, 'bc.game': 11, thrill: 5, solcasino: 8, '500 casino': 10, winna: 5, razed: 3, duelbits: 5, betfury: 3, 'yolo.com': 2, metawin: 2, 'chips.gg': 1 },
+    { week: 'Dec 8', stake: 600, duel: 32, shuffle: 42, roobet: 108, gamdom: 45, rainbet: 34, rollbit: 14, stakeus: 18, yeet: 7, 'bc.game': 9, thrill: 5, solcasino: 7, '500 casino': 10, winna: 4, razed: 3, duelbits: 5, betfury: 3, 'yolo.com': 2, metawin: 2, 'chips.gg': 1 },
+    { week: 'Dec 15', stake: 580, duel: 35, shuffle: 40, roobet: 105, gamdom: 44, rainbet: 32, rollbit: 16, stakeus: 16, yeet: 8, 'bc.game': 8, thrill: 6, solcasino: 7, '500 casino': 10, winna: 4, razed: 3, duelbits: 5, betfury: 3, 'yolo.com': 2, metawin: 2, 'chips.gg': 1 },
+    { week: 'Dec 22', stake: 720, duel: 45, shuffle: 42, roobet: 100, gamdom: 46, rainbet: 38, rollbit: 19, stakeus: 22, yeet: 10, 'bc.game': 7, thrill: 6, solcasino: 7, '500 casino': 10, winna: 4, razed: 3, duelbits: 5, betfury: 3, 'yolo.com': 2, metawin: 2, 'chips.gg': 1 },
+    { week: 'Dec 29', stake: 625, duel: 30, shuffle: 40, roobet: 93, gamdom: 47, rainbet: 35, rollbit: 15, stakeus: 17, yeet: 9, 'bc.game': 6, thrill: 7, solcasino: 7, '500 casino': 10, winna: 4, razed: 3, duelbits: 5, betfury: 3, 'yolo.com': 2, metawin: 2, 'chips.gg': 1 },
+    { week: 'Jan 6', stake: 441, duel: 65, shuffle: 40, roobet: 93, gamdom: 37, rainbet: 34, rollbit: 17, stakeus: 15, yeet: 9, 'bc.game': 6, thrill: 9, solcasino: 7, '500 casino': 10, winna: 4, razed: 4, duelbits: 5, betfury: 3, 'yolo.com': 2, metawin: 2, 'chips.gg': 2 }
   ];
 }
+
+// Deposit count trends (in thousands) - Weekly data points
+function getDefaultDepositTrends() {
+  return [
+    // Weekly snapshots going back ~12 weeks
+    { week: 'Oct 20', stake: 180, rainbet: 50, shuffle: 35, roobet: 28, rollbit: 15, stakeus: 14, gamdom: 10, thrill: 5, solcasino: 7, duel: 3, '500 casino': 4, winna: 3, razed: 2, yeet: 2, betfury: 3, duelbits: 3, 'chips.gg': 1, 'yolo.com': 1.5, metawin: 2, 'bc.game': 40 },
+    { week: 'Oct 27', stake: 185, rainbet: 52, shuffle: 36, roobet: 29, rollbit: 15, stakeus: 15, gamdom: 11, thrill: 5, solcasino: 7, duel: 3, '500 casino': 4, winna: 3, razed: 2, yeet: 2, betfury: 3, duelbits: 3, 'chips.gg': 1, 'yolo.com': 1.5, metawin: 2, 'bc.game': 35 },
+    { week: 'Nov 3', stake: 190, rainbet: 53, shuffle: 36, roobet: 29, rollbit: 16, stakeus: 15, gamdom: 11, thrill: 5, solcasino: 7, duel: 3, '500 casino': 4, winna: 4, razed: 2, yeet: 3, betfury: 3, duelbits: 3, 'chips.gg': 1, 'yolo.com': 1.5, metawin: 2, 'bc.game': 30 },
+    { week: 'Nov 10', stake: 195, rainbet: 54, shuffle: 37, roobet: 30, rollbit: 16, stakeus: 16, gamdom: 11, thrill: 5, solcasino: 7, duel: 3, '500 casino': 5, winna: 4, razed: 2, yeet: 3, betfury: 3, duelbits: 3, 'chips.gg': 1, 'yolo.com': 1.5, metawin: 2, 'bc.game': 25 },
+    { week: 'Nov 17', stake: 200, rainbet: 55, shuffle: 38, roobet: 30, rollbit: 16, stakeus: 17, gamdom: 11, thrill: 5, solcasino: 7, duel: 3, '500 casino': 5, winna: 4, razed: 2, yeet: 3, betfury: 3, duelbits: 3, 'chips.gg': 1, 'yolo.com': 1.5, metawin: 2, 'bc.game': 20 },
+    { week: 'Nov 24', stake: 210, rainbet: 56, shuffle: 39, roobet: 31, rollbit: 16, stakeus: 18, gamdom: 12, thrill: 5, solcasino: 7, duel: 4, '500 casino': 5, winna: 4, razed: 3, yeet: 3, betfury: 3, duelbits: 3, 'chips.gg': 1, 'yolo.com': 1.5, metawin: 2, 'bc.game': 15 },
+    { week: 'Dec 1', stake: 217, rainbet: 54, shuffle: 37, roobet: 32, rollbit: 16, stakeus: 17, gamdom: 11, thrill: 6, solcasino: 7, duel: 4, '500 casino': 5, winna: 3, razed: 2, yeet: 3, betfury: 3, duelbits: 3, 'chips.gg': 0.6, 'yolo.com': 1.5, metawin: 1.4, 'bc.game': 4 },
+    { week: 'Dec 10', stake: 225, rainbet: 53, shuffle: 39, roobet: 29, rollbit: 16, stakeus: 15, gamdom: 12, thrill: 5, solcasino: 7, duel: 3, '500 casino': 4, winna: 2, razed: 2, yeet: 2, betfury: 3, duelbits: 3, 'chips.gg': 0.6, 'yolo.com': 1.4, metawin: 1.7, 'bc.game': 46 },
+    { week: 'Dec 13', stake: 193, rainbet: 59, shuffle: 39, roobet: 31, rollbit: 17, stakeus: 18, gamdom: 12, thrill: 5, solcasino: 7, duel: 4, '500 casino': 5, winna: 2, razed: 5, yeet: 3, betfury: 3, duelbits: 3, 'chips.gg': 1.1, 'yolo.com': 1.3, metawin: 1.6, 'bc.game': 4 },
+    { week: 'Dec 22', stake: 258, rainbet: 59, shuffle: 41, roobet: 31, rollbit: 16, stakeus: 20, gamdom: 11, thrill: 6, solcasino: 7, duel: 4, '500 casino': 5, winna: 4, razed: 3, yeet: 3, betfury: 3, duelbits: 3, 'chips.gg': 0.8, 'yolo.com': 1.7, metawin: 1.4, 'bc.game': 4 },
+    { week: 'Dec 31', stake: 275, rainbet: 61, shuffle: 41, roobet: 32, rollbit: 16, stakeus: 22, gamdom: 11, thrill: 7, solcasino: 7, duel: 5, '500 casino': 5, winna: 4, razed: 3, yeet: 4, betfury: 3, duelbits: 3, 'chips.gg': 1.1, 'yolo.com': 2, metawin: 1.7, 'bc.game': 3 },
+    { week: 'Jan 6', stake: 197, rainbet: 56, shuffle: 36, roobet: 29, rollbit: 15, stakeus: 13, gamdom: 10, thrill: 9, solcasino: 7, duel: 5, '500 casino': 4, winna: 4, razed: 4, yeet: 3, betfury: 3, duelbits: 3, 'chips.gg': 1.7, 'yolo.com': 1.6, metawin: 1.6, 'bc.game': 0.3 }
+  ];
+}
+
+// Default trends - returns volume or deposits based on metric
+function getDefaultTrends(metric = 'volume') {
+  if (metric === 'deposits') {
+    return getDefaultDepositTrends();
+  }
+  return getDefaultVolumeTrends();
+}
+
+
+
+
 
 
 
