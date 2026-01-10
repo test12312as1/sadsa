@@ -153,7 +153,7 @@ export default function CasinoDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] text-white flex flex-col">
+      <div className="min-h-screen bg-[#0f0f1a] text-white flex flex-col">
         <Navbar />
         <main className="flex-1">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -174,7 +174,7 @@ export default function CasinoDetailPage() {
 
   if (!data) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] text-white flex flex-col">
+      <div className="min-h-screen bg-[#0f0f1a] text-white flex flex-col">
         <Navbar />
         <main className="flex-1">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -201,7 +201,7 @@ export default function CasinoDetailPage() {
   const trends = data.trends || [];
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white flex flex-col">
+    <div className="min-h-screen bg-[#0f0f1a] text-white flex flex-col">
       <Navbar />
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -426,5 +426,6 @@ export default function CasinoDetailPage() {
     </div>
   );
 }
+
 
 
