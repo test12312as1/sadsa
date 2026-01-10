@@ -167,22 +167,19 @@ export default function VIPDashboard() {
               </div>
 
               <div className="hidden md:flex items-center gap-1">
-                <Link href="/marketplace" className="px-3 py-1.5 text-sm text-purple-400 hover:text-purple-300 transition-colors">
-                  Account Marketplace
-                </Link>
-                <span className="px-3 py-1.5 text-sm text-purple-400 font-medium">
+                <span className="px-3 py-1.5 text-sm text-white font-medium">
                   VIP Offers
                 </span>
+                <Link href="/leaderboards" className="px-3 py-1.5 text-sm text-purple-400 hover:text-purple-300 transition-colors">
+                  Leaderboard Builder
+                </Link>
               </div>
             </div>
 
             <div className="flex items-center gap-3">
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="p-2 text-gray-400 hover:text-white transition-colors">
-                <TwitterIcon size={18} />
-              </a>
-              <a href="https://discord.com" target="_blank" rel="noopener noreferrer" className="p-2 text-gray-400 hover:text-white transition-colors">
-                <DiscordIcon size={18} />
-              </a>
+              <button className="px-4 py-1.5 text-sm font-medium text-gray-300 hover:text-white bg-[#1a1a2e] hover:bg-[#252540] rounded-lg border border-gray-700/50 transition-colors">
+                Sign In
+              </button>
             </div>
           </div>
         </div>
@@ -490,4 +487,5 @@ export default function VIPDashboard() {
     </div>
   );
 }
+
 
