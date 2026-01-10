@@ -61,7 +61,7 @@ function VerifyContent() {
               <div className="flex items-center gap-6">
                 <Link href="/" className="flex items-center gap-2 text-white font-semibold text-lg hover:opacity-80 transition-opacity">
                   <span className="text-purple-500">◈</span>
-                  GamStart
+                  GambleScan
                 </Link>
                 
                 <div className="flex items-center bg-[#1a1a2e] rounded-lg p-0.5">
@@ -126,7 +126,7 @@ function VerifyContent() {
             <div className="flex items-center gap-6">
               <Link href="/" className="flex items-center gap-2 text-white font-semibold text-lg hover:opacity-80 transition-opacity">
                 <span className="text-purple-500">◈</span>
-                GamStart
+                GambleScan
               </Link>
               
               <div className="flex items-center bg-[#1a1a2e] rounded-lg p-0.5">
@@ -270,7 +270,7 @@ function VerifyContent() {
       <footer className="border-t border-gray-800/50 bg-[#0a0a14]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14">
-            <div className="text-gray-500 text-sm">© 2026 GamStart</div>
+            <div className="text-gray-500 text-sm">© 2026 GambleScan</div>
             <div className="flex items-center gap-4">
               <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-white transition-colors">
                 <TwitterIcon size={16} />
@@ -304,4 +304,5 @@ export default function VerifyPage() {
     </Suspense>
   );
 }
+
 
