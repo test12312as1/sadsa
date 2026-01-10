@@ -248,7 +248,7 @@ export default function SampleLeaderboard() {
           </div>
           
           {/* Affiliate Code */}
-          <div className="mb-12">
+          <div className="mb-6">
             <span className="text-gray-400">Use code: </span>
             <span 
               className="font-bold text-lg"
@@ -270,7 +270,7 @@ export default function SampleLeaderboard() {
         </div>
 
         {/* Top 3 Podium Display */}
-        <div className="flex items-end justify-center gap-4 mb-10">
+        <div className="flex items-end justify-center gap-4 md:gap-8 mb-10 mt-8 pt-8">
           {/* 2nd Place - Left */}
           {leaderboardData[1] && (
             <div className="flex flex-col items-center">
@@ -523,5 +523,6 @@ export default function SampleLeaderboard() {
     </div>
   );
 }
+
 
 
