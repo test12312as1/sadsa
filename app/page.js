@@ -434,6 +434,66 @@ export default function GambleScan() {
   const [platformLoading, setPlatformLoading] = useState(false);
   const [rankingTimePeriod, setRankingTimePeriod] = useState('week'); // week, month, year
   
+  // Auth state
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authMode, setAuthMode] = useState('signin'); // 'signin' or 'signup'
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState('');
+  const [user, setUser] = useState(null);
+
+  // Check for existing session on mount
+  useEffect(() => {
+    const storedUser = localStorage.getItem('gamblescan_user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
+  const handleAuth = async (e) => {
+    e.preventDefault();
+    setAuthLoading(true);
+    setAuthError('');
+
+    try {
+      const endpoint = authMode === 'signup' ? '/api/auth/signup' : '/api/auth/signin';
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: authEmail, password: authPassword })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setAuthError(data.error || 'Authentication failed');
+        setAuthLoading(false);
+        return;
+      }
+
+      // Store session
+      if (data.session?.access_token) {
+        localStorage.setItem('gamblescan_token', data.session.access_token);
+      }
+      localStorage.setItem('gamblescan_user', JSON.stringify(data.user));
+      
+      setUser(data.user);
+      setShowAuthModal(false);
+      setAuthEmail('');
+      setAuthPassword('');
+    } catch (error) {
+      setAuthError('Something went wrong. Please try again.');
+    }
+    setAuthLoading(false);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('gamblescan_token');
+    localStorage.removeItem('gamblescan_user');
+    setUser(null);
+  };
+  
   // Fetch platform data from API
   const fetchPlatformData = async () => {
     setPlatformLoading(true);
@@ -714,9 +774,29 @@ export default function GambleScan() {
             </div>
 
             <div className="flex items-center gap-3">
-              <button className="px-4 py-1.5 text-sm font-medium text-gray-300 hover:text-white bg-[#1a1a2e] hover:bg-[#252540] rounded-lg border border-gray-700/50 transition-colors">
-                Sign In
-              </button>
+              {user ? (
+                <div className="flex items-center gap-2">
+                  <a
+                    href="/profile"
+                    className="px-4 py-1.5 text-sm font-medium text-gray-300 hover:text-white bg-[#1a1a2e] hover:bg-[#252540] rounded-lg border border-gray-700/50 transition-colors"
+                  >
+                    {user.email?.split('@')[0]}
+                  </a>
+                  <button
+                    onClick={handleLogout}
+                    className="px-3 py-1.5 text-sm text-gray-500 hover:text-white transition-colors"
+                  >
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowAuthModal(true)}
+                  className="px-4 py-1.5 text-sm font-medium text-gray-300 hover:text-white bg-[#1a1a2e] hover:bg-[#252540] rounded-lg border border-gray-700/50 transition-colors"
+                >
+                  Sign In
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -780,12 +860,12 @@ export default function GambleScan() {
             {/* Controls - Compact inline design */}
             <div className="bg-[#12121c] rounded-xl p-4 border border-gray-800/50 mb-6">
               <div className="flex flex-col lg:flex-row lg:items-center gap-4">
-                {/* Metric Selection */}
+                {/* Metric Selection - Only Volume and Deposits */}
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-gray-500 uppercase tracking-wide whitespace-nowrap">Metric:</span>
                   <div className="flex flex-wrap gap-1.5">
-                    {['volume', 'marketShare', 'deposits', 'newDepositors'].map((metric) => (
-              <button
+                    {['volume', 'deposits'].map((metric) => (
+                      <button
                         key={metric}
                         onClick={() => setSelectedMetric(metric)}
                         className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
@@ -794,13 +874,11 @@ export default function GambleScan() {
                             : 'bg-[#1a1a2e] text-gray-400 hover:text-white hover:bg-[#252540]'
                         }`}
                       >
-                        {metric === 'volume' ? 'Volume' : 
-                         metric === 'marketShare' ? 'Share' :
-                         metric === 'deposits' ? 'Deposits' : 'New Users'}
-              </button>
+                        {metric === 'volume' ? 'Volume' : 'Deposits'}
+                      </button>
                     ))}
                   </div>
-          </div>
+                </div>
 
                 <div className="hidden lg:block w-px h-6 bg-gray-700" />
 
@@ -1740,9 +1818,128 @@ export default function GambleScan() {
       </div>
         </div>
       </footer>
+
+      {/* Auth Modal */}
+      {showAuthModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-[#12121c] rounded-2xl border border-gray-800/50 w-full max-w-md mx-4 overflow-hidden">
+            {/* Modal Header */}
+            <div className="p-6 border-b border-gray-800/50">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-white">
+                  {authMode === 'signup' ? 'Create Account' : 'Sign In'}
+                </h2>
+                <button
+                  onClick={() => {
+                    setShowAuthModal(false);
+                    setAuthError('');
+                    setAuthEmail('');
+                    setAuthPassword('');
+                  }}
+                  className="text-gray-500 hover:text-white transition-colors"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M18 6L6 18M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <p className="text-gray-400 text-sm mt-1">
+                {authMode === 'signup' 
+                  ? 'Create an account to save your scans' 
+                  : 'Welcome back to GambleScan'}
+              </p>
+            </div>
+
+            {/* Modal Body */}
+            <form onSubmit={handleAuth} className="p-6 space-y-4">
+              {authError && (
+                <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">
+                  {authError}
+                </div>
+              )}
+
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">Email</label>
+                <input
+                  type="email"
+                  value={authEmail}
+                  onChange={(e) => setAuthEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  required
+                  className="w-full bg-[#0a0a14] border border-gray-800 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-purple-500 transition-colors"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">Password</label>
+                <input
+                  type="password"
+                  value={authPassword}
+                  onChange={(e) => setAuthPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  minLength={6}
+                  className="w-full bg-[#0a0a14] border border-gray-800 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-purple-500 transition-colors"
+                />
+                {authMode === 'signup' && (
+                  <p className="text-xs text-gray-600 mt-1">At least 6 characters</p>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                disabled={authLoading}
+                className="w-full py-3 bg-purple-600 hover:bg-purple-500 disabled:bg-purple-600/50 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+              >
+                {authLoading ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    {authMode === 'signup' ? 'Creating...' : 'Signing in...'}
+                  </>
+                ) : (
+                  authMode === 'signup' ? 'Create Account' : 'Sign In'
+                )}
+              </button>
+
+              <div className="text-center text-sm text-gray-500">
+                {authMode === 'signup' ? (
+                  <>
+                    Already have an account?{' '}
+                    <button
+                      type="button"
+                      onClick={() => { setAuthMode('signin'); setAuthError(''); }}
+                      className="text-purple-400 hover:text-purple-300"
+                    >
+                      Sign In
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    Don't have an account?{' '}
+                    <button
+                      type="button"
+                      onClick={() => { setAuthMode('signup'); setAuthError(''); }}
+                      className="text-purple-400 hover:text-purple-300"
+                    >
+                      Sign Up
+                    </button>
+                  </>
+                )}
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
+
+
+
 
 
 
