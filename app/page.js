@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Clock, DollarSign, Activity, Share2, Wallet, Trophy, Target, Flame, Timer, ExternalLink, ChevronRight, TrendingUp, TrendingDown, BarChart3, PieChart, Users, ArrowUpRight, ArrowDownRight, Gift, ShoppingCart } from 'lucide-react';
+import { Search, Clock, DollarSign, Activity, Share2, Wallet, Trophy, Target, Flame, Timer, ExternalLink, ChevronRight, TrendingUp, TrendingDown, BarChart3, PieChart, Users, ArrowUpRight, ArrowDownRight, Gift } from 'lucide-react';
 
 // Twitter/X Icon
 const TwitterIcon = ({ size = 18 }) => (
@@ -1626,16 +1626,18 @@ export default function GamStart() {
                   <div className="text-center">
                     <p className="text-sm text-gray-400 mb-3">Is this your wallet? Here are your options:</p>
                   </div>
-                  {/* Sell & VIP Buttons - Matrix Pill Colors */}
+                  {/* Help & VIP Buttons */}
                   <div className="flex gap-3 justify-center">
                     <a
-                      href="/marketplace"
+                      href="https://www.gambleaware.org/"
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="flex items-center gap-2 px-4 py-2.5 bg-[#0a1628] hover:bg-[#0d1e38] rounded-lg border border-blue-500/30 hover:border-blue-400/50 transition-all"
                     >
-                      <ShoppingCart className="text-blue-400" size={16} />
+                      <ExternalLink className="text-blue-400" size={16} />
                       <div className="text-left">
-                        <div className="text-xs text-blue-300/70">Sell Account</div>
-                        <div className="text-sm font-semibold text-blue-100">Est. ${Math.round((results.financialImpact?.totalUSD || 0) * 0.15).toLocaleString()}</div>
+                        <div className="text-xs text-blue-300/70">Need Help?</div>
+                        <div className="text-sm font-semibold text-blue-100">GambleAware Support</div>
                       </div>
                     </a>
                     <a
@@ -1692,4 +1694,5 @@ export default function GamStart() {
     </div>
   );
 }
+
 
