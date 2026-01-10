@@ -678,12 +678,6 @@ export default function GamStart() {
               {/* Secondary Links */}
               <div className="hidden md:flex items-center gap-1">
                 <a
-                  href="/marketplace"
-                  className="px-3 py-1.5 text-sm text-purple-400 hover:text-purple-300 transition-colors"
-                >
-                  Account Marketplace
-                </a>
-                <a
                   href="/vip-dashboard"
                   className="px-3 py-1.5 text-sm text-purple-400 hover:text-purple-300 transition-colors"
                 >
@@ -1698,3 +1692,4 @@ export default function GamStart() {
     </div>
   );
 }
+
