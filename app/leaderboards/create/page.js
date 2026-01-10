@@ -135,7 +135,7 @@ export default function CreateLeaderboard() {
     await new Promise(resolve => setTimeout(resolve, 2000));
     
     // Generate URL
-    const url = `https://${formData.subdomain}.gamblescan.com/leaderboard`;
+    const url = `https://${formData.subdomain}.gamblescan.org/leaderboard`;
     setGeneratedUrl(url);
     setIsComplete(true);
     setIsSubmitting(false);
@@ -151,7 +151,7 @@ export default function CreateLeaderboard() {
   // Success screen
   if (isComplete) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] text-white flex items-center justify-center">
+      <div className="min-h-screen bg-[#0f0f1a] text-white flex items-center justify-center">
         <div className="max-w-md w-full mx-4 text-center">
           <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-6">
             <Check className="text-green-400" size={32} />
@@ -194,7 +194,7 @@ export default function CreateLeaderboard() {
   // Loading screen
   if (isSubmitting) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] text-white flex items-center justify-center">
+      <div className="min-h-screen bg-[#0f0f1a] text-white flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="animate-spin text-purple-400 mx-auto mb-4" size={48} />
           <h2 className="text-xl font-medium text-white mb-2">Creating Your Leaderboard</h2>
@@ -205,7 +205,64 @@ export default function CreateLeaderboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white">
+    <div className="min-h-screen bg-[#0f0f1a] text-white flex flex-col">
+      {/* Navbar */}
+      <nav className="border-b border-gray-800/50 bg-[#0a0a14]/80 backdrop-blur-sm sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-14">
+            <div className="flex items-center gap-6">
+              <a 
+                href="/"
+                className="flex items-center gap-2 text-white font-semibold text-lg hover:opacity-80 transition-opacity"
+              >
+                <span className="text-purple-500">◈</span>
+                GambleScan
+              </a>
+              
+              {/* Primary Tabs */}
+              <div className="flex items-center bg-[#1a1a2e] rounded-lg p-0.5">
+                <a
+                  href="/"
+                  className="px-4 py-1.5 rounded-md text-sm font-medium text-gray-500 hover:text-gray-300 transition-all"
+                >
+                  Players
+                </a>
+                <a
+                  href="/?tab=platforms"
+                  className="px-4 py-1.5 rounded-md text-sm font-medium text-gray-500 hover:text-gray-300 transition-all"
+                >
+                  Casinos
+                </a>
+              </div>
+
+              {/* Secondary Links */}
+              <div className="hidden md:flex items-center gap-1">
+                <a
+                  href="/vip-dashboard"
+                  className="px-3 py-1.5 text-sm text-purple-400 hover:text-purple-300 transition-colors"
+                >
+                  VIP Offers
+                </a>
+                <a
+                  href="/leaderboards"
+                  className="px-3 py-1.5 text-sm text-white font-medium transition-colors"
+                >
+                  Leaderboard Builder
+                </a>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button className="px-4 py-1.5 text-sm font-medium text-gray-300 hover:text-white bg-[#1a1a2e] hover:bg-[#252540] rounded-lg border border-gray-700/50 transition-colors">
+                Sign In
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <main className="flex-1">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <a
@@ -251,7 +308,7 @@ export default function CreateLeaderboard() {
                     required
                   />
                   <div className="bg-[#1a1a2e] border border-l-0 border-gray-800 rounded-r-lg px-4 py-3 text-gray-500">
-                    .gamblescan.com
+                    .gamblescan.org
                   </div>
                 </div>
               </div>
@@ -483,7 +540,29 @@ export default function CreateLeaderboard() {
           </div>
         </form>
       </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="border-t border-gray-800/50 bg-[#0a0a14]/80">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-12">
+            <div className="text-gray-500 text-sm">
+              © 2026 GambleScan
+            </div>
+            <div className="flex items-center gap-4">
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-white transition-colors">
+                <TwitterIcon size={16} />
+              </a>
+              <a href="https://discord.com" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-white transition-colors">
+                <DiscordIcon size={16} />
+              </a>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
+
+
 
