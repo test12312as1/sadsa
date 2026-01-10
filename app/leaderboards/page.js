@@ -6,8 +6,8 @@ import { Trophy, Zap, Crown, Star, Check, X, ArrowRight, Users, BarChart3, Gift 
 // Sample leaderboard data for preview cards
 const SAMPLE_LEADERBOARDS = [
   {
-    id: 'terriblepker',
-    streamerName: 'TerriblePKER',
+    id: 'orange',
+    streamerName: 'Orange',
     casino: 'Roobet',
     prizePool: 5000,
     accentColor: '#f97316', // Orange
@@ -15,8 +15,8 @@ const SAMPLE_LEADERBOARDS = [
     participants: 247
   },
   {
-    id: 'codeivanb',
-    streamerName: 'CodeIvanB',
+    id: 'purple',
+    streamerName: 'Purple',
     casino: 'Rainbet',
     prizePool: 10000,
     accentColor: '#8b5cf6', // Purple
@@ -24,8 +24,8 @@ const SAMPLE_LEADERBOARDS = [
     participants: 512
   },
   {
-    id: 'karmacf',
-    streamerName: 'KarmaCF',
+    id: 'green',
+    streamerName: 'Green',
     casino: 'Stake',
     prizePool: 25000,
     accentColor: '#22c55e', // Green
@@ -63,7 +63,7 @@ const PRICING = {
     price: 0,
     features: [
       { text: '1 Active Leaderboard', included: true },
-      { text: 'Subdomain (you.gamblescan.com)', included: true },
+      { text: 'Subdomain (you.gamblescan.org)', included: true },
       { text: 'All Casino Integrations', included: true },
       { text: 'Custom Accent Colors', included: true },
       { text: 'Social Links', included: true },
@@ -77,7 +77,7 @@ const PRICING = {
     price: 199,
     features: [
       { text: 'Unlimited Leaderboards', included: true },
-      { text: 'Subdomain (you.gamblescan.com)', included: true },
+      { text: 'Subdomain (you.gamblescan.org)', included: true },
       { text: 'All Casino Integrations', included: true },
       { text: 'Custom Accent Colors', included: true },
       { text: 'Social Links', included: true },
@@ -358,6 +358,10 @@ export default function LeaderboardsLanding() {
     </div>
   );
 }
+
+
+
+
 
 
 
