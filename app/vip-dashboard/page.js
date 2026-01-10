@@ -154,7 +154,7 @@ export default function VIPDashboard() {
             <div className="flex items-center gap-6">
               <Link href="/" className="flex items-center gap-2 text-white font-semibold text-lg hover:opacity-80 transition-opacity">
                 <span className="text-purple-500">◈</span>
-                GamStart
+                GambleScan
               </Link>
               
               <div className="flex items-center bg-[#1a1a2e] rounded-lg p-0.5">
@@ -283,7 +283,7 @@ export default function VIPDashboard() {
               <div className="flex items-center gap-3">
                 <Building2 className="text-purple-400" size={20} />
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-1">For Casino & Affiliate Representatives</h3>
+                  <h3 className="text-lg font-semibold text-white mb-1">For Operators and Affiliates</h3>
                   <p className="text-sm text-gray-400">
                     Are you a representative of a casino or an affiliate? Get verified and send offers to verified high rollers.
                   </p>
@@ -350,7 +350,7 @@ export default function VIPDashboard() {
                 <div className="space-y-1.5 pt-2 border-t border-gray-800/50">
                   {vip.telegram && (
                     <div className="flex items-center gap-2">
-                      <div className="text-gray-600">
+                      <div className="text-gray-600 blur-[2px]">
                         <TelegramIcon size={14} />
                       </div>
                       <div className="text-xs text-gray-500 font-mono blur-sm select-none">
@@ -360,7 +360,7 @@ export default function VIPDashboard() {
                   )}
                   {vip.discord && (
                     <div className="flex items-center gap-2">
-                      <div className="text-gray-600">
+                      <div className="text-gray-600 blur-[2px]">
                         <DiscordIcon size={14} />
                       </div>
                       <div className="text-xs text-gray-500 font-mono blur-sm select-none">
@@ -397,7 +397,7 @@ export default function VIPDashboard() {
       <footer className="border-t border-gray-800/50 bg-[#0a0a14]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14">
-            <div className="text-gray-500 text-sm">© 2026 GamStart</div>
+            <div className="text-gray-500 text-sm">© 2026 GambleScan</div>
             <div className="flex items-center gap-4">
               <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-white transition-colors">
                 <TwitterIcon size={16} />
@@ -487,5 +487,6 @@ export default function VIPDashboard() {
     </div>
   );
 }
+
 
 
