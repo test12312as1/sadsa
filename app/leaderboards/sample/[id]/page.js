@@ -39,6 +39,27 @@ const KickIcon = ({ size = 18 }) => (
   </svg>
 );
 
+// Diamond Eye Logo - Eye with diamond pupil
+const DiamondEyeLogo = ({ size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    {/* Eye outline */}
+    <path 
+      d="M12 5C7 5 2.73 8.11 1 12.5C2.73 16.89 7 20 12 20C17 20 21.27 16.89 23 12.5C21.27 8.11 17 5 12 5Z" 
+      stroke="currentColor" 
+      strokeWidth="1.5" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+      className="text-purple-400"
+    />
+    {/* Diamond pupil */}
+    <path 
+      d="M12 8L15 12.5L12 17L9 12.5L12 8Z" 
+      fill="currentColor"
+      className="text-purple-500"
+    />
+  </svg>
+);
+
 // Sample leaderboard configurations
 const SAMPLE_CONFIGS = {
   orange: {
@@ -515,7 +536,7 @@ export default function SampleLeaderboard() {
             href="/"
             className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-purple-400 transition-colors"
           >
-            <span className="text-purple-500">◈</span>
+            <DiamondEyeLogo size={16} />
             Built by GambleScan
           </a>
         </footer>
@@ -523,6 +544,11 @@ export default function SampleLeaderboard() {
     </div>
   );
 }
+
+
+
+
+
 
 
 
