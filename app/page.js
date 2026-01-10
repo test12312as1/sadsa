@@ -397,7 +397,7 @@ const SimpleLineChart = ({ data, dataKey, color, height = 120 }) => {
   );
 };
 
-export default function GamStart() {
+export default function GambleScan() {
   const [address, setAddress] = useState('');
   const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
@@ -572,7 +572,7 @@ export default function GamStart() {
 
   const handleShare = () => {
     if (!results) return;
-    const shareText = `🎰 GamStart Report\n\nRisk Score: ${results.riskScore}/100\nType: ${results.gamblerType}\nStatus: ${results.status}\n\nCheck your gambling behavior: gamstart.vercel.app`;
+    const shareText = `🎰 GambleScan Report\n\nRisk Score: ${results.riskScore}/100\nType: ${results.gamblerType}\nStatus: ${results.status}\n\nCheck your gambling behavior: gamstart.vercel.app`;
     
     if (navigator.share) {
       navigator.share({ text: shareText }).catch(() => {
@@ -648,7 +648,7 @@ export default function GamStart() {
                 className="flex items-center gap-2 text-white font-semibold text-lg hover:opacity-80 transition-opacity"
               >
                 <span className="text-purple-500">◈</span>
-                GamStart
+                GambleScan
               </button>
               
               {/* Primary Tabs - Players & Casinos */}
@@ -1678,7 +1678,7 @@ export default function GamStart() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-12">
             <div className="text-gray-500 text-sm">
-              © 2026 GamStart
+              © 2026 GambleScan
       </div>
             <div className="flex items-center gap-4">
               <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-white transition-colors">
@@ -1694,5 +1694,6 @@ export default function GamStart() {
     </div>
   );
 }
+
 
 
