@@ -135,7 +135,7 @@ export default function CreateLeaderboard() {
     await new Promise(resolve => setTimeout(resolve, 2000));
     
     // Generate URL
-    const url = `https://${formData.subdomain}.gamstart.com/leaderboard`;
+    const url = `https://${formData.subdomain}.gamblescan.com/leaderboard`;
     setGeneratedUrl(url);
     setIsComplete(true);
     setIsSubmitting(false);
@@ -251,7 +251,7 @@ export default function CreateLeaderboard() {
                     required
                   />
                   <div className="bg-[#1a1a2e] border border-l-0 border-gray-800 rounded-r-lg px-4 py-3 text-gray-500">
-                    .gamstart.com
+                    .gamblescan.com
                   </div>
                 </div>
               </div>
@@ -486,3 +486,4 @@ export default function CreateLeaderboard() {
     </div>
   );
 }
+
