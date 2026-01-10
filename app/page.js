@@ -689,6 +689,12 @@ export default function GamStart() {
                 >
                   VIP Offers
                 </a>
+                <a
+                  href="/leaderboards"
+                  className="px-3 py-1.5 text-sm text-purple-400 hover:text-purple-300 transition-colors"
+                >
+                  Leaderboard Builder
+                </a>
               </div>
             </div>
 
@@ -1692,10 +1698,3 @@ export default function GamStart() {
     </div>
   );
 }
-
-
-
-
-
-
-
