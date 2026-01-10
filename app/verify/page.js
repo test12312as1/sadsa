@@ -19,6 +19,25 @@ const DiscordIcon = ({ size = 18 }) => (
   </svg>
 );
 
+// Diamond Eye Logo - Eye with diamond pupil
+const DiamondEyeLogo = ({ size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path 
+      d="M12 5C7 5 2.73 8.11 1 12.5C2.73 16.89 7 20 12 20C17 20 21.27 16.89 23 12.5C21.27 8.11 17 5 12 5Z" 
+      stroke="currentColor" 
+      strokeWidth="1.5" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+      className="text-purple-400"
+    />
+    <path 
+      d="M12 8L15 12.5L12 17L9 12.5L12 8Z" 
+      fill="currentColor"
+      className="text-purple-500"
+    />
+  </svg>
+);
+
 const CASINOS = ['Stake', 'Rollbit', 'Shuffle', 'Roobet', 'Gamdom', 'Rainbet', 'Duel', 'StakeUS', '500 Casino', 'BC.GAME'];
 
 function VerifyContent() {
@@ -60,7 +79,7 @@ function VerifyContent() {
             <div className="flex items-center justify-between h-14">
               <div className="flex items-center gap-6">
                 <Link href="/" className="flex items-center gap-2 text-white font-semibold text-lg hover:opacity-80 transition-opacity">
-                  <span className="text-purple-500">◈</span>
+                  <DiamondEyeLogo size={22} />
                   GambleScan
                 </Link>
                 
@@ -125,7 +144,7 @@ function VerifyContent() {
           <div className="flex items-center justify-between h-14">
             <div className="flex items-center gap-6">
               <Link href="/" className="flex items-center gap-2 text-white font-semibold text-lg hover:opacity-80 transition-opacity">
-                <span className="text-purple-500">◈</span>
+                <DiamondEyeLogo size={22} />
                 GambleScan
               </Link>
               
@@ -304,5 +323,8 @@ export default function VerifyPage() {
     </Suspense>
   );
 }
+
+
+
 
 
