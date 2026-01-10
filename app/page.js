@@ -790,12 +790,20 @@ export default function GambleScan() {
                   </button>
                 </div>
               ) : (
-                <button
-                  onClick={() => setShowAuthModal(true)}
-                  className="px-4 py-1.5 text-sm font-medium text-gray-300 hover:text-white bg-[#1a1a2e] hover:bg-[#252540] rounded-lg border border-gray-700/50 transition-colors"
-                >
-                  Sign In
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => { setAuthMode('signin'); setShowAuthModal(true); }}
+                    className="px-4 py-1.5 text-sm font-medium text-gray-300 hover:text-white transition-colors"
+                  >
+                    Sign In
+                  </button>
+                  <button
+                    onClick={() => { setAuthMode('signup'); setShowAuthModal(true); }}
+                    className="px-4 py-1.5 text-sm font-medium text-white bg-purple-600 hover:bg-purple-500 rounded-lg transition-colors"
+                  >
+                    Sign Up
+                  </button>
+                </div>
               )}
             </div>
           </div>
@@ -1936,6 +1944,10 @@ export default function GambleScan() {
     </div>
   );
 }
+
+
+
+
 
 
 
