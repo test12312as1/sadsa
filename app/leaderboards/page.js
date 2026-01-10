@@ -91,6 +91,67 @@ const PRICING = {
 export default function LeaderboardsLanding() {
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white">
+      {/* Navbar */}
+      <nav className="border-b border-gray-800/50 bg-[#0a0a14]/80 backdrop-blur-sm sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-14">
+            <div className="flex items-center gap-6">
+              <a 
+                href="/"
+                className="flex items-center gap-2 text-white font-semibold text-lg hover:opacity-80 transition-opacity"
+              >
+                <span className="text-purple-500">◈</span>
+                GamStart
+              </a>
+              
+              {/* Primary Tabs */}
+              <div className="flex items-center bg-[#1a1a2e] rounded-lg p-0.5">
+                <a
+                  href="/"
+                  className="px-4 py-1.5 rounded-md text-sm font-medium text-gray-500 hover:text-gray-300 transition-all"
+                >
+                  Players
+                </a>
+                <a
+                  href="/?tab=platforms"
+                  className="px-4 py-1.5 rounded-md text-sm font-medium text-gray-500 hover:text-gray-300 transition-all"
+                >
+                  Casinos
+                </a>
+              </div>
+
+              {/* Secondary Links */}
+              <div className="hidden md:flex items-center gap-1">
+                <a
+                  href="/marketplace"
+                  className="px-3 py-1.5 text-sm text-purple-400 hover:text-purple-300 transition-colors"
+                >
+                  Account Marketplace
+                </a>
+                <a
+                  href="/vip-dashboard"
+                  className="px-3 py-1.5 text-sm text-purple-400 hover:text-purple-300 transition-colors"
+                >
+                  VIP Offers
+                </a>
+                <a
+                  href="/leaderboards"
+                  className="px-3 py-1.5 text-sm text-white font-medium transition-colors"
+                >
+                  Leaderboard Builder
+                </a>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button className="px-4 py-1.5 text-sm font-medium text-gray-300 hover:text-white bg-[#1a1a2e] hover:bg-[#252540] rounded-lg border border-gray-700/50 transition-colors">
+                Sign In
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
       {/* Hero Section */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center mb-16">
@@ -276,17 +337,6 @@ export default function LeaderboardsLanding() {
           </div>
         </div>
 
-        {/* CTA */}
-        <div className="text-center">
-          <p className="text-gray-500 mb-4">Ready to engage your community?</p>
-          <a
-            href="/leaderboards/create"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-purple-600 hover:bg-purple-500 text-white font-medium rounded-lg transition-colors text-lg"
-          >
-            Create Your Leaderboard Now
-            <ArrowRight size={20} />
-          </a>
-        </div>
       </div>
 
       {/* Footer */}
@@ -300,3 +350,4 @@ export default function LeaderboardsLanding() {
     </div>
   );
 }
+
