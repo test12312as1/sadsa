@@ -1,0 +1,302 @@
+'use client';
+
+import { useState } from 'react';
+import { Trophy, Zap, Crown, Star, Check, X, ArrowRight, Users, BarChart3, Gift } from 'lucide-react';
+
+// Sample leaderboard data for preview cards
+const SAMPLE_LEADERBOARDS = [
+  {
+    id: 'terriblepker',
+    streamerName: 'TerriblePKER',
+    casino: 'Roobet',
+    prizePool: 5000,
+    accentColor: '#f97316', // Orange
+    timeline: 'Bi-Weekly',
+    participants: 247
+  },
+  {
+    id: 'codeivanb',
+    streamerName: 'CodeIvanB',
+    casino: 'Rainbet',
+    prizePool: 10000,
+    accentColor: '#8b5cf6', // Purple
+    timeline: 'Monthly',
+    participants: 512
+  },
+  {
+    id: 'karmacf',
+    streamerName: 'KarmaCF',
+    casino: 'Stake',
+    prizePool: 25000,
+    accentColor: '#22c55e', // Green
+    timeline: 'Weekly',
+    participants: 1834
+  }
+];
+
+const FEATURES = [
+  {
+    icon: Trophy,
+    title: 'Custom Leaderboards',
+    description: 'Create branded leaderboards that match your stream aesthetic'
+  },
+  {
+    icon: Zap,
+    title: 'Real-Time Updates',
+    description: 'Leaderboard updates automatically as your viewers wager'
+  },
+  {
+    icon: Users,
+    title: 'Engage Your Community',
+    description: 'Drive engagement with competitive prize pools'
+  },
+  {
+    icon: BarChart3,
+    title: 'Analytics Dashboard',
+    description: 'Track performance and viewer participation'
+  }
+];
+
+const PRICING = {
+  free: {
+    name: 'Free',
+    price: 0,
+    features: [
+      { text: '1 Active Leaderboard', included: true },
+      { text: 'Subdomain (you.gamstart.com)', included: true },
+      { text: 'All Casino Integrations', included: true },
+      { text: 'Custom Accent Colors', included: true },
+      { text: 'Social Links', included: true },
+      { text: 'Custom Domain', included: false },
+      { text: 'Multiple Leaderboards', included: false },
+      { text: 'VIP Highroller Insights', included: false }
+    ]
+  },
+  pro: {
+    name: 'Pro',
+    price: 199,
+    features: [
+      { text: 'Unlimited Leaderboards', included: true },
+      { text: 'Subdomain (you.gamstart.com)', included: true },
+      { text: 'All Casino Integrations', included: true },
+      { text: 'Custom Accent Colors', included: true },
+      { text: 'Social Links', included: true },
+      { text: 'Custom Domain', included: true },
+      { text: 'Multiple Leaderboards', included: true },
+      { text: 'VIP Highroller Insights', included: true }
+    ]
+  }
+};
+
+export default function LeaderboardsLanding() {
+  return (
+    <div className="min-h-screen bg-[#0a0a0f] text-white">
+      {/* Hero Section */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full mb-6">
+            <Crown className="text-purple-400" size={16} />
+            <span className="text-sm text-purple-300">For Gambling Streamers</span>
+          </div>
+          
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            Build Your Own <span className="text-purple-400">Leaderboard</span>
+          </h1>
+          
+          <p className="text-lg text-gray-400 max-w-2xl mx-auto mb-8">
+            Create custom affiliate leaderboards for your community. Track wagers, 
+            distribute prizes, and grow your audience with competitive engagement.
+          </p>
+          
+          <a
+            href="/leaderboards/create"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white font-medium rounded-lg transition-colors"
+          >
+            Create Your Leaderboard
+            <ArrowRight size={18} />
+          </a>
+        </div>
+
+        {/* Sample Leaderboards */}
+        <div className="mb-20">
+          <h2 className="text-2xl font-bold text-white text-center mb-2">Sample Leaderboards</h2>
+          <p className="text-gray-500 text-center mb-8">Click to preview live examples</p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {SAMPLE_LEADERBOARDS.map((lb) => (
+              <a
+                key={lb.id}
+                href={`/leaderboards/sample/${lb.id}`}
+                className="group bg-[#12121c] rounded-xl border border-gray-800/50 overflow-hidden hover:border-gray-700 transition-all hover:scale-[1.02]"
+              >
+                {/* Header with accent color */}
+                <div 
+                  className="h-2"
+                  style={{ backgroundColor: lb.accentColor }}
+                />
+                
+                <div className="p-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div 
+                        className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold"
+                        style={{ backgroundColor: lb.accentColor }}
+                      >
+                        {lb.streamerName.charAt(0)}
+                      </div>
+                      <div>
+                        <div className="font-medium text-white">{lb.streamerName}</div>
+                        <div className="text-xs text-gray-500">{lb.casino}</div>
+                      </div>
+                    </div>
+                    <div 
+                      className="text-xs px-2 py-1 rounded-full"
+                      style={{ backgroundColor: `${lb.accentColor}20`, color: lb.accentColor }}
+                    >
+                      {lb.timeline}
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between text-sm">
+                    <div>
+                      <div className="text-gray-500 text-xs">Prize Pool</div>
+                      <div className="text-white font-bold">${lb.prizePool.toLocaleString()}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-gray-500 text-xs">Participants</div>
+                      <div className="text-white font-medium">{lb.participants}</div>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 pt-4 border-t border-gray-800/50 flex items-center justify-center gap-2 text-sm text-gray-400 group-hover:text-purple-400 transition-colors">
+                    <span>View Leaderboard</span>
+                    <ArrowRight size={14} />
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+
+        {/* Features */}
+        <div className="mb-20">
+          <h2 className="text-2xl font-bold text-white text-center mb-2">What's Possible</h2>
+          <p className="text-gray-500 text-center mb-8">Everything you need to run successful competitions</p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {FEATURES.map((feature, i) => (
+              <div key={i} className="bg-[#12121c] rounded-xl p-5 border border-gray-800/50">
+                <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center mb-4">
+                  <feature.icon className="text-purple-400" size={20} />
+                </div>
+                <h3 className="font-medium text-white mb-2">{feature.title}</h3>
+                <p className="text-sm text-gray-500">{feature.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Pricing */}
+        <div className="mb-16">
+          <h2 className="text-2xl font-bold text-white text-center mb-2">Simple Pricing</h2>
+          <p className="text-gray-500 text-center mb-8">Start free, upgrade when you need more</p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            {/* Free Plan */}
+            <div className="bg-[#12121c] rounded-xl p-6 border border-gray-800/50">
+              <div className="mb-6">
+                <h3 className="text-xl font-bold text-white mb-1">{PRICING.free.name}</h3>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-3xl font-bold text-white">$0</span>
+                  <span className="text-gray-500">/month</span>
+                </div>
+              </div>
+              
+              <ul className="space-y-3 mb-6">
+                {PRICING.free.features.map((feature, i) => (
+                  <li key={i} className="flex items-center gap-3 text-sm">
+                    {feature.included ? (
+                      <Check className="text-green-400 shrink-0" size={16} />
+                    ) : (
+                      <X className="text-gray-600 shrink-0" size={16} />
+                    )}
+                    <span className={feature.included ? 'text-gray-300' : 'text-gray-600'}>
+                      {feature.text}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              
+              <a
+                href="/leaderboards/create"
+                className="block w-full py-3 text-center bg-[#1a1a2e] hover:bg-[#252540] text-white font-medium rounded-lg transition-colors"
+              >
+                Get Started Free
+              </a>
+            </div>
+            
+            {/* Pro Plan */}
+            <div className="bg-gradient-to-br from-purple-500/10 to-transparent rounded-xl p-6 border border-purple-500/30 relative">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                <div className="px-3 py-1 bg-purple-500 text-white text-xs font-medium rounded-full">
+                  Most Popular
+                </div>
+              </div>
+              
+              <div className="mb-6">
+                <h3 className="text-xl font-bold text-white mb-1">{PRICING.pro.name}</h3>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-3xl font-bold text-white">${PRICING.pro.price}</span>
+                  <span className="text-gray-500">/month</span>
+                </div>
+              </div>
+              
+              <ul className="space-y-3 mb-6">
+                {PRICING.pro.features.map((feature, i) => (
+                  <li key={i} className="flex items-center gap-3 text-sm">
+                    {feature.included ? (
+                      <Check className="text-purple-400 shrink-0" size={16} />
+                    ) : (
+                      <X className="text-gray-600 shrink-0" size={16} />
+                    )}
+                    <span className={feature.included ? 'text-gray-300' : 'text-gray-600'}>
+                      {feature.text}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              
+              <a
+                href="/leaderboards/create?plan=pro"
+                className="block w-full py-3 text-center bg-purple-600 hover:bg-purple-500 text-white font-medium rounded-lg transition-colors"
+              >
+                Upgrade to Pro
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {/* CTA */}
+        <div className="text-center">
+          <p className="text-gray-500 mb-4">Ready to engage your community?</p>
+          <a
+            href="/leaderboards/create"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-purple-600 hover:bg-purple-500 text-white font-medium rounded-lg transition-colors text-lg"
+          >
+            Create Your Leaderboard Now
+            <ArrowRight size={20} />
+          </a>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <footer className="border-t border-gray-800/50 bg-[#0a0a14]/80 py-6">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <p className="text-gray-500 text-sm">
+            © 2026 GamStart. All rights reserved.
+          </p>
+        </div>
+      </footer>
+    </div>
+  );
+}
