@@ -269,77 +269,190 @@ export default function SampleLeaderboard() {
           </div>
         </div>
 
-        {/* Leaderboard Table */}
-        <div className="bg-[#12121c] rounded-xl border border-gray-800/50 overflow-hidden mb-8">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="text-xs text-gray-500 uppercase bg-[#0f0f1a]">
-                  <th className="text-center px-4 py-3 font-medium w-20">Rank</th>
-                  <th className="text-left px-4 py-3 font-medium">User</th>
-                  <th className="text-right px-4 py-3 font-medium">Wagered</th>
-                </tr>
-              </thead>
-              <tbody>
-                {leaderboardData.map((entry) => {
-                  const prize = calculatePrize(entry.rank);
-                  const isTopThree = entry.rank <= 3;
-                  
-                  return (
-                    <tr 
-                      key={entry.rank} 
-                      className={`border-t border-gray-800/30 transition-colors ${
-                        isTopThree ? 'bg-[#1a1a2e]/30' : 'hover:bg-[#1a1a2e]/20'
-                      }`}
-                    >
-                      <td className="px-4 py-3 text-center">
-                        {entry.rank <= 3 ? (
-                          <div 
-                            className="inline-flex items-center justify-center w-8 h-8 rounded-full font-bold text-sm"
-                            style={{ 
-                              backgroundColor: entry.rank === 1 ? '#eab308' : entry.rank === 2 ? '#9ca3af' : '#cd7f32',
-                              color: '#000'
-                            }}
-                          >
-                            {entry.rank}
-                          </div>
-                        ) : (
+        {/* Top 3 Podium Display */}
+        <div className="flex items-end justify-center gap-4 mb-10">
+          {/* 2nd Place - Left */}
+          {leaderboardData[1] && (
+            <div className="flex flex-col items-center">
+              <div className="relative mb-3">
+                <div 
+                  className="absolute -top-3 -right-3 w-8 h-8 rounded-full flex items-center justify-center text-lg font-bold z-10"
+                  style={{ 
+                    background: 'linear-gradient(135deg, #e5e7eb 0%, #9ca3af 100%)',
+                    color: '#1a1a2e',
+                    boxShadow: '0 2px 8px rgba(156, 163, 175, 0.4)'
+                  }}
+                >
+                  2
+                </div>
+                <div 
+                  className="w-20 h-20 rounded-2xl flex items-center justify-center text-2xl font-bold border-2"
+                  style={{ 
+                    backgroundColor: '#1a1a2e',
+                    borderColor: '#9ca3af'
+                  }}
+                >
+                  <span style={{ color: '#9ca3af' }}>{leaderboardData[1].username.charAt(0)}</span>
+                </div>
+              </div>
+              <div className="bg-[#12121c] rounded-xl p-4 text-center border border-gray-700/50 w-40">
+                <div className="text-gray-400 text-sm mb-1 truncate">
+                  {leaderboardData[1].username.slice(0, 3)}*****{leaderboardData[1].username.slice(-2)}
+                </div>
+                <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Wagered</div>
+                <div className="text-white font-bold">${leaderboardData[1].wagered.toLocaleString()}</div>
+                <div 
+                  className="text-xl font-bold mt-2"
+                  style={{ color: config.accentColor }}
+                >
+                  ${calculatePrize(2).toLocaleString()}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 1st Place - Center (Elevated) */}
+          {leaderboardData[0] && (
+            <div className="flex flex-col items-center -mt-8">
+              <div className="relative mb-3">
+                <div 
+                  className="absolute -top-4 -right-4 w-10 h-10 rounded-full flex items-center justify-center text-xl font-bold z-10"
+                  style={{ 
+                    background: 'linear-gradient(135deg, #fbbf24 0%, #eab308 100%)',
+                    color: '#1a1a2e',
+                    boxShadow: '0 4px 12px rgba(234, 179, 8, 0.5)'
+                  }}
+                >
+                  1
+                </div>
+                <div 
+                  className="w-24 h-24 rounded-2xl flex items-center justify-center text-3xl font-bold border-2"
+                  style={{ 
+                    backgroundColor: '#1a1a2e',
+                    borderColor: '#eab308',
+                    boxShadow: '0 0 20px rgba(234, 179, 8, 0.2)'
+                  }}
+                >
+                  <span style={{ color: '#eab308' }}>{leaderboardData[0].username.charAt(0)}</span>
+                </div>
+              </div>
+              <div className="bg-[#12121c] rounded-xl p-5 text-center border border-yellow-500/30 w-48">
+                <div className="text-yellow-400 font-medium mb-1 truncate">
+                  {leaderboardData[0].username.slice(0, 3)}*****{leaderboardData[0].username.slice(-2)}
+                </div>
+                <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Wagered</div>
+                <div className="text-white font-bold text-lg">${leaderboardData[0].wagered.toLocaleString()}</div>
+                <div 
+                  className="text-2xl font-bold mt-2"
+                  style={{ color: config.accentColor }}
+                >
+                  ${calculatePrize(1).toLocaleString()}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 3rd Place - Right */}
+          {leaderboardData[2] && (
+            <div className="flex flex-col items-center">
+              <div className="relative mb-3">
+                <div 
+                  className="absolute -top-3 -right-3 w-8 h-8 rounded-full flex items-center justify-center text-lg font-bold z-10"
+                  style={{ 
+                    background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
+                    color: '#1a1a2e',
+                    boxShadow: '0 2px 8px rgba(180, 83, 9, 0.4)'
+                  }}
+                >
+                  3
+                </div>
+                <div 
+                  className="w-20 h-20 rounded-2xl flex items-center justify-center text-2xl font-bold border-2"
+                  style={{ 
+                    backgroundColor: '#1a1a2e',
+                    borderColor: '#b45309'
+                  }}
+                >
+                  <span style={{ color: '#b45309' }}>{leaderboardData[2].username.charAt(0)}</span>
+                </div>
+              </div>
+              <div className="bg-[#12121c] rounded-xl p-4 text-center border border-gray-700/50 w-40">
+                <div className="text-gray-400 text-sm mb-1 truncate">
+                  {leaderboardData[2].username.slice(0, 3)}*****{leaderboardData[2].username.slice(-2)}
+                </div>
+                <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Wagered</div>
+                <div className="text-white font-bold">${leaderboardData[2].wagered.toLocaleString()}</div>
+                <div 
+                  className="text-xl font-bold mt-2"
+                  style={{ color: config.accentColor }}
+                >
+                  ${calculatePrize(3).toLocaleString()}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Remaining Leaderboard Table (4th place onwards) */}
+        {leaderboardData.length > 3 && (
+          <div className="bg-[#12121c] rounded-xl border border-gray-800/50 overflow-hidden mb-8">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="text-xs text-gray-500 uppercase bg-[#0f0f1a]">
+                    <th className="text-center px-4 py-3 font-medium w-20">Rank</th>
+                    <th className="text-left px-4 py-3 font-medium">User</th>
+                    <th className="text-right px-4 py-3 font-medium">Wagered</th>
+                    <th className="text-right px-4 py-3 font-medium">Prize</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {leaderboardData.slice(3).map((entry) => {
+                    const prize = calculatePrize(entry.rank);
+                    
+                    return (
+                      <tr 
+                        key={entry.rank} 
+                        className="border-t border-gray-800/30 hover:bg-[#1a1a2e]/20 transition-colors"
+                      >
+                        <td className="px-4 py-3 text-center">
                           <span className="text-gray-500">{entry.rank}</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <div 
-                            className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-medium"
-                            style={{ backgroundColor: `${config.accentColor}30` }}
-                          >
-                            {entry.username.charAt(0)}
-                          </div>
-                          <span className={isTopThree ? 'text-white font-medium' : 'text-gray-300'}>
-                            {entry.username}
-                          </span>
-                          {prize > 0 && (
-                            <span 
-                              className="text-xs px-2 py-0.5 rounded-full"
-                              style={{ backgroundColor: `${config.accentColor}20`, color: config.accentColor }}
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            <div 
+                              className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-medium"
+                              style={{ backgroundColor: `${config.accentColor}30` }}
                             >
+                              {entry.username.charAt(0)}
+                            </div>
+                            <span className="text-gray-300">
+                              {entry.username}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <span className="text-gray-400">
+                            ${entry.wagered.toLocaleString()}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          {prize > 0 ? (
+                            <span style={{ color: config.accentColor }}>
                               ${prize.toLocaleString()}
                             </span>
+                          ) : (
+                            <span className="text-gray-600">—</span>
                           )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <span className={isTopThree ? 'text-white font-medium' : 'text-gray-400'}>
-                          ${entry.wagered.toLocaleString()}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Footer */}
         <footer className="text-center pt-6 border-t border-gray-800/50">
@@ -410,3 +523,4 @@ export default function SampleLeaderboard() {
     </div>
   );
 }
+
